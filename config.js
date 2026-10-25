@@ -1,70 +1,41 @@
-// Central tuning values. Change numbers here, not in the systems that use them.
+/* data/config.js — loads first. Creates the global DATA object that the other
+   data files extend, and holds the tuning numbers. */
+'use strict';
 
-export const CONFIG = {
-  title: 'The Midnight Appraiser',
-  saveVersion: 1,
-  version: '2.5.1',
-  saveSlots: 3,
-
-  tile: 16,
-
-  // Rendering: pick the largest integer scale that still shows at least this
-  // many logical pixels across the narrow side of the screen.
-  minLogicalShortSide: 176,
-  // ...and on bigger screens, about one logical pixel per this many CSS pixels (by the
-  // View size setting), never more than maxLogicalShortSide.
-  cssPerLogical: { close: 2.8, normal: 2.3, wide: 1.9 },
-  maxLogicalShortSide: 400,
-
-  // Fixed simulation step (seconds) and the longest frame we will catch up on.
-  step: 1 / 60,
-  maxFrame: 0.25,
-
-  // Day clock: one full day lasts this long in real time while the clock runs.
-  dayLengthMs: 10 * 60 * 1000,
-  dayStartMinute: 8 * 60,   // 8:00 AM in-game
-  dayEndMinute: 20 * 60,    // 8:00 PM in-game
-  clockDisplayStep: 10,     // in-game minutes per visible clock tick
-
-  player: {
-    speed: 68,              // logical px per second at full stick
-    box: { w: 10, h: 6, ox: 3, oy: 10 }, // collision box (feet) inside the 16x16 sprite
-    walkFrameTime: 0.11,     // per frame of the 4-frame walk
+const DATA = {
+  config: {
+    maxEnergy: 10, heatMax: 100, logMax: 40,
+    benchMins: 360,   // bench time per day, in minutes (6 hours)
+    startVials: 6, vialPack: { qty: 3, cost: 20 }, scrapRate: 0.3,
+    customersBase: 6, customersMax: 10, customersEvery: 5,   // +1 customer every 5 days
+    kindWeights: { buy: 55, sell: 25, appraise: 20 },        // who walks in on an open day
+    factionHeat: 2, inspectorHeat: 50, maxRefusals: 2,
+    apBase: 6, apCap: 8,                // errand hours; your ride's upgrades raise them toward apCap
+    /* Campaign story (Phase 7). The shop's own name has a target of nameRate × campaign days. */
+    nameRate: 1.3, nameShowAt: 0.2, libraryPageAt: 0.25, pageRuns: 5,
+    pledgeRep: 10, pledgeRivalHit: 10, selfPledgeName: 5,
+    bigSale: 120,                      // a sale this big gets the big-sale stinger (Phase 12d)
+    doorPages: 4, doorName: 0.6,       // the other door: pages found (page 4 among them) and the shop's own name
+    name: { civSale: 1, civAppraisal: 2, incident: -4, surrender: 2, fence: -2, job: -1, capture: 1, sellCaptive: -1, breakout: -3 }
   },
 
-  camera: { followLerp: 10 },
-
-  joystick: {
-    sizes: { small: 96, medium: 120, large: 148 }, // CSS px diameter of the base
-    deadZone: 0.18,
+  /* Per-mode tuning. days = full days before the audit (audit is the morning after
+     the last day). Rent is never a game over: short rent becomes arrears plus a late
+     fee, adds Heat, and the landlord's notice scares off customers until it's paid. */
+  difficulty: {
+    easy:    { name:'Easy',    days:90,   startCash:500, rent:200, rentEvery:7, heatDecay:5, lateFee:0.15,
+               blurb:'90 days until the audit. Cheaper rent and a forgiving city.' },
+    medium:  { name:'Medium',  days:60,   startCash:400, rent:250, rentEvery:7, heatDecay:4, lateFee:0.20,
+               blurb:'60 days until the audit. The intended balance.' },
+    hard:    { name:'Hard',    days:30,   startCash:350, rent:300, rentEvery:7, heatDecay:3, lateFee:0.25,
+               blurb:'30 days until the audit. Steep rent, and Heat lingers.' },
+    endless: { name:'Endless', days:null, startCash:400, rent:250, rentEvery:7, heatDecay:4, lateFee:0.20,
+               blurb:'No audit. Keep the doors open as long as you can.' }
   },
 
-  interactRange: 14,
-
-  // Errand days in the city keep the original's budget: 6 errand hours (more with ride
-  // upgrades) starting at 9 AM. One errand hour lasts 100 seconds, so a 6-hour errand
-  // day runs the same 10 minutes as a shop day.
-  city: {
-    startMinute: 9 * 60,
-    hourMs: 100 * 1000,
-    pedestrians: 28,
-    // Walking speed by ride tier (on foot, then each upgrade).
-    rideSpeed: [1, 1.45, 1.8],
-  },
-
-  // Night runs. The zone clock starts when you go in and runs 10 PM to 4 AM.
-  // Each cell of the original map is drawn as cellTiles x cellTiles tiles.
-  night: {
-    startMinute: 22 * 60,
-    hours: 6,
-    lengthMs: 5 * 60 * 1000,
-    cellTiles: 3,
-    // Seconds between cryptid moves. Lower light makes them hunt faster and notice you sooner.
-    cryptidStep: { lit: 1.0, low: 0.82, dark: 0.6 },
-    lowBattery: 25,
-    // The light drains every this many steps (the original: every 2). Phase 18: a little slower.
-    lightDrainEvery: 3,
-    knockoutHeat: 3,
-    clockOutLoss: 1 / 3,
-  },
+  rentPenalty: {
+    heatPerStrike: 5,       // Heat added per missed payment, times the strike count
+    heatCap: 90,            // rent Heat never pushes you past this, so rent alone can't trigger a raid
+    customerLossMax: 2      // fewer customers per day while arrears are owed (one per strike, capped)
+  }
 };

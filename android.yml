@@ -1,0 +1,61 @@
+# Builds and signs the Google Play bundle (.aab) in GitHub's cloud: no Android Studio needed.
+#
+# One-time setup (repo Settings -> Secrets and variables -> Actions -> New repository secret):
+#   KEYSTORE_B64       the contents of signing/upload-keystore.b64.txt
+#   KEYSTORE_PASSWORD  the storePassword from signing/keystore.properties
+#   KEY_ALIAS          midnight-appraiser-upload
+#   KEY_PASSWORD       the keyPassword from signing/keystore.properties
+# Then: Actions tab -> "Build Android bundle" -> Run workflow. The signed .aab is attached to the run.
+
+name: Build Android bundle
+on:
+  workflow_dispatch:
+
+jobs:
+  bundle:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - uses: android-actions/setup-android@v3
+
+      - name: Install
+        run: npm install
+
+      - name: Prepare the game files
+        run: npm run www
+
+      - name: Create and patch the Android project
+        run: |
+          npx cap add android
+          npm run patch
+          npx cap sync android
+
+      - name: Build the release bundle
+        run: cd android && ./gradlew bundleRelease
+
+      - name: Sign it
+        env:
+          KEYSTORE_B64: ${{ secrets.KEYSTORE_B64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          mkdir -p signing
+          echo "$KEYSTORE_B64" | base64 -d > signing/upload-keystore.jks
+          printf 'storeFile=upload-keystore.jks\nstorePassword=%s\nkeyAlias=%s\nkeyPassword=%s\n' "$KEYSTORE_PASSWORD" "$KEY_ALIAS" "$KEY_PASSWORD" > signing/keystore.properties
+          npm run sign
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: midnight-appraiser-aab
+          path: dist-play/*.aab
