@@ -1,4 +1,4 @@
-// Things on the street at night (v2.4), drawn in code like everything else until Brit's art
+// Things on the street at night (v2.4), drawn in code like everything else until Morgan's art
 // arrives: the 3:13, Tarp Sal's night tables, the noodle cart, eyes in an alley, a lit
 // laundromat window, a dropped wallet, a song in the air. x, y: the top-left of the tile the
 // thing stands on, in screen pixels. t: seconds.

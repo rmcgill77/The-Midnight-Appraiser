@@ -2,7 +2,7 @@
 // bed: the same streets from 10 PM to 4 AM, dark between the lamps.
 //
 //  - Hours: the night runs, the night city and the shop's night openings all share them.
-//  - Late-open places: the Gathering Hub until two, the Owl Diner all night, the Bijou's late
+//  - Late-open places: the Brass Lantern until two, the Owl Diner all night, the Bijou's late
 //    show until midnight. Everything else is shut.
 //  - The dark notices you (game/attention.js), faster under a new moon.
 //  - Sights: things you come across, some once, some again and again (the mysteries, each a
@@ -67,12 +67,12 @@ const FRIEND_HOME = {
   Kristen: 'Kristen falls into step beside you. “Four in the morning, shipmate. Come on. I’ve got you.” She walks you to your door and checks your pupils on the stoop.',
   Ryan: 'Ryan steps out of a doorway as if he’d been waiting. “Your carriage awaits.” It’s his old car. He drives you home doing card tricks at the red lights.',
   Erin: 'Erin’s car slows beside you. “Ryan said he saw you out. Get in, honey.” She drives you home and makes you promise to sleep.',
-  Styg: 'Styg is suddenly beside you, as if he’d always been. “The dark’s getting curious about you. Let’s not.” He walks you home without a word.',
-  Paco: 'Paco pulls up in his truck. “You eat? No? Get in.” There’s a foil-wrapped burrito on the passenger seat. It’s for you.',
-  Dex: 'Dex finds you. “Brit sent me. She had a feeling.” He walks you home, ducking under every awning.',
-  Brit: 'Brit and Dex find you. “I had a FEELING,” Brit says. They walk you home and Brit lectures you the whole way.',
-  Jae: 'Jae finds you on the corner. “I was walking home too! Okay, I wasn’t. Come on.” Jae hums the whole way to your door.',
-  Rando: 'Rando appears on a bicycle. “I was following the bus. Hop on the pegs.” You arrive home alive, which surprises you both.',
+  Stuart: 'Stuart is suddenly beside you, as if he’d always been. “The dark’s getting curious about you. Let’s not.” He walks you home without a word.',
+  Pablo: 'Pablo pulls up in his truck. “You eat? No? Get in.” There’s a foil-wrapped burrito on the passenger seat. It’s for you.',
+  Dex: 'Dex finds you. “Morgan sent me. She had a feeling.” He walks you home, ducking under every awning.',
+  Morgan: 'Morgan and Dex find you. “I had a FEELING,” Morgan says. They walk you home and Morgan lectures you the whole way.',
+  Jade: 'Jade finds you on the corner. “I was walking home too! Okay, I wasn’t. Come on.” Jade hums the whole way to your door.',
+  Jackson: 'Jackson appears on a bicycle. “I was following the bus. Hop on the pegs.” You arrive home alive, which surprises you both.',
 };
 
 // ---------- sights ----------
@@ -150,28 +150,28 @@ export const noodleSpot = (day, n) => ((day * 7 + 3) % n + n) % n;
 // Who you might meet and where (a kind of spot, as for sights), by weekday. moon: 'full'
 // only on a full moon.
 export const NIGHT_PEOPLE = [
-  { name: 'Styg', where: 'bridge', days: [2, 3], from: 23 * 60, to: 27 * 60 },
+  { name: 'Stuart', where: 'bridge', days: [2, 3], from: 23 * 60, to: 27 * 60 },
   { name: 'Kristen', where: 'diner', days: [4], from: 22 * 60, to: 26 * 60 },
   { name: 'Ryan', where: 'square', days: [5], from: 22 * 60, to: 24 * 60 },
-  { name: 'Paco', where: 'noodles', days: [1, 3], from: 22 * 60, to: 26 * 60 },
+  { name: 'Pablo', where: 'noodles', days: [1, 3], from: 22 * 60, to: 26 * 60 },
   { name: 'Dex', where: 'harbor', moon: 'full', from: 22 * 60, to: 25 * 60 },
-  { name: 'Brit', where: 'harbor', moon: 'full', from: 22 * 60, to: 25 * 60 },
-  { name: 'Rando', where: 'bus', days: [0, 6], from: 23 * 60, to: 27 * 60 },
-  { name: 'Jae', where: 'square', days: [6], from: 22 * 60, to: 25 * 60 },
+  { name: 'Morgan', where: 'harbor', moon: 'full', from: 22 * 60, to: 25 * 60 },
+  { name: 'Jackson', where: 'bus', days: [0, 6], from: 23 * 60, to: 27 * 60 },
+  { name: 'Jade', where: 'square', days: [6], from: 22 * 60, to: 25 * 60 },
 ];
 export function nightPeople(weekday, minute, moonId) {
   return NIGHT_PEOPLE.filter(p => (!p.days || p.days.includes(weekday)) && (!p.moon || p.moon === moonId) && minute >= p.from && minute < p.to);
 }
 // What they say when you find them out late (their usual conversation, with this hello).
 export const NIGHT_HELLO = {
-  Styg: ['Ah. You found the bridge too. Good place to think. Bad place to stand still.', 'Shh. Listen. The river talks more at night.', 'I’m waiting for someone. She might come. She might not. I brought a watch.'],
+  Stuart: ['Ah. You found the bridge too. Good place to think. Bad place to stand still.', 'Shh. Listen. The river talks more at night.', 'I’m waiting for someone. She might come. She might not. I brought a watch.'],
   Kristen: ['Couldn’t sleep either? Pie helps. Pie and bad coffee.', 'Night shift habits. Body still thinks it’s on watch.', 'Sit for a minute. Breathe. Then go home, okay?'],
   Ryan: ['Practicing. Tricks look different by streetlight. Better. Spookier.', 'Pick a card. No, really, I need the practice.', 'Erin thinks I’m asleep. I’m a very convincing pillow.'],
-  Paco: ['Midnight noodles! The best meal of the day is the one you shouldn’t be eating.', 'This guy makes broth like my abuela. I’d marry him, but he’s married to the cart.', 'Eat. You look like you’ve been walking in the dark. You have, haven’t you?'],
-  Dex: ['Full moon. Brit says you can see the craters. I see a moon.', 'She drags me out here every full moon. I pretend I don’t like it.', 'Pull up a bit of wall.'],
-  Brit: ['Look at it! You can see the Sea of Tranquility! Dex, are you looking?', 'Did you know the harbor tide is highest on a full moon? I wrote a whole chapter on it.', 'Hi! Moon party. Very exclusive. You’re invited.'],
-  Rando: ['I’m waiting for the bus that doesn’t exist. For science.', 'Did you see it? No? It’s fine. Science is mostly waiting.', 'Theory: the 3:13 is early for the 3:14. Write that down.'],
-  Jae: ['The square’s so quiet at night. Listen. You can hear the fountain think.', 'I come here to practice singing where nobody can hear me. Hi, nobody.', 'Walk me to the corner? It’s more fun with two.'],
+  Pablo: ['Midnight noodles! The best meal of the day is the one you shouldn’t be eating.', 'This guy makes broth like my abuela. I’d marry him, but he’s married to the cart.', 'Eat. You look like you’ve been walking in the dark. You have, haven’t you?'],
+  Dex: ['Full moon. Morgan says you can see the craters. I see a moon.', 'She drags me out here every full moon. I pretend I don’t like it.', 'Pull up a bit of wall.'],
+  Morgan: ['Look at it! You can see the Sea of Tranquility! Dex, are you looking?', 'Did you know the harbor tide is highest on a full moon? I wrote a whole chapter on it.', 'Hi! Moon party. Very exclusive. You’re invited.'],
+  Jackson: ['I’m waiting for the bus that doesn’t exist. For science.', 'Did you see it? No? It’s fine. Science is mostly waiting.', 'Theory: the 3:13 is early for the 3:14. Write that down.'],
+  Jade: ['The square’s so quiet at night. Listen. You can hear the fountain think.', 'I come here to practice singing where nobody can hear me. Hi, nobody.', 'Walk me to the corner? It’s more fun with two.'],
 };
 
 // ---------- what the dark does when it finds you ----------

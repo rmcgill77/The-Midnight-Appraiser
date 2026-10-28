@@ -30,7 +30,7 @@ export const DECOR = [
     blurb: 'Glass shelves of small strange things that aren’t for sale. People ask anyway.' },
   // Phase 27: for the apartment only (Kowalski Hardware stocks them).
   { id: 'bookshelf', char: '0', name: 'Bookshelf', cost: 70, charm: 2, solid: true, unlock: 0, homeOnly: true,
-    blurb: 'Somewhere to put the paperbacks. Brit would approve. Mostly.' },
+    blurb: 'Somewhere to put the paperbacks. Morgan would approve. Mostly.' },
   { id: 'record', char: '_', name: 'Record player', cost: 110, charm: 3, solid: true, unlock: 0, homeOnly: true,
     blurb: 'Your dad’s old turntable and a crate of jazz. The apartment finally sounds lived in.' },
   // v2.5b: more to buy, for the shop and for home. (Greek letters are just their tiles.)

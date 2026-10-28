@@ -14,7 +14,7 @@
 //   portraits:   a person's name → a 48x48 PNG.
 //   props:       reserved for later (furniture, signs, items).
 //
-// Example, once Brit's art arrives:
+// Example, once Morgan's art arrives:
 //   tiles: { 'city/grass': 'tiles/city/grass.png' },
 //   characters: { Kristen: 'characters/kristen.png' },
 //   portraits: { Kristen: 'portraits/kristen.png' },

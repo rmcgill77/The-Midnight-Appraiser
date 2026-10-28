@@ -21,7 +21,7 @@ export function openMagic(g, hooks) {
   const left = M.showsLeft(world, st.day), why = M.showBlocker(world, st, hooks.hoursLeft?.() ?? Infinity);
   const m = M.magicState(world, st.day);
   ui.open({
-    id: 'magic', eyebrow: hooks.where ?? 'Outside the Gathering Hub', title: 'Ryan, The Mystic Magician',
+    id: 'magic', eyebrow: hooks.where ?? 'Outside the Brass Lantern', title: 'Ryan, The Mystic Magician',
     body: [
       faceRow(hooks.look, 'Ryan', el('p', { class: 'speech' }, `“${M.PATTER[(st.day + m.shows) % M.PATTER.length]}”`)),
       hooks.hearts ? el('p', { class: 'hearts-line' }, el('span', { class: 'hearts', 'aria-label': hooks.hearts.label }, hooks.hearts.text), hooks.hearts.note ? el('span', { class: 'note' }, ` ${hooks.hearts.note}`) : null) : null,

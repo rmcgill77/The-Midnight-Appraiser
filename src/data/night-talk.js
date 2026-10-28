@@ -4,7 +4,7 @@
 //   c.nc.step      how far along this mystery is (0 the first time)
 //   c.nc.advance() moves the mystery on a step (returns notices)
 //   c.nc.bench(odds, n)  things for your bench; c.nc.time: the time, as said aloud
-//   c.nc.flag(k)   a lasting flag (the watch Styg gave you, ...); c.nc.jolt(n): the dark notices
+//   c.nc.flag(k)   a lasting flag (the watch Stuart gave you, ...); c.nc.jolt(n): the dark notices
 //   c.nc.befriend(name, n, note): someone you know hears about it
 // A sight leaves when the conversation ends, whatever you chose.
 
@@ -49,7 +49,7 @@ export const NIGHT_TALK = {
     },
   },
 
-  // ---------- the woman on the bridge (three nights; Styg knows her) ----------
+  // ---------- the woman on the bridge (three nights; Stuart knows her) ----------
   della: {
     name: 'The woman on the bridge',
     start: c => `s${Math.min(2, c.nc.step)}`,
@@ -61,8 +61,8 @@ export const NIGHT_TALK = {
       s1: { say: ['The woman on the bridge. “Excuse me. What time is it?”', 'You tell her. She smiles a little this time. “My name’s Della. He said he’d meet me here at one. He works the boats.”'],
         choices: [{ text: '“Who are you waiting for?”', effects: run(c => c.nc.advance()), next: 's1b' }] },
       s1b: { say: ['“Tommy. He’s getting me a ring. He doesn’t think I know.”', '“If you see a boy with a stopped watch, tell him I waited.” Then the fog, and she’s gone.'] },
-      s2: { say: c => ['Della, at the rail. “Excuse me. What time is it?”', ...(c.nc.flag('stygWatch') ? ['You take out Styg’s watch, his brother’s watch, and hold it up for her to read.', 'She goes very still. “That’s Tommy’s watch.” She touches the glass. “It’s going again.”'] : [`You tell her: ${c.nc.time}.`, '“Then he isn’t coming. He was never coming, was he.”'])],
-        choices: [{ text: c => (c.nc.flag('stygWatch') ? '“He didn’t forget you.”' : '“I’m sorry.”'), effects: { run: c => [...c.nc.advance(), ...c.nc.bench({ inert: 0, enchanted: 100, cursed: 0 }, 1), ...(c.nc.flag('stygWatch') ? c.nc.befriend('Styg', 10, 'Styg will want to hear about this.') : [])], stress: -10 }, next: 's2b' }] },
+      s2: { say: c => ['Della, at the rail. “Excuse me. What time is it?”', ...(c.nc.flag('stygWatch') ? ['You take out Stuart’s watch, his brother’s watch, and hold it up for her to read.', 'She goes very still. “That’s Tommy’s watch.” She touches the glass. “It’s going again.”'] : [`You tell her: ${c.nc.time}.`, '“Then he isn’t coming. He was never coming, was he.”'])],
+        choices: [{ text: c => (c.nc.flag('stygWatch') ? '“He didn’t forget you.”' : '“I’m sorry.”'), effects: { run: c => [...c.nc.advance(), ...c.nc.bench({ inert: 0, enchanted: 100, cursed: 0 }, 1), ...(c.nc.flag('stygWatch') ? c.nc.befriend('Stuart', 10, 'Stuart will want to hear about this.') : [])], stress: -10 }, next: 's2b' }] },
       s2b: { say: c => [c.nc.flag('stygWatch') ? '“Tell his brother I said thank you.” She takes a ring from her finger and puts it in your palm. It’s warm.' : 'She takes a ring from her finger and puts it in your palm. “Sell it to someone who’ll be on time.”', 'The fog closes over the bridge. When it clears, there’s nobody at the rail, and the river is quiet.'] },
     },
   },

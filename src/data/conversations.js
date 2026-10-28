@@ -1,5 +1,5 @@
 // Who says what (Phase 20). Conversations with choices, for the regulars at the
-// Gathering Hub and the shopkeepers in town. See game/talk.js for how a conversation is
+// Brass Lantern and the shopkeepers in town. See game/talk.js for how a conversation is
 // put together. Choices are short (they're buttons); lines stay under two sentences
 // where they can, so they read easily in the dialog box.
 
@@ -8,7 +8,7 @@ import { S } from '../rules/index.js';
 
 const hasCash = n => c => c.st.cash >= n;
 
-// ---------- Brit ----------
+// ---------- Morgan ----------
 // The first custom townsperson: a regular at the bar, cheerful, nosy, collects rumors and
 // believes most of them. Her rumors are about real things out there, and each one is
 // worth a little research the first time you hear it.
@@ -42,7 +42,7 @@ export function britRumor(c) {
   return rumor;
 }
 
-// Something to look up for you (Phase 21, Brit at the library): the creature you've met
+// Something to look up for you (Phase 21, Morgan at the library): the creature you've met
 // that you know least about, the same one all day.
 export function britLookup(c) {
   const f = c.p.flags;
@@ -65,26 +65,26 @@ const britHello = c => {
   return pickToday(['Oh, hey. It’s you again. Library card? Kidding.', 'Hi! Quietly, though.'], c);
 };
 
-// Brit, the Nerdy Librarian: runs the circulation desk at the Kessler University Library
-// (and spends her evenings off at the Gathering Hub). She collects rumors and has a book
+// Morgan, the Nerdy Librarian: runs the circulation desk at the Kessler University Library
+// (and spends her evenings off at the Brass Lantern). She collects rumors and has a book
 // about most of them. Her rumors are about real things out there, worth a little research
 // the first time you hear them; at her desk she'll look up a creature you've met.
 export const BRIT = {
-  name: 'Brit',
+  name: 'Morgan',
   start: c => (!c.p.met ? 'intro' : c.p.rel < 0 && !c.flag('madeUp') ? 'cold' : 'hello'),
   nodes: {
     intro: {
-      say: c => [atBar(c) ? 'Oh! Hi! Sorry, I was people-watching. I’m Brit. I work at the university library, but it’s shut, so here I am.' : 'Oh! Hi! Welcome to the Kessler Library. I’m Brit. Do you have a card? Never mind, nobody has a card.',
+      say: c => [atBar(c) ? 'Oh! Hi! Sorry, I was people-watching. I’m Morgan. I work at the university library, but it’s shut, so here I am.' : 'Oh! Hi! Welcome to the Kessler Library. I’m Morgan. Do you have a card? Never mind, nobody has a card.',
         'Wait, you’re the one who opened Second Sight back up. The pawn shop with the creepy basement!'],
       choices: [
-        { text: 'That’s me. Nice to meet you, Brit.', effects: { met: true, rel: 4, flag: { intro: 'warm' } }, next: 'introWarm' },
+        { text: 'That’s me. Nice to meet you, Morgan.', effects: { met: true, rel: 4, flag: { intro: 'warm' } }, next: 'introWarm' },
         { text: 'Creepy? It’s a perfectly normal basement.', effects: { met: true, rel: 3, flag: { intro: 'joke' } }, next: 'introJoke' },
         { text: 'Who’s asking?', tone: 'cold', effects: { met: true, rel: -3, flag: { intro: 'cold' } }, next: 'introCold' },
       ],
     },
     introWarm: { say: ['Nice to meet YOU. Everybody in town has a theory about that place.', 'Mine’s the best one. It has citations.'], after: 'introEnd' },
     introJoke: { say: ['Ha! That’s exactly what someone with a creepy basement would say.', 'I like you already.'], after: 'introEnd' },
-    introCold: { say: ['Okay, Detective. Brit’s asking. Brit, from the library.', '…You’ll warm up. Everybody does.'], after: 'introEnd' },
+    introCold: { say: ['Okay, Detective. Morgan’s asking. Morgan, from the library.', '…You’ll warm up. Everybody does.'], after: 'introEnd' },
     introEnd: { say: ['I’m at the circulation desk most days. If you ever need something looked up, I’m your librarian.', 'Strange things are my specialty. We have a whole shelf. I made the shelf.'] },
 
     cold: {
@@ -130,7 +130,7 @@ export const BRIT = {
         { text: 'Be careful. That’s how people get hurt.', if: c => !c.flag('worried'), effects: { flag: { worried: true }, rel: 1 }, next: 'rumorWorried' },
       ],
     },
-    rumorThanks: { say: c => [c.flag('worried') ? 'Useful AND careful. Look at me.' : 'Useful! Write that down. Brit: useful. I’ll make a card for it.'] },
+    rumorThanks: { say: c => [c.flag('worried') ? 'Useful AND careful. Look at me.' : 'Useful! Write that down. Morgan: useful. I’ll make a card for it.'] },
     rumorBelieve: { say: ['Believe it? I want to SEE it. From a very safe distance. Through binoculars. With a field guide.'] },
     rumorWorried: { say: ['Aw. Okay, okay. I’ll stick to reading about it, not checking it out.', 'You’re sweet. Weird, but sweet.'] },
 
@@ -160,7 +160,7 @@ export const BRIT = {
     charm: {
       say: ['Okay, don’t laugh. Somebody returned a book with this in it as a bookmark.', 'It hums when you hold it up to the window at night. I don’t want it. I think you should have it.'],
       choices: [
-        { text: 'Thank you, Brit. Really.', effects: { flag: { charm: true }, kit: { ward: 1 }, rel: 3 }, next: 'charmYes' },
+        { text: 'Thank you, Morgan. Really.', effects: { flag: { charm: true }, kit: { ward: 1 }, rel: 3 }, next: 'charmYes' },
         { text: 'Keep it. It’s yours.', effects: { flag: { charm: 'kept' }, rel: 2 }, next: 'charmNo' },
       ],
     },
@@ -195,12 +195,12 @@ export const LOU = {
       ],
     },
     hello: {
-      say: c => [pickToday(['What’ll it be?', 'Back again.', 'The Hub’s open. Always is.'], c)],
+      say: c => [pickToday(['What’ll it be?', 'Back again.', 'The Lantern’s open. Always is.'], c)],
       choices: [
         { text: 'Coffee, black.', note: c => (c.st.stress > 0 ? '$3 · steadies your nerve' : '$3'), if: c => !c.today('coffee') && hasCash(3)(c), effects: { cash: -3, stress: -12, flag: { coffee: 'today' }, rel: 1 }, next: 'coffee' },
         { text: 'A beer.', note: c => (c.st.stress > 0 ? '$4 · steadies your nerve' : '$4'), if: c => !c.today('beer') && hasCash(4)(c), effects: { cash: -4, stress: -15, flag: { beer: 'today' }, rel: 1 }, next: 'beer' },
         { text: 'What’s the word on the street?', if: c => !c.today('word'), effects: { flag: { word: 'today' } }, next: 'word' },
-        { text: 'Who’s the regular?', if: c => !c.world.people?.Brit?.met && c.here?.includes('Brit'), next: 'aboutBrit' },
+        { text: 'Who’s the regular?', if: c => !c.world.people?.Morgan?.met && c.here?.includes('Morgan'), next: 'aboutBrit' },
         { text: 'Who are all these people?', if: c => !c.today('crowd') && TESTER_NAMES.some(n => c.here?.includes(n)), effects: { flag: { crowd: 'today' } }, next: 'crowd' },
         { text: 'Just looking around.', tone: 'quiet' },
       ],
@@ -220,8 +220,8 @@ export const LOU = {
         ], c, 1)];
       },
     },
-    crowd: { say: ['The regulars. Everybody in this town ends up at the Hub sooner or later. Some of them just never leave.', 'Dex is Brit’s husband, the tall one. Paco knows food, Rando knows everything, Styg knows the obituaries. Jae keeps the rest of them honest. Erin used to, before she opened her design shop.', 'The one in uniform is Kristen. Navy medic. Coffee till five, beer after. If you fall off a stool, she’s the one you want.'] },
-    aboutBrit: { say: ['That’s Brit. Runs the desk at the university library. When it’s shut, she’s in here.', 'Knows every rumor in town and has a book about half of them. Go say hi, she doesn’t bite.'] },
+    crowd: { say: ['The regulars. Everybody in this town ends up at the Lantern sooner or later. Some of them just never leave.', 'Dex is Morgan’s husband, the tall one. Pablo knows food, Jackson knows everything, Stuart knows the obituaries. Jade keeps the rest of them honest. Erin used to, before she opened her design shop.', 'The one in uniform is Kristen. Navy medic. Coffee till five, beer after. If you fall off a stool, she’s the one you want.'] },
+    aboutBrit: { say: ['That’s Morgan. Runs the desk at the university library. When it’s shut, she’s in here.', 'Knows every rumor in town and has a book about half of them. Go say hi, she doesn’t bite.'] },
   },
 };
 
@@ -456,7 +456,7 @@ export const EXTRA_LINES = {
   bijou: ['Shh. This is the good part.', 'I’ve seen this one eleven times. It ends different sometimes.', 'Don’t sit in row M. Trust me.'],
   thrift: ['I found my grandmother’s coat here. She’s still wearing hers.', 'Rose says this lamp is haunted. I’m buying it anyway.', 'Everything in here smells like 1965.'],
   chapel: ['…', 'It’s peaceful, isn’t it? Even the candles whisper.', 'I come here when the radio starts talking back.'],
-  library: ['Shh.', 'I’ve been on the same page for an hour. The page keeps changing.', 'Brit found me a book I didn’t know I needed. It’s about me. I think.'],
+  library: ['Shh.', 'I’ve been on the same page for an hour. The page keeps changing.', 'Morgan found me a book I didn’t know I needed. It’s about me. I think.'],
   brush: ['Erin told me my living room has “bad energy.” She was right. It was the couch.', 'I came in for a lamp. I’m leaving with a whole new personality.', 'Do you think this green says “cozy” or “swamp”? Erin says cozy.'],
   // v2.2: Lantern Park.
   park: ['Feed the ducks if you like. Just not the big one. The big one isn’t a duck.', 'They light the lanterns at dusk. Every one. Nobody’s ever seen who does it.', 'The band plays Sundays, when it plays. Last time it was one man and a tuba.', 'I come here to read. Mostly I watch the pond.', 'There used to be a statue where the flowers are. One morning it was gone. Nobody reported it.', 'Lovely day for it. Whatever it is.'],
@@ -468,7 +468,7 @@ export const EXTRA_LINES = {
 export const extraName = room => ({ bar: 'A regular', diner: 'A night owl', bijou: 'A moviegoer', thrift: 'A shopper', chapel: 'Someone praying', library: 'A student', brush: 'A browser', park: 'Someone in the park', beach: 'A beachgoer', cemetery: 'A visitor' }[room] ?? 'Someone');
 
 // Everyone you can talk to, by name.
-// ---------- Phase 24: the regulars at the Gathering Hub ----------
+// ---------- Phase 24: the regulars at the Brass Lantern ----------
 // Testers with no job yet. Each: how they say hello, a story worth hearing once (a lead on
 // something out there), a round you can buy them, and small talk that changes day to day.
 const tester = ({ name, meet, hello, smallTalk, story, species, round = 'Buy you a drink?', roundReply }) => ({
@@ -493,41 +493,41 @@ const tester = ({ name, meet, hello, smallTalk, story, species, round = 'Buy you
 
 export const DEX = tester({
   name: 'Dex', species: 'hound',
-  meet: ['Hey. Dex. I’m Brit’s husband, so you’ve probably heard a lot about me. Most of it’s true.', 'You run the pawn shop. She talks about your basement like it’s a tourist attraction.'],
-  hello: c => (c.here?.includes('Brit') ? pickToday(['Hey. Brit’s around here somewhere. Follow the sound of footnotes.', 'Pull up a chair. She’s telling the whole booth about a book again.'], c) : pickToday(['Hey. Saving Brit a seat. She’ll be in when the library shuts.', 'Hey, you. Long day?', 'Evening. Or whatever it is.'], c)),
-  smallTalk: ['I hit my head on the door frame coming in. Every time. Lou says he’ll raise it. Lou says a lot of things.', 'Brit got me a library card. I’ve never once used it. Don’t tell her.', 'Our anniversary’s coming up. I’m thinking a book. She’ll have read it. She’s read all of them.', 'Being tall is mostly getting asked to reach things.'],
-  story: ['Walking home last week, something kept pace with me on the other side of the street. Big. Low. Never in the light.', 'I stopped, it stopped. I walked, it walked. Brit says it’s a story. Brit wasn’t there.'],
-  roundReply: ['Thanks. I’ll get the next one. Brit will make sure I get the next one.', 'Appreciate it. Cheers.', 'You’re all right, you know that?'],
+  meet: ['Hey. Dex. I’m Morgan’s husband, so you’ve probably heard a lot about me. Most of it’s true.', 'You run the pawn shop. She talks about your basement like it’s a tourist attraction.'],
+  hello: c => (c.here?.includes('Morgan') ? pickToday(['Hey. Morgan’s around here somewhere. Follow the sound of footnotes.', 'Pull up a chair. She’s telling the whole booth about a book again.'], c) : pickToday(['Hey. Saving Morgan a seat. She’ll be in when the library shuts.', 'Hey, you. Long day?', 'Evening. Or whatever it is.'], c)),
+  smallTalk: ['I hit my head on the door frame coming in. Every time. Lou says he’ll raise it. Lou says a lot of things.', 'Morgan got me a library card. I’ve never once used it. Don’t tell her.', 'Our anniversary’s coming up. I’m thinking a book. She’ll have read it. She’s read all of them.', 'Being tall is mostly getting asked to reach things.'],
+  story: ['Walking home last week, something kept pace with me on the other side of the street. Big. Low. Never in the light.', 'I stopped, it stopped. I walked, it walked. Morgan says it’s a story. Morgan wasn’t there.'],
+  roundReply: ['Thanks. I’ll get the next one. Morgan will make sure I get the next one.', 'Appreciate it. Cheers.', 'You’re all right, you know that?'],
 });
 export const PACO = tester({
-  name: 'Paco', species: 'exhaust',
-  meet: ['Paco! Nice to meet you. You hungry? You look hungry.', 'Let me tell you about tacos. The taco is the greatest food ever made. Soft tortilla, warm, a little char. Meat, onion, cilantro, lime. It fits in one hand. It is perfect.', 'I know every taco in this town, and I respect every one of them. Ask me anything.'],
+  name: 'Pablo', species: 'exhaust',
+  meet: ['Pablo! Nice to meet you. You hungry? You look hungry.', 'Let me tell you about tacos. The taco is the greatest food ever made. Soft tortilla, warm, a little char. Meat, onion, cilantro, lime. It fits in one hand. It is perfect.', 'I know every taco in this town, and I respect every one of them. Ask me anything.'],
   hello: ['Hey hey! There they are!', 'You eat today? Be honest.', 'Pull up a stool, friend.'],
   smallTalk: ['The tamale cart by the Narrows moves every day. I follow it. It’s a whole system.', 'Dot gave me the big slice yesterday. I think she likes me. Or she felt bad. Either way, big slice.', 'There’s a noodle place in Harbor Row open only on Tuesdays. Nobody knows why. Nobody asks.', 'I tried cooking at home once. The smoke alarm and I don’t talk anymore.'],
   story: ['The parking garage by the depot, the bottom level. I left my truck there one night and the engine was running when I came back.', 'Keys in my pocket. Doors locked. Exhaust everywhere, like something was breathing it.'],
   roundReply: ['Ayy, thank you! Next one’s on me, and it comes with fries.', 'You’re good people.', 'Salud!'],
 });
 export const RANDO = tester({
-  name: 'Rando', species: 'sockling',
-  meet: ['Rando. Before you ask, yes, it’s my real name. Well. Real enough.', 'Hey, quick question. Do you think pigeons know they’re in a city?'],
+  name: 'Jackson', species: 'sockling',
+  meet: ['Jackson. Before you ask, yes, it’s my real name. Well. Real enough.', 'Hey, quick question. Do you think pigeons know they’re in a city?'],
   hello: ['Oh good, someone new to tell this to.', 'Okay, so, hear me out.', 'Hey! Perfect timing. I just had a thought.'],
-  smallTalk: ['What if the bus is always late because it’s actually early for the next one?', 'I counted the stools in here. Then I counted again. Different number. Lou says I can’t count.', 'Library books are just rentals for words. Brit didn’t like that one.', 'Every coin in the fountain at the market is a tiny wish. Someone should audit that.'],
+  smallTalk: ['What if the bus is always late because it’s actually early for the next one?', 'I counted the stools in here. Then I counted again. Different number. Lou says I can’t count.', 'Library books are just rentals for words. Morgan didn’t like that one.', 'Every coin in the fountain at the market is a tiny wish. Someone should audit that.'],
   story: ['The laundromat at night. I swear the dryers keep going after everyone’s gone, and they’re eating socks. Left ones. Only left ones.', 'Where do they go? I have a theory. I have several theories.'],
   roundReply: ['A drink! For me! You’re a scholar and a gentleperson.', 'Thanks! I was going to theorize my way into a free one, but this is faster.', 'Cheers. To the pigeons.'],
 });
 export const STYG = tester({
-  name: 'Styg', species: 'wraith',
-  meet: ['Styg.', '…You run the pawn shop. Mm. Old things. Things that belonged to people who aren’t around anymore. I like it.'],
+  name: 'Stuart', species: 'wraith',
+  meet: ['Stuart.', '…You run the pawn shop. Mm. Old things. Things that belonged to people who aren’t around anymore. I like it.'],
   hello: ['You again. Good.', 'Ah. Company.', 'Sit. The candle on this table’s the only one that doesn’t flicker.'],
-  smallTalk: ['I read the obituaries every morning. You learn more about a town from how it says goodbye.', 'Abernathy at the chapel lets me help with the candles. It’s peaceful. Nobody talks.', 'Someone asked if I’m going to a funeral. I said not today.', 'The Hub at two in the morning is the most honest room in the city.'],
+  smallTalk: ['I read the obituaries every morning. You learn more about a town from how it says goodbye.', 'Abernathy at the chapel lets me help with the candles. It’s peaceful. Nobody talks.', 'Someone asked if I’m going to a funeral. I said not today.', 'The Lantern at two in the morning is the most honest room in the city.'],
   story: ['There’s a woman on the bridge some nights. Pale, soaked through, though it hasn’t rained. She asks the time.', 'I told her once. She thanked me and wasn’t there anymore. I bring a watch now. Just in case she asks again.'],
   roundReply: ['…Thank you. That was unexpectedly kind.', 'Black. Like everything else. Thanks.', 'To the departed. And to you, I suppose.'],
 });
 export const JAE = tester({
-  name: 'Jae', species: 'choir',
-  meet: ['Hi! You’re the one from Second Sight, right? I’m Jae. I feel like I already know you. Everyone here talks about everyone.', 'Welcome to the Hub. Officially. I’m the welcome committee. Unofficially.'],
+  name: 'Jade', species: 'choir',
+  meet: ['Hi! You’re the one from Second Sight, right? I’m Jade. I feel like I already know you. Everyone here talks about everyone.', 'Welcome to the Lantern. Officially. I’m the welcome committee. Unofficially.'],
   hello: ['Hi, you! Come sit with us.', 'Oh, I was hoping you’d come by.', 'Hey! How are you, really?'],
-  smallTalk: ['Paco and Rando have been arguing about pigeons for an hour. I’m keeping score.', 'I’m learning the piano. Lou says I can practice when it’s slow. It’s never slow.', 'Erin made me promise to stop staying out so late. So I’m here early, and also late.', 'Brit lent me a book about local ghost stories. I’m on chapter two and I sleep with the light on now.'],
+  smallTalk: ['Pablo and Jackson have been arguing about pigeons for an hour. I’m keeping score.', 'I’m learning the piano. Lou says I can practice when it’s slow. It’s never slow.', 'Erin made me promise to stop staying out so late. So I’m here early, and also late.', 'Morgan lent me a book about local ghost stories. I’m on chapter two and I sleep with the light on now.'],
   story: ['The old church on the hill, St. Agnes? On quiet nights you can hear singing from it. A whole choir.', 'It’s been closed for years. I went to look once. The singing stopped the second I stepped inside.'],
   roundReply: ['Aw, thank you! You’re sweet.', 'You didn’t have to! But thank you.', 'Cheers! Now you have to stay for one song.'],
 });
@@ -537,7 +537,7 @@ export const ERIN = tester({
   name: 'Erin', species: 'visitor', round: 'Bring you a coffee?',
   meet: ['Hi, I’m Erin. Welcome to the Wandering Brush. You must be the new owner at Second Sight. Everyone’s been wondering when you’d come in.', 'You live across from the shop, right? Above the dry cleaner? Oh, honey. Let’s talk about that apartment.'],
   hello: ['Hey, you. How’s the apartment treating you?', 'Hi! If you see my husband out there, tell him he left his top hat on my drafting table. Again.', 'Hi! Come in, come in. Mind the wet paint.', 'There you are. Did you eat today? You never eat.'],
-  smallTalk: ['Every room has a story. Most of them are just asking for a lamp.', 'Jae comes by to “help” and leaves with a new throw pillow every time.', 'Lou asked me to redo the Hub. I said only if the piano stays exactly where it is. He looked so relieved.', 'You’re doing better than you think, by the way. With the shop, with all of it. People notice.', 'A good chair changes a whole room. A good friend changes a whole week.', 'Ryan practiced a new trick on me at breakfast. I found the card in the butter. I’m keeping the butter.', 'Being married to a magician means every “I love you” comes with a flourish. I’m not complaining.'],
+  smallTalk: ['Every room has a story. Most of them are just asking for a lamp.', 'Jade comes by to “help” and leaves with a new throw pillow every time.', 'Lou asked me to redo the Lantern. I said only if the piano stays exactly where it is. He looked so relieved.', 'You’re doing better than you think, by the way. With the shop, with all of it. People notice.', 'A good chair changes a whole room. A good friend changes a whole week.', 'Ryan practiced a new trick on me at breakfast. I found the card in the butter. I’m keeping the butter.', 'Being married to a magician means every “I love you” comes with a flourish. I’m not complaining.'],
   story: ['My neighbor swears someone knocks on her door at three in the morning. Polite little knocks. Never anyone there.', 'Last time she looked through the peephole first. She said someone was looking back. Smiling. She hasn’t answered since.'],
   roundReply: ['That’s sweet of you. Thank you.', 'Thank you! Next time it’s on me, no arguments.', 'Oh, you remembered I take it with oat milk. Take care of yourself out there, okay?'],
 });
@@ -547,7 +547,7 @@ export const RYAN = tester({
   name: 'Ryan', species: 'valet', round: 'Buy you a coffee?',
   meet: ['Ryan. The Mystic Magician, on the posters I haven’t printed yet.', 'You’re the pawn shop! I’ve sold you nothing and bought nothing from you, which makes us the only honest relationship on this street.'],
   hello: ['The great and powerful customer returns!', 'Hey! Have you been by Erin’s shop? Tell her I said she’s the real magic. She hates when I say that. She loves it.', 'Pick a card. Any card. Actually, just say hi, I’m on a break.', 'Ah, my favorite audience. Also my only audience, right now.'],
-  smallTalk: ['A good trick is ninety percent story and ten percent sleeve.', 'Lou lets me use the Hub when it rains. I pay him in card tricks. He hates card tricks.', 'Styg asked me to make him disappear. I said I’d need a bigger hat.', 'Someone once paid me in a cursed coin. I gave it to Rose. She gave it back. Twice.', 'My lucky deck has fifty-three cards. I’ve never found out which one is extra.', 'Erin redecorated my card table. It has a theme now. The theme is “Erin was here.”', 'My wife can spot a forced card from across the street. I married my toughest audience.'],
+  smallTalk: ['A good trick is ninety percent story and ten percent sleeve.', 'Lou lets me use the Lantern when it rains. I pay him in card tricks. He hates card tricks.', 'Stuart asked me to make him disappear. I said I’d need a bigger hat.', 'Someone once paid me in a cursed coin. I gave it to Rose. She gave it back. Twice.', 'My lucky deck has fifty-three cards. I’ve never found out which one is extra.', 'Erin redecorated my card table. It has a theme now. The theme is “Erin was here.”', 'My wife can spot a forced card from across the street. I married my toughest audience.'],
   story: ['The parking garage on Fifth. The valet stand at the bottom level, the one with no attendant.', 'I left my keys there once as a bit. When I came back, my car was parked better than I’ve ever parked it, and the seat was still warm.'],
   roundReply: ['Coffee! The fuel of all true magic.', 'Thanks. Watch: I’ll make it disappear.', 'A patron of the arts. I’m honored.'],
 });
@@ -578,14 +578,14 @@ RYAN.nodes.hello.choices.splice(RYAN.nodes.hello.choices.length - 1, 0,
 RYAN.nodes.lore = { say: c => [(c.p.flags.loreSeen ?? []).slice(-1)[0] ?? loreFor(c)] };
 
 // ---------- Phase 29: Kristen, Navy Corpsman ----------
-// A Navy hospital corpsman ("Doc"). Mostly at the Hub, coffee before five and a beer after;
+// A Navy hospital corpsman ("Doc"). Mostly at the Lantern, coffee before five and a beer after;
 // she tells you about the Navy a little at a time, and the closer you get, the steadier
 // she makes you before a night out (game/relationships.js `nerveGuard`).
 export const KRISTEN = tester({
   name: 'Kristen', species: 'negative', round: 'Buy you a coffee?',
   meet: ['Hey. Kristen. Navy, hospital corpsman. The Marines called me Doc, so everybody does now.', 'You’re the pawn shop kid. You’ve got the look. The one where you haven’t slept since Tuesday. Sit.'],
   hello: ['Hey, you. Coffee’s fresh. Well, Lou says it is.', 'There you are. Sit. Let me look at you. Hm. You’ll live.', 'Evening. I’m on my second beer and my first good mood.', 'Hey. Pull up a stool. How are you sleeping? Honestly.'],
-  smallTalk: ['Lou finally put a decent beer on tap. Took me three months of complaining. Worth it.', 'Coffee before five, beer after. That’s not a rule. That’s a treaty.', 'Brit asked me to look at a paper cut. I did. It was a paper cut. She was thrilled.', 'Paco feeds everyone. I just make sure nobody chokes.', 'Erin wants to redo my place. I told her I live out of a seabag. She took that personally.', 'Styg asked what the worst thing I ever saw was. I said the mess deck on taco night.', 'Ryan keeps pulling coins from behind my ear. I keep checking him for a concussion.'],
+  smallTalk: ['Lou finally put a decent beer on tap. Took me three months of complaining. Worth it.', 'Coffee before five, beer after. That’s not a rule. That’s a treaty.', 'Morgan asked me to look at a paper cut. I did. It was a paper cut. She was thrilled.', 'Pablo feeds everyone. I just make sure nobody chokes.', 'Erin wants to redo my place. I told her I live out of a seabag. She took that personally.', 'Stuart asked what the worst thing I ever saw was. I said the mess deck on taco night.', 'Ryan keeps pulling coins from behind my ear. I keep checking him for a concussion.'],
   story: ['I did a few weeks of nights at St. Agnes when I got back, in the old wing, before they shut it.', 'The X-ray room would warm up on its own. Films came out with nobody on the table. Same shape every time: somebody standing very still, waiting to be seen.'],
   roundReply: ['Coffee. Good call. You’re learning.', 'Thanks. Black, no sugar, no nonsense.', 'Bless you. Now drink some water too.'],
 });
@@ -634,16 +634,16 @@ export const kristenGuard = rel => KRISTEN_GUARD.find(([h]) => Math.floor(Math.m
 }
 
 // ---------- Phase 29: the married couples ----------
-// Brit and Dex, Erin and Ryan. Each tells you, once, how they met (their own version), and
+// Morgan and Dex, Erin and Ryan. Each tells you, once, how they met (their own version), and
 // they notice when the other one is in the room.
 const HOW_MET = {
-  Brit: ['Dex had sixty-three dollars in late fees. Sixty-three! On one book. A field guide to North American birds.', 'He came in to pay it off and asked me what the best book in the library was. I said it depends who’s asking. Married two years later. He never did finish the bird book.'],
+  Morgan: ['Dex had sixty-three dollars in late fees. Sixty-three! On one book. A field guide to North American birds.', 'He came in to pay it off and asked me what the best book in the library was. I said it depends who’s asking. Married two years later. He never did finish the bird book.'],
   Dex: ['I had a late fee. A big one. I went in to pay it and the librarian looked at me like I’d personally hurt the book.', 'Then she smiled, and I asked her for a recommendation, and I’ve been reading whatever she hands me ever since. Best fine I ever paid.'],
   Erin: ['He did a card trick at a gallery opening I was working. He got it wrong. He pulled out my business card instead of my card. He’d pocketed it while I wasn’t looking.', 'He called the next day and said, “Is this your card?” I married him anyway.'],
   Ryan: ['She’ll tell you I got the trick wrong. I’ll have you know I got exactly the card I wanted.', 'Best trick I ever did. Only one I’ll never do again. You only need it to work once.'],
 };
 for (const [name, lines] of Object.entries(HOW_MET)) {
-  const convo = { Brit: BRIT, Dex: DEX, Erin: ERIN, Ryan: RYAN }[name], ch = convo.nodes.hello.choices;
+  const convo = { Morgan: BRIT, Dex: DEX, Erin: ERIN, Ryan: RYAN }[name], ch = convo.nodes.hello.choices;
   ch.splice(ch.length - 1, 0, { text: 'How did you two meet?', if: c => c.p.met && c.at('acquaintance') && !c.flag('howMet'), effects: { flag: { howMet: true }, rel: 2 }, next: 'howMet' });
   convo.nodes.howMet = { say: lines };
 }
@@ -768,9 +768,9 @@ export const MIKE = {
 };
 const T_pick = (list, c) => list[Math.abs(c.day * 7 + (c.p?.talks ?? 0) * 3) % list.length];
 
-export const TESTERS = { Dex: DEX, Paco: PACO, Rando: RANDO, Styg: STYG, Jae: JAE, Erin: ERIN, Kristen: KRISTEN };
+export const TESTERS = { Dex: DEX, Pablo: PACO, Jackson: RANDO, Stuart: STYG, Jade: JAE, Erin: ERIN, Kristen: KRISTEN };
 export const TESTER_NAMES = Object.keys(TESTERS);
 
 export function convoFor(name) {
-  return { Brit: BRIT, Lou: LOU, Dot: DOT, Teddy: TEDDY, Rose: ROSE, Abernathy: ABERNATHY, Ryan: RYAN, Kip: KIP, Mike: MIKE, ...TESTERS }[name] ?? keeperConvo(name);
+  return { Morgan: BRIT, Lou: LOU, Dot: DOT, Teddy: TEDDY, Rose: ROSE, Abernathy: ABERNATHY, Ryan: RYAN, Kip: KIP, Mike: MIKE, ...TESTERS }[name] ?? keeperConvo(name);
 }

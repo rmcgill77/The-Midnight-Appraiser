@@ -13,7 +13,7 @@ export const CHANGELOG = [
     'Fourteen new things for the shop and your apartment: a globe, a parlor palm, a coat rack, a steamer trunk, a candelabra, a birdcage, a fish tank, a gramophone, a suit of armor, a round rug, a loveseat, a writing desk and a little cactus.',
     'The radio is furniture now. It starts by the kitchen; move it wherever you like to listen.',
     'A Brightness slider in Settings, under Screen. The game is a little brighter to start with, too.',
-    'Ryan’s, Erin’s, Brit’s and Dex’s birthdays are on their real dates.',
+    'Ryan’s, Erin’s, Morgan’s and Dex’s birthdays are on their real dates.',
   ] },
   { version: '2.5', title: 'The yard and the tide', items: [
     'St. Brigid’s churchyard, through the back door of the chapel. Read the stones: the old carvers usually knew what went in the box.',
@@ -30,7 +30,7 @@ export const CHANGELOG = [
     'Walk the city at night: a new choice when night falls. The streets are yours from 10 PM to 4 AM, dark between the lamps.',
     'Stay under the streetlights. In the dark, something notices you, and the longer you linger the closer it gets. Watch the Seen meter.',
     'The moon follows the real calendar. A full moon lights the streets and brings the strange out; a new moon is darkest of all.',
-    'The Gathering Hub is open until two, the Owl Diner all night, the Bijou until midnight. Everything else is shut.',
+    'The Brass Lantern is open until two, the Owl Diner all night, the Bijou until midnight. Everything else is shut.',
     'Things to find at night, and three mysteries that unfold over several nights each, with something at the end of every one.',
     'Tarp Sal’s real night market on the square, Friday and Saturday. A noodle cart turns up somewhere new every night but Monday.',
     'People you know keep late hours too. Find them out on the right nights and they have different things to say.',
@@ -62,7 +62,7 @@ export const CHANGELOG = [
   { version: '2.1', title: 'Getting ready for new places', items: [
     'Behind the scenes: the town can now open onto new areas you walk into off the edge of the map, the way the park, the beach and the woods will.',
     'Behind the scenes: hand-made art can now replace the drawn-by-code art one piece at a time, for tiles, people and portraits.',
-    'Paco has a few words to say about tacos when you meet him.',
+    'Pablo has a few words to say about tacos when you meet him.',
     'Outdoor areas are lit like the street.',
   ] },
   { version: '2.0', title: 'The year', items: [
@@ -78,13 +78,13 @@ export const CHANGELOG = [
   { version: '1.5', title: 'Couples and birthdays', items: [
     'Kristen’s shield is explained where you need it: in her advice, on the zone list, and as a blue Shield bar under Nerve on a night out. Stress soaks into it first, and it can save you from a knockout.',
     'Kristen can patch you up once a day: less stress the closer you are, and more the morning after a knockout.',
-    'The married couples act like it. Brit and Dex sit together at the Hub, couples visit your shop together, and each will tell you how they met.',
+    'The married couples act like it. Morgan and Dex sit together at the Lantern, couples visit your shop together, and each will tell you how they met.',
     'Ryan has lunch with Erin at the Wandering Brush every day from noon to one, out of costume. His table waits with a note.',
     'Everybody in town has a birthday. Check the corkboard at home or the radio, and wish them a happy one on the day.',
     'Beer at the Owl Diner too.',
   ] },
   { version: '1.4', title: 'Kristen, Navy Corpsman', items: [
-    'Meet Kristen, a Navy hospital corpsman. Find her at the Gathering Hub with a coffee or a beer, or out walking around town.',
+    'Meet Kristen, a Navy hospital corpsman. Find her at the Brass Lantern with a coffee or a beer, or out walking around town.',
     'Get close to her and she teaches you to steady your nerve: at two hearts and up, the first stress you take on a night out doesn’t touch you.',
     'Lou has beer on tap now: $4, and it steadies your nerve a little more than coffee.',
     'Erin and Ryan are married. You can befriend both all the way to ten hearts; Erin has her own heart scenes, and a family rate at ten.',
@@ -102,7 +102,7 @@ export const CHANGELOG = [
     'Kowalski Hardware sells furniture for your apartment. Put it out from the corkboard; a comfier place takes more stress away overnight and can leave you well rested.',
   ] },
   { version: '1.1', title: 'The Mystic Magician', items: [
-    'Ryan, The Mystic Magician, works the sidewalk outside the Gathering Hub (inside on wet days). $5 a trick: Find the Lady, Higher or Lower, or The Crystal Ball. Win and he pays you; any win has a 1 in 100 chance of paying $1,000.',
+    'Ryan, The Mystic Magician, works the sidewalk outside the Brass Lantern (inside on wet days). $5 a trick: Find the Lady, Higher or Lower, or The Crystal Ball. Win and he pays you; any win has a 1 in 100 chance of paying $1,000.',
     'He’s the first real friend you can make in town: hearts, gifts, and a scene at every second heart. The closer you get, the more he tells you about the city and where the things out there come from.',
     'On touch screens, the tap that opens a menu can no longer press something in it.',
   ] },
@@ -116,9 +116,9 @@ export const CHANGELOG = [
   { version: '0.24', title: 'Your shop, your way', items: [
     'Arrange the shop yourself: move the display cases anywhere on the open floor and slide the till and the register along the counter. Whatever’s in a case goes with it. Notice board → Arrange.',
     'Decor: a welcome mat, ferns, rugs, an umbrella stand, a brass floor lamp, a reading chair, a marble bust, a grandfather clock and a curio cabinet. Charm keeps people waiting longer and spending more, and a charming enough shop gets extra browsers.',
-    'The bar is the Gathering Hub now, bigger and busier: it’s where the whole town ends up, and every shopkeeper spends about half their days off there.',
-    'Six new regulars at the Hub: Dex (Brit’s husband), Paco, Rando, Styg, Jae and Erin. Each has a story worth hearing, and they’ll let you buy them a drink.',
-    'Brit smiles without the teeth now, and looks right from the side.',
+    'The bar is the Brass Lantern now, bigger and busier: it’s where the whole town ends up, and every shopkeeper spends about half their days off there.',
+    'Six new regulars at the Lantern: Dex (Morgan’s husband), Pablo, Jackson, Stuart, Jade and Erin. Each has a story worth hearing, and they’ll let you buy them a drink.',
+    'Morgan smiles without the teeth now, and looks right from the side.',
   ] },
   { version: '0.23', title: 'Weather', items: [
     'Every day has weather now: clear, overcast, fog, rain, thunderstorms and, in winter, snow. The morning paper has the forecast, and the icon by the date shows today’s.',
@@ -135,14 +135,14 @@ export const CHANGELOG = [
   { version: '0.21', title: 'A city to walk into', items: [
     'The city is rebuilt in scale: three-storey fronts, tall doors, storefronts with signs, street lamps and trees you can walk behind.',
     'Five new places to walk into: the Lamplighter, the Owl Diner, the Bijou, Second Hand Rose and St. Brigid’s Chapel. The university library’s reading room is open too.',
-    'Brit is the Nerdy Librarian now. Find her at the library’s front desk (or at the bar when it’s shut). She’ll look up creatures you’ve met.',
+    'Morgan is the Nerdy Librarian now. Find her at the library’s front desk (or at the bar when it’s shut). She’ll look up creatures you’ve met.',
     'New faces with things to offer: pie at the diner, a matinee at the Bijou, the bargain bins, a candle at the chapel.',
     'A minimap in the corner while you’re out. Every place has its own icon. Tap it for the whole city.',
   ] },
   { version: '0.20', title: 'Someone to talk to', items: [
     'Conversations have choices now. Tap an answer (or press its number), and people remember what you said.',
     'Friendships grow a little each day you talk. Friends share leads, favors and the odd gift. Be rude and they’ll remember that too.',
-    'The Lamplighter, a corner bar near the shop, is open. Lou pours the coffee, and Brit always has a rumor.',
+    'The Lamplighter, a corner bar near the shop, is open. Lou pours the coffee, and Morgan always has a rumor.',
     'Shopkeepers will chat, in their shop (the Talk button) or when you catch them out on the street.',
     'A rumor about something out there adds to your Bestiary research the first time you hear it.',
   ] },

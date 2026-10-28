@@ -97,7 +97,7 @@ export function sceneFor(st, world, panelId) {
     tension = r.encounter ? 1 : Math.max(st.stress / 100 * 0.8, near < 7 ? (1 - (near - 1) / 6) * 0.85 : 0, st.battery <= 0 ? 0.45 : 0);
   } else if (st.phase === 'morning' || panelId === 'morning') scene = 'morning';
   else if (world.room === 'back-room' || world.room === 'apartment') scene = 'backroom';   // home: the soft piano
-  else if (world.room === 'bar' || world.room === 'chapel') scene = 'bar';   // Phase 20: the Gathering Hub's piano (and a quiet one in the chapel)
+  else if (world.room === 'bar' || world.room === 'chapel') scene = 'bar';   // Phase 20: the Brass Lantern's piano (and a quiet one in the chapel)
   else if (['diner', 'bijou', 'thrift', 'library'].includes(world.room)) scene = 'errands';
   else if (world.room === 'city') scene = 'errands';
   else if (world.room === 'lab') scene = 'lab';

@@ -1,8 +1,10 @@
 // Save slots. Every save carries a version so later phases can migrate old
 // saves forward instead of throwing them away.
 
-export const SAVE_VERSION = 4;
+export const SAVE_VERSION = 5;
 const KEY = slot => `tma.save.${slot}`;
+
+const RENAMED = { Brit: 'Morgan', Styg: 'Stuart', Jae: 'Jade', Rando: 'Jackson', Paco: 'Pablo' };
 
 // Migrations run in order: MIGRATIONS[n] upgrades a version-n save to n+1.
 export const MIGRATIONS = {
@@ -15,6 +17,9 @@ export const MIGRATIONS = {
   // Phase 8 adds shop stages and the walkthrough. A game saved before then already had
   // the whole shop, so it keeps it (stage 4, restored) and never sees the walkthrough.
   3: d => ({ ...d, version: 4, world: { ...(d.world || {}), shop: d.world?.shop ?? { tier: 4, booked: null }, tutorial: d.world?.tutorial ?? { done: true, step: null }, notes: d.world?.notes ?? {} } }),
+  // Five townsfolk and the bar were renamed. Saves key people by name, so rename exact
+  // matches ("Brit" the key or value, never part of a longer string) throughout the save.
+  4: d => ({ ...JSON.parse(Object.entries(RENAMED).reduce((j, [from, to]) => j.split(`"${from}"`).join(`"${to}"`), JSON.stringify(d))), version: 5 }),
 };
 
 export function migrate(data, target = SAVE_VERSION, migrations = MIGRATIONS) {
