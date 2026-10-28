@@ -51,10 +51,16 @@ phase when we plan it.
   - Decided: sleep that is cut short (for example it starts late and hits the 10 AM
     limit) gives a minor penalty: slow walking until the player performs a full sleep.
     This is separate from, and milder than, the skipped-night stages above.
-  - Open: whether a skipped night means a day with no sleep at all, or a day with under 6
-    hours (a cut-short sleep already has its own penalty, so likely no sleep at all).
-  - Open: where the "24-hour day" begins and ends for the once-per-day sleep rule (for
-    example, if the player sleeps at 8 PM and again at 9 AM, is that two sleeps in one day?).
+  - Decided: a day starts when the player wakes up and ends when they go to sleep. If the
+    player goes to sleep at exactly 8 PM, the earliest they can wake is 2 AM (6 hours),
+    and then they can start their day or sleep a little longer. The 6 hours of sleep per
+    24-hour day rule has to be followed either way.
+  - Decided: a skipped night means a day with no sleep at all (a cut-short sleep has its
+    own, milder penalty).
+  - Open: what counts as a sleep being "cut short" if the player can't wake before 6
+    hours (for example it hits the 10 AM limit before 6 hours, or the player is woken by
+    something, or the player is allowed to wake early and takes the penalty).
+  - Open: whether the player can sleep past 10 AM when they started after 4 AM.
   - Open: how the NPC comments vary after a collapse.
   - Decided: NPC schedules are adjusted to fit the new clock, so morning, day and night
     connect: hours, story and NPC schedules line up across them.
