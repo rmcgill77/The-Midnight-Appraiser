@@ -37,6 +37,16 @@ export const CONFIG = {
     skipsToCollapse: 3,       // nights skipped in a row before the player collapses
   },
 
+  // Phase 30: the shop's weekly hours (game/shophours.js). The player sets them with a
+  // slider: up to eight hours on any day, at any time, and at least one day a week closed.
+  shopHours: {
+    maxMinutes: 8 * 60,
+    minMinutes: 60,
+    stepMinutes: 30,          // the slider snaps to half hours
+    defaultOpen: 10 * 60,     // a new game opens at 10 AM...
+    defaultClosedDay: 6,      // ...and is closed Sundays (0 = Monday)
+  },
+
   player: {
     speed: 68,              // logical px per second at full stick
     box: { w: 10, h: 6, ox: 3, oy: 10 }, // collision box (feet) inside the 16x16 sprite

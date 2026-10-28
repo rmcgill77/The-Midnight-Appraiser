@@ -112,6 +112,12 @@ phase when we plan it.
     job's pay.
   - To watch while building: the lab only being open when the shop is closed limits how
     much testing fits in a day.
+- **Found while building: shop upgrades and hours.** Today each shop upgrade ("tier") sets how
+  many hours the shop opens (the boarded-up shop 5 hours, the restored one 12) and how many
+  customers come (`src/data/shop-tiers.js`). The new rule lets the player pick up to 8 hours.
+  Open: should upgrades still cap the hours (for example 5 hours at the start, 8 at the top
+  tier), or should the player have the full 8 hours from the start with upgrades only
+  affecting customers and space?
 - **Status: Phase 30 is fully specified. No open questions.** Suggested build order:
   1. New save version and the new clock (15-20 minute day, wake-to-sleep days, sleep).
   2. Shop hours slider, closed weekly day, shop locked while open, floor pricing.
