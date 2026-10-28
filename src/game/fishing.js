@@ -1,11 +1,7 @@
 // Fishing (v2.3): the beach, the pier, the rocks, the harbor jetties and the river.
 //
-// "The Scales": once something bites, a brass pawn-shop scale appears. Whatever's on the
-// line pushes the beam one way and then the other; you lean the other way (the stick, or
-// left and right) to keep the needle in the middle. Balanced, you reel it in. Pinned at
-// either end too long, the line snaps. A fish fights: it darts and pulls and changes its
-// mind. A thing (hooked junk, or something better) doesn't fight at all. It just comes up
-// heavy, the beam leaning steadily one way, and a good appraiser feels the difference.
+// The Reel (v2.5.2, replacing The Scales): once something bites, keep what's on the line
+// inside your box on a bar beside you (see below). A fish darts; a thing just sinks.
 //
 // What bites depends on where you are, the season, the time of day, the weather, the tide
 // and your bait. Fish sell only to the fisherman on the boardwalk, whose prices move every
@@ -19,8 +15,8 @@ import { RNG } from '../engine/rng.js';
 
 // ---------- the gear ----------
 
-// band: how wide the balanced zone is; reel: how fast a balanced line comes in (per
-// second, before weight); line: seconds the line holds pinned at an end; window: seconds
+// band: how tall your box is on the reel bar (0..1); reel: how fast the line comes in while
+// the catch is in the box (per second, before weight); line: seconds the line holds pinned at an end; window: seconds
 // to set the hook after a bite; max: the weight (lb) it handles before big fish get the
 // better of it.
 export const RODS = {
@@ -168,57 +164,74 @@ export function rollBite(cond, rng) {
   return { kind: 'fish', fish: pick, lb };
 }
 
-// ---------- The Scales ----------
+// ---------- The Reel (v2.5.2) ----------
 
-// A fight on the scale. The beam angle is -1 (pinned left) to 1 (pinned right).
-export function startReel(bite, rod, rng) {
-  const heavy = bite.kind === 'thing';
-  const f = bite.fish;
+// Once something bites, a bar appears beside you. What's on the line moves up and down it,
+// and you keep it inside your box: hold (the action button, Space or E, the stick pushed up,
+// or a pad's A) to lift the box; let go and it sinks. While the catch is in the box the reel
+// winds in; out of it, the line pays out. Wind it all the way in and it's yours; let it all
+// the way out and it's gone. A better rod gives you a bigger box and a quicker reel. A fish
+// darts about, harder the stronger it is; a thing (what a magnet or a bare hook drags up)
+// doesn't fight at all: it just sways down near the bottom, heavy.
+export const BAR = { lift: 3.4, fall: 2.8, maxV: 1.5, start: 0.3 };
+export const boxSize = rod => Math.round((rod.band + 0.1) * 1000) / 1000;   // cane 0.34 … brass 0.48
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+
+// bait: the bait on the hook (a thing on a magnet shows as a magnet on the bar).
+export function startReel(bite, rod, rng, bait = null) {
+  const heavy = bite.kind === 'thing', f = bite.fish;
   // Over the rod's limit, a fish pulls harder still.
   const over = !heavy && bite.lb > rod.max ? Math.min(1.6, 1 + (bite.lb - rod.max) / rod.max) : 1;
   return {
-    bite, rod, heavy, t: 0, angle: 0, vel: 0, reel: 0, strain: 0, done: null,
-    pull: heavy ? 0.55 + rng.next() * 0.25 : (f.fight.pull * 0.9 + 0.1) * over,
-    dart: heavy ? 0 : f.fight.dart,
-    dir: rng.next() < 0.5 ? -1 : 1, force: 0, target: 0, nextTurn: 0.4,
-    // How much each fish weighs on the reel: a big one takes longer to bring in.
+    bite, rod, heavy, t: 0, done: null,
+    size: boxSize(rod), box: boxSize(rod) / 2, boxV: 0, inside: false, spin: 0,
+    pos: heavy ? 0.25 : 0.45 + rng.next() * 0.2, target: 0.5, dir: rng.next() < 0.5 ? -1 : 1, nextTurn: 0.25, phase: rng.next() * 6,
+    reel: BAR.start,
+    speed: heavy ? 0.16 : (0.3 + f.fight.pull * 0.6) * over,
+    dart: heavy ? 0 : f.fight.dart * over,
     weight: heavy ? 1.6 : 1 + Math.min(2.2, Math.log10(1 + bite.lb)),
-    told: false,
+    drain: heavy ? 0.1 : 0.12 + 0.1 * f.fight.pull * over,
+    icon: heavy ? (bait === 'magnet' ? 'magnet' : 'junk') : 'fish',
   };
 }
 
-// One step. lean: the stick, -1..1 (lean left pushes the beam left). Returns the fight.
-export function stepReel(R, dt, lean, rng) {
+// One step. hold: lifting the box (true/false). Returns the fight.
+export function stepReel(R, dt, hold, rng) {
   if (R.done) return R;
   R.t += dt;
   if (R.heavy) {
-    // A thing doesn't fight. It hangs there, heavy, and leans the beam one way, steadily.
-    R.target = R.dir * R.pull * (0.9 + 0.1 * Math.sin(R.t * 0.7));
+    // A thing sways slowly down near the bottom, never changing its mind.
+    R.target = 0.25 + 0.18 * Math.sin(R.t * 0.5 + R.phase);
   } else {
     R.nextTurn -= dt;
     if (R.nextTurn <= 0) {
-      // A fish changes its mind: a dart one way or the other, harder the stronger it is.
-      R.dir = rng.next() < 0.35 + R.dart * 0.3 ? -R.dir : R.dir;
-      R.target = R.dir * R.pull * (0.55 + rng.next() * 0.65);
-      R.nextTurn = (0.5 + rng.next() * 1.4) / (0.6 + R.dart);
+      // A fish darts: a jump up or down the bar, further and more often the livelier it is.
+      const jump = 0.15 + rng.next() * (0.25 + 0.45 * R.dart);
+      R.dir = R.pos < 0.2 ? 1 : R.pos > 0.8 ? -1 : rng.next() < 0.6 + 0.25 * R.dart ? -R.dir : R.dir;
+      const dir = R.dir;
+      R.target = clamp(R.pos + dir * jump, 0.04, 0.96);
+      R.nextTurn = (0.35 + rng.next() * 1.1) / (0.6 + R.dart);
     }
-    R.target += (rng.next() - 0.5) * R.dart * 0.6 * dt * 10 * R.pull;
   }
-  R.force += (R.target - R.force) * Math.min(1, dt * (R.heavy ? 1.5 : 4 + R.dart * 6));
-  const acc = (R.force - lean * 0.95) * 3.2 - R.vel * 2.4 - R.angle * 0.6;
-  R.vel += acc * dt;
-  R.angle = Math.max(-1, Math.min(1, R.angle + R.vel * dt));
-  if (Math.abs(R.angle) >= 1) R.vel *= -0.2;
-  const balanced = Math.abs(R.angle) < R.rod.band;
-  R.reel = Math.max(0, Math.min(1, R.reel + (balanced ? R.rod.reel / R.weight : -0.04) * dt));
-  R.strain = Math.max(0, R.strain + (Math.abs(R.angle) > 0.88 ? dt / R.rod.line : -dt * 0.5));
-  if (R.strain >= 1) R.done = 'snapped';
-  else if (R.reel >= 1) R.done = 'landed';
+  const stepMax = R.speed * (1 + R.dart * 0.6) * dt;
+  R.pos = clamp(R.pos + clamp(R.target - R.pos, -stepMax, stepMax), 0.03, 0.97);
+  // Your box: lifts while you hold, sinks when you don't, bumps at the ends.
+  R.boxV = clamp(R.boxV + (hold ? BAR.lift : -BAR.fall) * dt, -BAR.maxV, BAR.maxV);
+  R.box += R.boxV * dt;
+  const lo = R.size / 2, hi = 1 - R.size / 2;
+  if (R.box < lo) { R.box = lo; R.boxV = R.boxV < -0.4 ? -R.boxV * 0.25 : 0; }
+  if (R.box > hi) { R.box = hi; R.boxV = R.boxV > 0.4 ? -R.boxV * 0.25 : 0; }
+  R.inside = inBox(R);
+  const gain = R.rod.reel * 1.8 / Math.pow(R.weight, 0.6);
+  R.reel = clamp(R.reel + (R.inside ? gain : -R.drain) * dt, 0, 1);
+  R.spin += (R.inside ? 12 : -5) * dt;
+  if (R.reel >= 1) R.done = 'landed';
+  else if (R.reel <= 0) R.done = 'snapped';
   return R;
 }
-export const balanced = R => Math.abs(R.angle) < R.rod.band;
-// The tell: after a second on the line, a thing has never once fought you.
-export const feelsHeavy = R => R.heavy && (R.t > 1.2 || !!R.rod.tell);
+export const inBox = R => Math.abs(R.pos - R.box) <= R.size / 2;
+// A thing on the line: it shows on the bar as what it is (a magnet's catch, or junk).
+export const feelsHeavy = R => R.heavy;
 
 // ---------- what you catch ----------
 

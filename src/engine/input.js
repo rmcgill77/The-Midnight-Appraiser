@@ -21,6 +21,7 @@ export class Input {
     this.surface = surface; this.stickEl = stickEl; this.knobEl = knobEl; this.actionEl = actionEl; this.sprintEl = sprintEl;
     // Phase 18: sprint is held, from any source: Shift, the Run button, or a pad's B / bumper / trigger.
     this.sprintKey = false; this.sprintTouch = null; this.sprintPad = false;
+    this.actionKey = false; this.actionTouch = null; this.actionPad = false;
     this.deadZone = deadZone; this.setSize(size);
     this.move = { x: 0, y: 0, mag: 0 };
     this.touch = { id: null, ox: 0, oy: 0, v: { x: 0, y: 0, mag: 0 } };
@@ -33,6 +34,9 @@ export class Input {
   }
 
   setSize(px) { this.radius = px / 2; this.stickEl?.style.setProperty('--stick', px + 'px'); }
+
+  // v2.5.2: the action button held down (the fishing reel), from any source.
+  get actionHeld() { return this.enabled && (this.actionKey || this.actionTouch !== null || this.actionPad); }
 
   get sprintHeld() { return this.enabled && (this.sprintKey || this.sprintTouch !== null || this.sprintPad); }
 
@@ -77,6 +81,7 @@ export class Input {
     }
     this._pad = now;
     this.sprintPad = btn(1) || btn(5) || btn(7);
+    this.actionPad = btn(0);
     const dx = (btn(15) ? 1 : 0) - (btn(14) ? 1 : 0), dy = (btn(13) ? 1 : 0) - (btn(12) ? 1 : 0);
     if (dx || dy) { const l = Math.hypot(dx, dy); return { x: dx / l, y: dy / l, mag: 1 }; }
     return stickVector(ax, ay, 1, this.deadZone);
@@ -90,6 +95,7 @@ export class Input {
     this.touch.id = null; this.touch.v = { x: 0, y: 0, mag: 0 };
     this.keys.clear(); this.actionQueued = false;
     this.sprintKey = false; this.sprintTouch = null; this.sprintEl?.classList.remove('pressed');
+    this.actionKey = false; this.actionTouch = null;
     this.#showStick(false);
   }
 
@@ -132,11 +138,10 @@ export class Input {
       e.preventDefault(); e.stopPropagation();
       this.#queueAction('touch');
       this.actionEl.classList.add('pressed');
+      this.actionTouch = e.pointerId; this.actionEl.setPointerCapture?.(e.pointerId);
     });
-    const up = () => this.actionEl?.classList.remove('pressed');
-    this.actionEl?.addEventListener('pointerup', up);
-    this.actionEl?.addEventListener('pointercancel', up);
-    this.actionEl?.addEventListener('pointerleave', up);
+    const up = () => { this.actionEl?.classList.remove('pressed'); this.actionTouch = null; };
+    for (const ev of ['pointerup', 'pointercancel', 'pointerleave', 'lostpointercapture']) this.actionEl?.addEventListener(ev, up);
 
     // The Run button: held with one thumb while the other steers.
     this.sprintEl?.addEventListener('pointerdown', e => {
@@ -155,10 +160,11 @@ export class Input {
       if (e.code === 'ShiftLeft' || e.code === 'ShiftRight') this.sprintKey = true;
       if ((e.code === 'KeyE' || e.code === 'Space' || e.code === 'Enter') && !e.repeat) {
         if (e.target?.closest?.('button')) return;
+        this.actionKey = true;
         this.#queueAction('keys'); e.preventDefault();
       }
     });
-    addEventListener('keyup', e => { if (map[e.code]) this.keys.delete(map[e.code]); if (e.code === 'ShiftLeft' || e.code === 'ShiftRight') this.sprintKey = false; });
+    addEventListener('keyup', e => { if (map[e.code]) this.keys.delete(map[e.code]); if (e.code === 'KeyE' || e.code === 'Space' || e.code === 'Enter') this.actionKey = false; if (e.code === 'ShiftLeft' || e.code === 'ShiftRight') this.sprintKey = false; });
     addEventListener('blur', () => this.release());
   }
 

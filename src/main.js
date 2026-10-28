@@ -20,7 +20,7 @@ import { RoomCrowd, peopleIn } from './game/bar.js';
 import { regularsAt, titleOf, dayOffSpot, streetWalkers, spouseOf, parkPeople, beachPeople } from './data/townsfolk.js';
 import * as FISH from './game/fishing.js';
 import { openTackle, openTackleBox, fishArt } from './ui/fishing-panels.js';
-import { drawLine as drawFishLine, drawScales } from './ui/fishing-art.js';
+import { drawLine as drawFishLine, drawReel } from './ui/fishing-art.js';
 import { birthdaysAhead, isBirthdayToday, birthdayThanks, whenText } from './data/birthdays.js';
 import * as REL from './game/relationships.js';
 import { RELATIONSHIPS } from './data/relationships.js';
@@ -979,7 +979,7 @@ function endNightShop() {
 // ---------- v2.3: fishing ----------
 // Face open water from the beach (the pier, the surf, the rocks) or in town (the river mouth,
 // the quay, the riverbank) and fish. The rules are in game/fishing.js; the screens in
-// ui/fishing-panels.js; the line and The Scales in ui/fishing-art.js.
+// ui/fishing-panels.js; the line and The Reel in ui/fishing-art.js.
 const THINGS_PER_DAY = 3;
 let fishing = null;
 const DIRS = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] };
@@ -1019,10 +1019,13 @@ function startFishing(s) {
   const cond = fishCond(s.spot);
   fishing = { phase: 'cast', t: 0, spot: s, cond, rng, delay: FISH.biteDelay(cond, rng), bite: null, R: null };
   cue('tap');
-  ui.toast(`${fishConditionsLine()}${cond.bait ? '' : ' · a bare hook'}`, 2200, { minor: true });
+  const Fw = FISH.fishingOf(world);
+  // v2.5.2: the first few casts explain the reel, before anything bites.
+  if ((Fw.reelTips ?? 0) < 3) { Fw.reelTips = (Fw.reelTips ?? 0) + 1; ui.toast('When it bites, tap to hook it. Then hold the button (or push the stick up) to lift your box, and keep the catch inside it.', 3000, { minor: true }); }
+  else ui.toast(`${fishConditionsLine()}${cond.bait ? '' : ' · a bare hook'}`, 2200, { minor: true });
 }
 function stopFishing(text) { fishing = null; if (text) ui.toast(text, 2600); changed(); }
-function stepFishing(dt, move, action) {
+function stepFishing(dt, move, action, held = false) {
   const S_ = fishing; S_.t += dt;
   if (S_.phase === 'cast') { if (S_.t > 0.6) { S_.phase = 'wait'; S_.t = 0; } return; }
   if (S_.phase === 'wait') {
@@ -1036,7 +1039,7 @@ function stepFishing(dt, move, action) {
   if (S_.phase === 'bite') {
     if (action) {
       if (S_.cond.bait) FISH.useBait(world, S_.cond.bait);
-      S_.R = FISH.startReel(S_.bite, FISH.rodOf(world), S_.rng); S_.phase = 'reel'; S_.t = 0;
+      S_.R = FISH.startReel(S_.bite, FISH.rodOf(world), S_.rng, S_.cond.bait); S_.phase = 'reel'; S_.t = 0;
       if (S_.R.rod.tell) ui.toast(S_.bite.kind === 'thing' ? 'Dead weight. That’s no fish.' : 'It’s alive. It’s fighting.', 1600, { minor: true });
       return;
     }
@@ -1044,9 +1047,9 @@ function stepFishing(dt, move, action) {
     return;
   }
   if (S_.phase === 'reel') {
-    const R = FISH.stepReel(S_.R, dt, move.x, S_.rng);
-    if (FISH.feelsHeavy(R) && !S_.told) { S_.told = true; if (!R.rod.tell) ui.toast('It isn’t fighting. It’s just… heavy.', 2000, { minor: true }); }
-    if (R.done === 'snapped') { if (S_.cond.bait) FISH.useBait(world, S_.cond.bait); return stopFishing('The line snapped.'); }
+    S_.hold = !!held || move.y < -0.35;
+    const R = FISH.stepReel(S_.R, dt, S_.hold, S_.rng);
+    if (R.done === 'snapped') return stopFishing(R.heavy ? 'It slipped off the hook and sank.' : 'It got away.');
     if (R.done === 'landed') return landCatch(S_);
   }
 }
@@ -1075,10 +1078,11 @@ function drawFishing(ctx, cx, cy) {
   const f = player.feet, [dx, dy] = DIRS[player.facing];
   const hx = Math.round(player.x) - cx + 8 + dx * 8, hy = Math.round(player.y) - cy + 4 + (dy < 0 ? -6 : 0);
   const bx = fishing.spot.wx * 16 + 8 - cx, by = fishing.spot.wy * 16 + 8 - cy;
+  fishing.screen = { x: Math.round(player.x) - cx + 8, y: Math.round(player.y) - cy + 8 };   // where the reel bar goes
   drawFishLine(ctx, hx, hy, bx, by, fishing.phase, time, fishing.phase === 'cast' ? Math.min(1, fishing.t / 0.6) : 1);
 }
 function drawFishingHud(ctx) {
-  if (fishing?.phase === 'reel') drawScales(ctx, renderer.w, renderer.h, fishing.R, { heavy: FISH.feelsHeavy(fishing.R), time });
+  if (fishing?.phase === 'reel') drawReel(ctx, renderer.w, renderer.h, fishing.R, { time, hold: fishing.hold, at: fishing.screen });
 }
 // v2.4: Kip minds the shack every day but Sunday, when he's out on the pier and it runs on
 // the honor tin. He's there from the morning to dusk (not at night). Each heart is a percent
@@ -1810,7 +1814,7 @@ function update(dt) {
     player.speedMul = world.room === 'city' ? CR.walkSpeed(st, riding()) * streetPace(todayWeather(), riding(), vehicleOf(st)?.kind)
       : world.room === 'zone' && st.run ? N.sprintStep(st, dt, input.sprintHeld, move.mag > 0.1) : 1;
     if (world.room === 'beach' && nightCity() && nightArea().inTide) player.speedMul *= 0.6;   // v2.5: wading
-    if (fishing) { if (!outdoors()) fishing = null; else stepFishing(dt, move, action); }
+    if (fishing) { if (!outdoors()) fishing = null; else stepFishing(dt, move, action, input.actionHeld); }
     else player.update(dt, move, world.room === 'city' ? cityMoveMap() : m);
     // v2.1: walked off the edge of an area onto the next one (game/edges.js).
     if (m?.room?.edges && world.room !== 'zone') {

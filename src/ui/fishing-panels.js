@@ -8,18 +8,13 @@ import { el } from './ui.js';
 import { S } from '../rules/index.js';
 import * as F from '../game/fishing.js';
 import { faceRow } from './portraits.js';
+import { FISH_LOOK } from './fishing-art.js';
 
 const money = n => S.money(n);
 const lb = n => (n < 1 ? `${Math.round(n * 16)} oz` : `${n.toFixed(1)} lb`);
 
 // A fish, drawn: the same silhouette for every kind, in its own colors.
-const LOOK = {
-  mackerel: ['#3d6a7a', '#c8d6d0'], herring: ['#8a9aa6', '#e0e6e8'], smelt: ['#9ab0a0', '#e6efe6'], flounder: ['#6a5a3e', '#a08a60'], scup: ['#9a8a7a', '#d0c4b0'],
-  pollock: ['#5a6a4a', '#b0b89a'], cod: ['#7a6a4a', '#c8b88a'], bluefish: ['#3d5a7a', '#a6b8c8'], seabass: ['#26282e', '#5a5f6e'], striper: ['#6a7078', '#d0d4d6'],
-  tautog: ['#3a3022', '#6a5a40'], skate: ['#6a5e4a', '#9a8a6a'], dogfish: ['#5a5e66', '#a8acb0'], eel: ['#3a3a1e', '#7a7a4a'], perch: ['#a08a2e', '#d6c46a'],
-  catfish: ['#4a4436', '#8a8070'], carp: ['#a0782e', '#e0b85a'], monkfish: ['#5a4a3a', '#8a7a62'], tuna: ['#1e2a4a', '#a6b0c0'], lanternfish: ['#1e2a3a', '#7ae0d0'],
-  glasseel: ['#a0c0c8', '#e6f6f6'], grandfather: ['#3a3a3e', '#7a7a80'],
-};
+const LOOK = FISH_LOOK;
 const SHAPE = ['.......####.....', '.....########...', '#...##########..', '##.###########..', '.############.#.', '.##############.', '.############.#.', '##.###########..', '#...##########..', '.....########...', '.......####.....'];
 export function fishArt(id, scale = 2) {
   const [body, belly] = LOOK[id] ?? ['#5a6070', '#a0a6b0'];

@@ -2,6 +2,11 @@
 // Written for players: what they'll notice, not how it was built.
 
 export const CHANGELOG = [
+  { version: '2.5.2', title: 'A simpler reel', items: [
+    'Fishing has a new reel. When something bites, a bar appears beside you: hold the button (or push the stick up) to lift your box, let go to drop it, and keep the catch inside. Keep it there and the reel winds it in.',
+    'Better rods give you a bigger box and a quicker reel.',
+    'You can see what you’ve hooked: a fish darts up and down the bar; a magnet catch or a bit of junk just sways near the bottom.',
+  ] },
   { version: '2.5.1', title: 'Fixes and furniture', items: [
     'No more sea at the bottom of town. Below the quay there are dunes now, and the only way through is the boardwalk, under a BEACH sign, with a signpost beside it.',
     'The river runs out through the dunes. Fish that liked the harbor now bite at the river mouth.',
