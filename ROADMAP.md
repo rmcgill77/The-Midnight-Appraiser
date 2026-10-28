@@ -41,20 +41,21 @@ phase when we plan it.
     flickering or dimming, ghost images, false characters at the edge of view, and muffled
     sound.
   - Decided: a missed day (the third-night collapse) costs:
-    - relationship points with NPCs, if the player has any;
+    - relationship points with NPCs, if the player has any: half a heart lost per missed day;
     - rent is still due on the same day as usual;
     - no night run, and no money from opening the shop that day (and so on);
     - NPCs comment on it when the player passes out and misses a day.
   - Decided: shop hours are set with a slider. The player can set each day separately, or
     choose to use the same hours every day, up to 8 hours total, at any time of the day.
-    The shop must be closed at least one day a week.
-  - Open: whether a skipped night means a day with under 6 hours of sleep, or any day with
-    no sleep at all (sleep is a fast-forward, so partial sleep may not exist).
-  - Open: how a sleep that starts late fits the 10 AM limit (starting at 5 AM, does the
-    player still get 6 hours, waking after 10 AM?) and what the "24-hour day" boundary is.
-  - Open: how much relationship loss a missed day costs, and how the NPC comments vary.
-  - Open: which weekday(s) the shop closes by default, and whether the player or the game
-    picks the closed day.
+    The shop must be closed at least one day a week, and the player picks the closed day.
+  - Decided: sleep that is cut short (for example it starts late and hits the 10 AM
+    limit) gives a minor penalty: slow walking until the player performs a full sleep.
+    This is separate from, and milder than, the skipped-night stages above.
+  - Open: whether a skipped night means a day with no sleep at all, or a day with under 6
+    hours (a cut-short sleep already has its own penalty, so likely no sleep at all).
+  - Open: where the "24-hour day" begins and ends for the once-per-day sleep rule (for
+    example, if the player sleeps at 8 PM and again at 9 AM, is that two sleeps in one day?).
+  - Open: how the NPC comments vary after a collapse.
   - Decided: NPC schedules are adjusted to fit the new clock, so morning, day and night
     connect: hours, story and NPC schedules line up across them.
   - Open: what the player does outside shop hours, what happens to the lab and zone runs,
