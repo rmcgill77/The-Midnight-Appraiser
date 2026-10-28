@@ -26,6 +26,17 @@ export const CONFIG = {
   dayEndMinute: 20 * 60,    // 8:00 PM in-game
   clockDisplayStep: 10,     // in-game minutes per visible clock tick
 
+  // Phase 30: the continuous day and night (game/daycycle.js). Awake time runs at one real
+  // minute per in-game hour, so the 18 hours a player is awake take about 18 real minutes.
+  // Sleep fast-forwards and is only allowed in the window from 8 PM to 10 AM, once a window.
+  cycle: {
+    msPerGameMinute: 1000,
+    sleepFrom: 20 * 60,       // the sleep window opens at 8 PM...
+    sleepTo: 10 * 60,         // ...and closes at 10 AM the next morning
+    minSleepMinutes: 6 * 60,  // a full sleep is at least 6 hours
+    skipsToCollapse: 3,       // nights skipped in a row before the player collapses
+  },
+
   player: {
     speed: 68,              // logical px per second at full stick
     box: { w: 10, h: 6, ox: 3, oy: 10 }, // collision box (feet) inside the 16x16 sprite
