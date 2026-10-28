@@ -3150,7 +3150,7 @@ function slotSummary(d) {
 function allSaves() {
   const auto = slots.readAuto();
   return [
-    ...(auto ? [{ slot: 'auto', data: auto.corrupt ? null : auto, corrupt: !!auto.corrupt }] : []),
+    ...(auto ? [{ slot: 'auto', data: auto.corrupt || auto.legacy ? null : auto, corrupt: !!auto.corrupt, legacy: !!auto.legacy }] : []),
     ...slots.list(),
   ];
 }
@@ -3159,14 +3159,14 @@ function allSaves() {
 function openSlots(mode, fromTitle = false) {
   const back = fromTitle ? openTitle : openMenu;
   const rows = (mode === 'save' ? slots.list() : allSaves()).map(s => {
-    const desc = s.corrupt ? 'This save can’t be read.' : s.data ? slotSummary(s.data) : 'Empty';
+    const desc = s.corrupt ? 'This save can’t be read.' : s.legacy ? 'From an older version of the game, so it can’t be loaded. You can still export it.' : s.data ? slotSummary(s.data) : 'Empty';
     const id = String(s.slot);
     const buttons = mode === 'save'
-      ? [el('button', { type: 'button', class: 'btn small primary', id: `slot-${id}`, onclick: () => doSave(s.slot) }, s.data ? 'Overwrite' : 'Save here')]
+      ? [el('button', { type: 'button', class: 'btn small primary', id: `slot-${id}`, onclick: () => doSave(s.slot) }, s.data || s.legacy ? 'Overwrite' : 'Save here')]
       : [el('button', { type: 'button', class: 'btn small primary', id: `slot-${id}`, disabled: !s.data, onclick: () => doLoad(s.slot) }, 'Load'),
-         s.data ? el('button', { type: 'button', class: 'btn small', id: `export-${id}`, onclick: () => exportSave(s.slot) }, 'Export') : null,
-         s.data || s.corrupt ? el('button', { type: 'button', class: 'btn small quiet', id: `delete-${id}`, onclick: () => confirmDelete(s.slot, mode, fromTitle) }, 'Delete') : null];
-    return el('li', { class: `slot ${s.data ? '' : 'empty'}` },
+         s.data || s.legacy ? el('button', { type: 'button', class: 'btn small', id: `export-${id}`, onclick: () => exportSave(s.slot) }, 'Export') : null,
+         s.data || s.corrupt || s.legacy ? el('button', { type: 'button', class: 'btn small quiet', id: `delete-${id}`, onclick: () => confirmDelete(s.slot, mode, fromTitle) }, 'Delete') : null];
+    return el('li', { class: `slot ${s.data || s.legacy ? '' : 'empty'}` },
       el('div', { class: 'slot-text' }, el('strong', {}, slotName(s.slot)), el('span', {}, desc)),
       el('div', { class: 'slot-buttons' }, buttons));
   });
@@ -3241,6 +3241,7 @@ function quitToTitle() {
 
 function doLoad(slot) {
   const d = slots.read(slot);
+  if (d?.legacy) { ui.toast('That save is from an older version of the game and can’t be loaded. You can export it from Manage saves.', 4200); return; }
   if (!d || d.corrupt) { ui.toast('That save can’t be read.'); return; }
   ui.close();
   const older = !d.sim;
@@ -3461,6 +3462,7 @@ for (const b of banner.querySelectorAll('button')) b.addEventListener('pointerdo
 function openTitle() {
   const latest = slots.latest();
   const saves = allSaves().filter(x => x.data);
+  const oldSaves = allSaves().filter(x => x.legacy).length;
   const row = x => el('li', { class: 'title-save' },
     el('button', { type: 'button', class: 'title-save-btn', id: `title-load-${x.slot}`, onclick: () => doLoad(x.slot) },
       el('strong', {}, slotName(x.slot)), el('span', {}, slotSummary(x.data))));
@@ -3471,12 +3473,13 @@ function openTitle() {
       saves.length
         ? el('div', { class: 'title-saves' }, el('p', { class: 'label' }, 'Your saves'), el('ul', {}, saves.slice(0, 4).map(row)))
         : el('p', { class: 'note' }, 'No saves yet. A new game starts with Mina showing you around the shop.'),
+      oldSaves ? el('p', { class: 'note warn', id: 'old-saves-note' }, `${oldSaves === 1 ? 'You have a save' : `You have ${oldSaves} saves`} from an older version of the game. ${oldSaves === 1 ? 'It' : 'They'} can’t be loaded in this version, so a new game starts fresh. Open Manage saves to export ${oldSaves === 1 ? 'it' : 'them'} as a file.`) : null,
       storage.persistent ? null : el('p', { class: 'note warn' }, 'This browser is blocking storage. Saves last until you close the page.'),
     ],
     actions: [
       ...(latest ? [{ id: 'continue', label: `Continue · ${slotName(latest.slot)}`, kind: 'primary', onClick: () => doLoad(latest.slot) }] : []),
       { id: 'new-game', label: 'New game', kind: latest ? '' : 'primary', onClick: () => { ui.close(); newGame(true); } },
-      ...(saves.length ? [{ id: 'title-load', label: 'Manage saves', onClick: () => openSlots('load', true) }] : [{ id: 'title-import', label: 'Import a save file', kind: 'quiet', onClick: () => importSave(true) }]),
+      ...(saves.length || oldSaves ? [{ id: 'title-load', label: 'Manage saves', onClick: () => openSlots('load', true) }] : [{ id: 'title-import', label: 'Import a save file', kind: 'quiet', onClick: () => importSave(true) }]),
       { id: 'title-settings', label: 'Settings', onClick: () => openSettings() },
       { id: 'title-cases', label: 'Case files', kind: 'quiet', onClick: () => openCaseFiles(ui, null, openTitle, 'title') },
       ...(installPrompt ? [{ id: 'install', label: 'Install the game', kind: 'quiet', onClick: installGame }] : []),
