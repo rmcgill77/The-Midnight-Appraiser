@@ -2,6 +2,10 @@
 // saves forward instead of throwing them away.
 
 export const SAVE_VERSION = 5;
+// Saves older than this can't be loaded: they aren't migrated, but they stay in storage and can
+// be exported or deleted. Phase 30 changes the clock, the day and the shop so much that it
+// raises this to its own save version when it ships; until then every older save still loads.
+export const FIRST_SUPPORTED = 0;
 const KEY = slot => `tma.save.${slot}`;
 
 const RENAMED = { Brit: 'Morgan', Styg: 'Stuart', Jae: 'Jade', Rando: 'Jackson', Paco: 'Pablo' };
@@ -34,7 +38,7 @@ export function migrate(data, target = SAVE_VERSION, migrations = MIGRATIONS) {
 }
 
 export class SaveSlots {
-  constructor(storage, count) { this.storage = storage; this.count = count; }
+  constructor(storage, count, firstSupported = FIRST_SUPPORTED) { this.storage = storage; this.count = count; this.firstSupported = firstSupported; }
 
   write(slot, state) {
     const data = { ...state, version: SAVE_VERSION, savedAt: Date.now(), slot };
@@ -46,8 +50,12 @@ export class SaveSlots {
   read(slot) {
     const raw = this.storage.get(KEY(slot));
     if (!raw) return null;
-    try { return migrate(JSON.parse(raw)); }
-    catch (err) { return { corrupt: true, error: String(err.message || err), slot }; }
+    try {
+      const parsed = JSON.parse(raw);
+      const version = Number.isInteger(parsed?.version) ? parsed.version : 0;
+      if (version < this.firstSupported) return { legacy: true, version, slot, savedAt: parsed?.savedAt };
+      return migrate(parsed);
+    } catch (err) { return { corrupt: true, error: String(err.message || err), slot }; }
   }
 
   erase(slot) {
@@ -66,7 +74,7 @@ export class SaveSlots {
   // Whatever was saved most recently, numbered slot or autosave: what Continue loads.
   latest() {
     const c = [...this.list().filter(s => s.data).map(s => ({ slot: s.slot, data: s.data }))];
-    const a = this.readAuto(); if (a && !a.corrupt) c.push({ slot: 'auto', data: a });
+    const a = this.readAuto(); if (a && !a.corrupt && !a.legacy) c.push({ slot: 'auto', data: a });
     return c.sort((x, y) => (y.data.savedAt || 0) - (x.data.savedAt || 0))[0] ?? null;
   }
 
@@ -74,7 +82,11 @@ export class SaveSlots {
   exportText(slot) { return this.storage.get(KEY(slot)); }
   importText(text) {
     let data;
-    try { data = migrate(JSON.parse(text)); } catch (err) { return { error: 'That file isn’t a Midnight Appraiser save.' }; }
+    try {
+      const parsed = JSON.parse(text);
+      if ((Number.isInteger(parsed?.version) ? parsed.version : 0) < this.firstSupported) return { error: 'That save is from an older version of the game and can’t be loaded.' };
+      data = migrate(parsed);
+    } catch (err) { return { error: 'That file isn’t a Midnight Appraiser save.' }; }
     if (!data || typeof data !== 'object' || !data.sim || typeof data.sim !== 'object') return { error: 'That file isn’t a Midnight Appraiser save.' };
     const free = this.list().find(s => !s.data && !s.corrupt);
     if (!free) return { error: 'Every slot is full. Delete one first.' };
@@ -85,7 +97,7 @@ export class SaveSlots {
   list() {
     return Array.from({ length: this.count }, (_, i) => {
       const d = this.read(i + 1);
-      return { slot: i + 1, data: d && !d.corrupt ? d : null, corrupt: !!d?.corrupt };
+      return { slot: i + 1, data: d && !d.corrupt && !d.legacy ? d : null, corrupt: !!d?.corrupt, legacy: !!d?.legacy };
     });
   }
 
