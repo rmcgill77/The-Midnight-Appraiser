@@ -28,6 +28,12 @@ phase when we plan it.
 - **A longer, continuous day and night.**
   - Decided: the full day and night is one cycle of about 15-20 minutes of real time
     (today a shop day is about ten minutes, 8 AM to 8 PM, and the night is separate).
+    The 15-20 minutes is awake time only: sleep fast-forwards past it. That is about 18
+    awake game hours at roughly one real minute per game hour, close to today's pace.
+  - Decided: two clocks. The player's **day** runs from waking to sleeping and governs the
+    sleep rules. The **calendar date** changes at midnight and governs rent, weekdays, the
+    weekly closed day, birthdays, holidays and appraisal due dates. Shop hours that run past
+    midnight count toward the date they started on.
   - Decided: the player chooses a set timeframe during the day for the shop to be open.
   - Decided: a day starts and ends when the player chooses to sleep. The player can skip
     sleep and go straight into the next day, but suffers consequences, which get worse
@@ -57,8 +63,8 @@ phase when we plan it.
     player goes to sleep at exactly 8 PM, the earliest they can wake is 2 AM (6 hours),
     and then they can start their day or sleep a little longer. The 6 hours of sleep per
     24-hour day rule has to be followed either way.
-  - Decided: a skipped night means a day with no sleep at all (a cut-short sleep has its
-    own, milder penalty).
+  - Decided: a skipped night means the 8 PM-10 AM sleep window ended with no sleep taken in
+    it (a cut-short sleep has its own, milder penalty).
   - Decided: a sleep is "cut short" when 10 AM arrives before the player has had 6 hours.
     Sleep ends at 10 AM, so anyone who starts sleeping after 4 AM wakes at 10 AM with
     under 6 hours and gets the slow-walking penalty until they next do a full sleep.
@@ -99,9 +105,11 @@ phase when we plan it.
     can file early and get paid at once. Jobs are shown on a list with the days left.
   - This replaces the earlier rule that unfiled reports are lost when the player sleeps.
     Reports now stay on the bench until their due day.
-  - Interactions to handle while building: a missed day (collapse) can push a job past its
-    due date, and the lab only being open when the shop is closed limits how much testing
-    fits in a day.
+  - Decided: a job due on the shop's closed day is collected on the next open day. A job
+    due on a collapse (missed) day gets one extra day, so a collapse doesn't also cost the
+    job's pay.
+  - To watch while building: the lab only being open when the shop is closed limits how
+    much testing fits in a day.
 - **Status: Phase 30 is fully specified. No open questions.** Suggested build order:
   1. New save version and the new clock (15-20 minute day, wake-to-sleep days, sleep).
   2. Shop hours slider, closed weekly day, shop locked while open, floor pricing.
@@ -109,6 +117,17 @@ phase when we plan it.
   4. NPC schedules and shop visitors on the new clock.
   5. Sleep consequences (slow walking, shop mistakes, screen effects, collapse).
   6. Climate model and weather in the world.
+- **Also part of Phase 30 (found in the consistency check):**
+  - Rebalance the economy. A shop day was 12 hours of customers; it is now at most 8, so
+    rent, prices and customer rates need retuning.
+  - Remove the woods ranger's "out too late" line in `src/game/night-city.js`, since that
+    rule is replaced by the sleep rules.
+  - Write the collapse comments per NPC: about three variants each (worried, annoyed,
+    didn't notice).
+  - Half a heart is 5 relationship points (the game uses ten points per heart).
+  - Ground weather effects: Phase 30 builds the climate model, the world weather rules
+    and simple placeholder ground effects. The finished puddles, wet streets and snow
+    cover are drawn in Phase 32 on the new tiles, so they aren't built twice.
 - Likely files: `src/game/clock.js`, `src/game/weather.js`, `src/ui/weather-fx.js`,
   `src/game/night-city.js`, `src/game/schedule.js`, `src/main.js` (day phases: morning,
   day, errands, night).
@@ -156,6 +175,8 @@ phase when we plan it.
   (trees and ground change with the season: leaves, blossoms, snow, bare branches).
 - The town is generated from rules, not drawn by hand, so this is mostly new tile art and
   generator rules.
+- Also in Phase 32: the finished ground weather effects (puddles, wet streets, snow cover
+  that builds and melts) drawn on the new tiles. Phase 30 only ships placeholders.
 - **Status: Phase 32 is specified.**
 - Likely files: `src/data/city.js`, `src/data/city-tiles.js`, `src/data/tiles.js`.
 
@@ -177,6 +198,14 @@ phase when we plan it.
 - Deferred on purpose: the story itself, the creature list, and who runs the shops. They
   will be designed closer to Phase 33, not now. Phases 30 to 32 don't depend on them.
 - **Status: Phase 33 is specified except for the deferred content above.**
+
+## Consistency check (done)
+
+All four phases were re-read against each other. Resolved: awake-time day length, the two
+clocks (player day versus calendar date), the skipped-night rule, due dates on the closed
+day and on a collapse day, the ground-weather order, and the shop-income rebalance. No known
+conflicts remain. Phases 30, 31 and 32 are ready to build; Phase 33's woods content is
+deferred on purpose.
 
 ## Backlog (ideas not yet in a phase)
 
