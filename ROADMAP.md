@@ -60,12 +60,26 @@ phase when we plan it.
   - Decided: a sleep is "cut short" when 10 AM arrives before the player has had 6 hours.
     Sleep ends at 10 AM, so anyone who starts sleeping after 4 AM wakes at 10 AM with
     under 6 hours and gets the slow-walking penalty until they next do a full sleep.
-  - Open: how the NPC comments vary after a collapse.
-  - Decided: NPC schedules are adjusted to fit the new clock, so morning, day and night
-    connect: hours, story and NPC schedules line up across them.
-  - Open: what the player does outside shop hours, what happens to the lab and zone runs,
-    how "out too late" fits with a day that ends at sleep, how shop customers map onto the
-    longer clock, and how old saves carry over (the clock stores its own day length).
+  - Decided: NPC comments after a collapse vary by relationship. Some NPCs are worried,
+    some are annoyed, and some didn't notice. The higher the relationship, the more worried
+    the NPC is.
+  - Decided: outside shop hours the player is free to explore the city, visit NPCs, fish
+    and so on.
+  - Decided: at night, depending on the time of year, the player can choose to do night
+    runs. (The length of the night changes with the season, so the choice is only there
+    when the season allows it.)
+  - Decided: while the shop is open, the NPCs from the city visit the shop, as well as the
+    non-custom (generic) customers. The player can't leave the shop or go to the back
+    room while it is open.
+  - Decided: the player can adjust item prices on the shop floor, not only at the bench.
+  - Decided: old saves do not carry over, because so much is being added. Phase 30 starts
+    a new save version and old saves are not migrated (the game should say so clearly,
+    and could offer to export the old save).
+  - Open: what happens to the basement lab at night and by day now that the player has
+    free time outside shop hours.
+  - Open: how "out too late" fits a day that ends at sleep.
+  - Open: how many generic customers versus city NPCs visit, and how the longer clock and
+    the shop-hours slider change shop traffic and pricing.
   - Superseded: the earlier note that day length/pacing was out of scope. Dusk and dawn
     lighting is still not requested, though a continuous cycle will probably want it.
 - Likely files: `src/game/clock.js`, `src/game/weather.js`, `src/ui/weather-fx.js`,
