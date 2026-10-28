@@ -85,6 +85,8 @@ phase when we plan it.
   - Decided: old saves do not carry over, because so much is being added. Phase 30 starts
     a new save version and old saves are not migrated (the game should say so clearly,
     and could offer to export the old save).
+    Confirmed again after weighing the alternative: carrying over long-term progress (and
+    resetting in-progress days, jobs and night runs) was considered and not chosen.
   - Decided: the basement lab and back room are open any time the shop is closed. Testing
     an item takes in-game time from the player's day. Reports stay on the bench until the
     job's due date (see Appraisals take up to a week).
