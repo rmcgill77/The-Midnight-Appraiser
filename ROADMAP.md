@@ -34,24 +34,32 @@ phase when we plan it.
     - Second night skipped: parts of the screen change to mess with the player.
     - Third night skipped: the player is forced to collapse and miss a whole day.
   - Decided: the player must get at least 6 hours of sleep a day, whenever they choose to
-    take it. (Not meeting that is what counts as a skipped night.)
-  - Decided: the player sets their shop hours whenever they want, up to a total of 8
-    hours, at any time of the day.
-  - Open: what counts as a "skipped night" exactly (under 6 hours of sleep in a day?), and
-    whether the count resets after a full sleep.
-  - Open: what the screen effects in the second stage are (ideas: blur, a tilt, flickering
-    or dimming, ghost images, false characters at the edge of view, muffled sound).
-  - Open: what a missed day costs (the shop stays closed, customers and rent, what the
-    NPCs say, what the player wakes up to).
-  - Open: how sleep fits the clock: how much real time 6 hours of sleep takes (it could
-    fast-forward), and whether sleep can be taken in more than one stretch.
+    take it. A full sleep resets the skipped-night count.
+  - Decided: sleep fast-forwards time. It is only allowed between 8 PM and 10 AM, and only
+    once per 24-hour day.
+  - Decided: all of these screen effects are wanted for the second stage: blur, a tilt,
+    flickering or dimming, ghost images, false characters at the edge of view, and muffled
+    sound.
+  - Decided: a missed day (the third-night collapse) costs:
+    - relationship points with NPCs, if the player has any;
+    - rent is still due on the same day as usual;
+    - no night run, and no money from opening the shop that day (and so on);
+    - NPCs comment on it when the player passes out and misses a day.
+  - Decided: shop hours are set with a slider. The player can set each day separately, or
+    choose to use the same hours every day, up to 8 hours total, at any time of the day.
+    The shop must be closed at least one day a week.
+  - Open: whether a skipped night means a day with under 6 hours of sleep, or any day with
+    no sleep at all (sleep is a fast-forward, so partial sleep may not exist).
+  - Open: how a sleep that starts late fits the 10 AM limit (starting at 5 AM, does the
+    player still get 6 hours, waking after 10 AM?) and what the "24-hour day" boundary is.
+  - Open: how much relationship loss a missed day costs, and how the NPC comments vary.
+  - Open: which weekday(s) the shop closes by default, and whether the player or the game
+    picks the closed day.
   - Decided: NPC schedules are adjusted to fit the new clock, so morning, day and night
     connect: hours, story and NPC schedules line up across them.
-  - Open: how the shop-hours picker works as a screen (a slider or start and end times,
-    and whether it can be changed during the day), what the player does outside shop hours,
-    what happens to the lab and zone runs, how "out too late" fits with a day that ends at
-    sleep, how shop customers map onto the longer clock, and how old saves carry over (the
-    clock stores its own day length).
+  - Open: what the player does outside shop hours, what happens to the lab and zone runs,
+    how "out too late" fits with a day that ends at sleep, how shop customers map onto the
+    longer clock, and how old saves carry over (the clock stores its own day length).
   - Superseded: the earlier note that day length/pacing was out of scope. Dusk and dawn
     lighting is still not requested, though a continuous cycle will probably want it.
 - Likely files: `src/game/clock.js`, `src/game/weather.js`, `src/ui/weather-fx.js`,
