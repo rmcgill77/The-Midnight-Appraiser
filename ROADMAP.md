@@ -21,8 +21,10 @@ phase when we plan it.
     that falls, settles and melts).
   - Decided: the climate model should be fairly detailed: temperature, humidity, wind and
     fronts, with the season setting the climate.
-  - Open: which effects stay as a screen overlay (falling rain/snow) and which become
-    ground effects.
+  - Decided: world effects are puddles, wet streets, snow cover that builds and melts, fog
+    banks sitting over areas, wind moving trees, and lightning lighting up the map. Only
+    the falling rain and snow streaks stay on the screen, kept light so they don't feel
+    stuck to the camera.
 - **A longer, continuous day and night.**
   - Decided: the full day and night is one cycle of about 15-20 minutes of real time
     (today a shop day is about ten minutes, 8 AM to 8 PM, and the night is separate).
@@ -77,13 +79,25 @@ phase when we plan it.
   - Decided: old saves do not carry over, because so much is being added. Phase 30 starts
     a new save version and old saves are not migrated (the game should say so clearly,
     and could offer to export the old save).
-  - Open: what happens to the basement lab at night and by day now that the player has
-    free time outside shop hours.
-  - Open: how "out too late" fits a day that ends at sleep.
-  - Open: how many generic customers versus city NPCs visit, and how the longer clock and
-    the shop-hours slider change shop traffic and pricing.
+  - Decided: the basement lab and back room are open any time the shop is closed. Testing
+    an item takes in-game time from the player's day. Reports not filed by the time the
+    player sleeps are lost, as today.
+  - Decided: "out too late" is replaced by the sleep rules. The 3:30 warning goes. Staying
+    up just means skipping sleep and the three-night penalties. On the third night an NPC
+    finds the player and takes them home, and that is the collapse scene.
+  - Decided: shop traffic scales with the shop hours and the weather: busier at lunch and
+    after work, quieter early and late, with weather changing it as today. City NPCs visit
+    based on their schedule and relationship (a few a day) and generic customers fill the
+    rest. Prices set on the floor change how likely a sale is.
   - Superseded: the earlier note that day length/pacing was out of scope. Dusk and dawn
     lighting is still not requested, though a continuous cycle will probably want it.
+- **Status: Phase 30 is fully specified. No open questions.** Suggested build order:
+  1. New save version and the new clock (15-20 minute day, wake-to-sleep days, sleep).
+  2. Shop hours slider, closed weekly day, shop locked while open, floor pricing.
+  3. Remove the day/night menus: free time, night runs by season, lab when closed.
+  4. NPC schedules and shop visitors on the new clock.
+  5. Sleep consequences (slow walking, shop mistakes, screen effects, collapse).
+  6. Climate model and weather in the world.
 - Likely files: `src/game/clock.js`, `src/game/weather.js`, `src/ui/weather-fx.js`,
   `src/game/night-city.js`, `src/game/schedule.js`, `src/main.js` (day phases: morning,
   day, errands, night).
@@ -103,8 +117,9 @@ phase when we plan it.
   - Expressions: portraits that change with mood during conversations, over a wide range
     of moods: happy, sad, annoyed, angry, upset, flirty and more.
 - Today: six creator tabs, 24x32 figures and 48x48 portraits, all drawn by
-  `src/engine/figure-hd.js`, so all of this runs through that one drawing system. Existing
-  saves and the NPC looks in `src/game/people.js` must keep working.
+  `src/engine/figure-hd.js`, so all of this runs through that one drawing system. The
+  NPC looks in `src/game/people.js` must keep working. (Old saves don't carry over from
+  Phase 30 on, so no save migration is needed for the new creator.)
 - Open: the exact list of new clothes, accessories and looks, whether to keep backstory,
   and the full list of moods. Each NPC portrait would need every mood drawn.
 - Likely files: `src/ui/creator.js`, `src/ui/portraits.js`, `src/engine/figure.js`,
