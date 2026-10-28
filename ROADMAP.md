@@ -80,8 +80,8 @@ phase when we plan it.
     a new save version and old saves are not migrated (the game should say so clearly,
     and could offer to export the old save).
   - Decided: the basement lab and back room are open any time the shop is closed. Testing
-    an item takes in-game time from the player's day. Reports not filed by the time the
-    player sleeps are lost, as today.
+    an item takes in-game time from the player's day. Reports stay on the bench until the
+    job's due date (see Appraisals take up to a week).
   - Decided: "out too late" is replaced by the sleep rules. The 3:30 warning goes. Staying
     up just means skipping sleep and the three-night penalties. On the third night an NPC
     finds the player and takes them home, and that is the collapse scene.
@@ -91,6 +91,17 @@ phase when we plan it.
     rest. Prices set on the floor change how likely a sale is.
   - Superseded: the earlier note that day length/pacing was out of scope. Dusk and dawn
     lighting is still not requested, though a continuous cycle will probably want it.
+- **Appraisals take up to a week.** Today an owner collects at bedtime on the same day
+  (`settleJobs` in `shared/js/shop.js`, called from `sleep` in `src/rules/actions.js`).
+  Decided: appraisal jobs can take up to a week.
+  - Decided: each job carries its own due date of 1 to 7 days (longer for harder items).
+    Owners collect on the due day: paid if the report is filed, nothing if not. The player
+    can file early and get paid at once. Jobs are shown on a list with the days left.
+  - This replaces the earlier rule that unfiled reports are lost when the player sleeps.
+    Reports now stay on the bench until their due day.
+  - Interactions to handle while building: a missed day (collapse) can push a job past its
+    due date, and the lab only being open when the shop is closed limits how much testing
+    fits in a day.
 - **Status: Phase 30 is fully specified. No open questions.** Suggested build order:
   1. New save version and the new clock (15-20 minute day, wake-to-sleep days, sleep).
   2. Shop hours slider, closed weekly day, shop locked while open, floor pricing.
@@ -107,21 +118,29 @@ phase when we plan it.
   - More options in the existing tabs (hairstyles, hats, tops, faces, accessories).
   - New categories: body shapes and heights, pronouns, backstory and a name tag.
     Voice is not wanted.
-  - A bit more: extra additions to the creator: more clothes, accessories, looks and
-    similar. Exact list still to be written.
+  - Decided: new content in four areas: more clothes (tops, bottoms such as shorts and
+    dresses, jackets, shoes), more accessories (hats, jewelry, bags, glasses, scarves),
+    more looks (makeup, tattoos, piercings, scars, birthmarks, more skin and eye detail),
+    and body shape and height beyond Slim, Regular and Broad. The exact item lists are
+    drawn up while building, with the player's review.
   - Pronouns: the player picks their pronouns and NPCs refer to the player with them in
     dialogue. That is all it does.
-  - Backstory: undecided. Keep it parked until it's decided.
+  - Backstory: dropped for now (kept in the backlog below).
 - **More refined character portraits.** Decided scope:
   - Higher-resolution portraits than today's 48x48, in the same pixel style.
-  - Expressions: portraits that change with mood during conversations, over a wide range
-    of moods: happy, sad, annoyed, angry, upset, flirty and more.
+  - Expressions: portraits that change with mood during conversations. Decided: 12 moods:
+    neutral, happy, sad, annoyed, angry, upset, flirty, surprised, scared, embarrassed,
+    smug and tired. Portraits are built from face parts (eyes, brows, mouth), so
+    expressions can be drawn for everyone instead of hand-drawn per NPC. (To confirm in the
+    code before building.)
+  - Portrait size: default to double the current size (96x96), to be confirmed when
+    building.
 - Today: six creator tabs, 24x32 figures and 48x48 portraits, all drawn by
   `src/engine/figure-hd.js`, so all of this runs through that one drawing system. The
   NPC looks in `src/game/people.js` must keep working. (Old saves don't carry over from
   Phase 30 on, so no save migration is needed for the new creator.)
-- Open: the exact list of new clothes, accessories and looks, whether to keep backstory,
-  and the full list of moods. Each NPC portrait would need every mood drawn.
+- **Status: Phase 31 is specified.** Item lists and portrait size are settled while
+  building.
 - Likely files: `src/ui/creator.js`, `src/ui/portraits.js`, `src/engine/figure.js`,
   `src/engine/figure-hd.js`, `src/game/people.js`.
 
@@ -129,8 +148,15 @@ phase when we plan it.
 - **Updated city look**, including streets and so on. Decided scope: new art for the
   existing town (buildings, streets, sidewalks in a more detailed look). The layout stays.
   Not selected: changing the layout itself.
+- Decided style: richer pixel art plus lighting: glowing windows and lamps at night, wet
+  street reflections in rain, long shadows at dusk. It pairs with Phase 30's weather and
+  day cycle.
+- Decided parts that get new art: buildings and facades, streets and sidewalks, props and
+  clutter (lamps, benches, signs, cars, bins, fences, plants, posters), and seasonal looks
+  (trees and ground change with the season: leaves, blossoms, snow, bare branches).
 - The town is generated from rules, not drawn by hand, so this is mostly new tile art and
   generator rules.
+- **Status: Phase 32 is specified.**
 - Likely files: `src/data/city.js`, `src/data/city-tiles.js`, `src/data/tiles.js`.
 
 ### Phase 33: The woods
@@ -140,8 +166,16 @@ phase when we plan it.
   the park gate, past Kessler Heights (`woods` in `src/data/city.js`), and "out too late"
   ranger dialogue for the woods (`src/game/night-city.js`). The town can open onto new
   areas off the map edge (`src/data/areas.js`, `src/game/edges.js`).
+- Decided content: a story arc (characters and a payoff), new creatures (woodland
+  cryptids and animals for night runs and the bestiary), shops and people (such as a
+  ranger station, a cabin, a camp store or a hermit who trades), and night events and
+  fishing (woods mysteries and a lake or stream).
+- Decided layout: several connected areas (a trailhead, a forest, a lake, ruins and a cabin,
+  joined by paths). The woods open through a story event that takes down the rope across the
+  trail.
 - Why after the city look: the new area should match it.
-- Open: story, creatures, shops, how it ties into the night.
+- Open: the story itself, the creature list, and who runs the shops. These need a design
+  pass before building (see below).
 
 ## Backlog (ideas not yet in a phase)
 
@@ -149,6 +183,9 @@ phase when we plan it.
   clash with Lantern Park: the bar's short name "the Lantern" becomes "the Mug", and
   the town's Lantern Park keeps its name. Small change across the game text, data and
   changelog. Not built yet.
+
+- Character backstory (dropped from Phase 31 for now). Options discussed: pick an origin from
+  a few presets that NPCs reference, or a free-text backstory shown on the player's profile.
 
 ## Housekeeping (not game features)
 
