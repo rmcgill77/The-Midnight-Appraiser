@@ -28,19 +28,30 @@ phase when we plan it.
     (today a shop day is about ten minutes, 8 AM to 8 PM, and the night is separate).
   - Decided: the player chooses a set timeframe during the day for the shop to be open.
   - Decided: a day starts and ends when the player chooses to sleep. The player can skip
-    sleep and go straight into the next day, but should suffer consequences for it.
-  - Open: what the consequences are (ideas: slower movement, a faster-draining light on
-    night runs, fewer or worse shop sales, mistakes in appraisals, a forced collapse).
-  - Decided: night runs still happen at night, as part of the same cycle.
-  - Decided goal: far fewer menus. Today the player picks from menus at the start of the
-    day and again at its end (the lab, a zone run, the night city, bed). The day should
-    flow into night instead, with a much simpler set of choices.
+    sleep and go straight into the next day, but suffers consequences, which get worse
+    each night in a row:
+    - First night skipped: the player moves slower, and makes mistakes in the shop.
+    - Second night skipped: parts of the screen change to mess with the player.
+    - Third night skipped: the player is forced to collapse and miss a whole day.
+  - Decided: the player must get at least 6 hours of sleep a day, whenever they choose to
+    take it. (Not meeting that is what counts as a skipped night.)
+  - Decided: the player sets their shop hours whenever they want, up to a total of 8
+    hours, at any time of the day.
+  - Open: what counts as a "skipped night" exactly (under 6 hours of sleep in a day?), and
+    whether the count resets after a full sleep.
+  - Open: what the screen effects in the second stage are (ideas: blur, a tilt, flickering
+    or dimming, ghost images, false characters at the edge of view, muffled sound).
+  - Open: what a missed day costs (the shop stays closed, customers and rent, what the
+    NPCs say, what the player wakes up to).
+  - Open: how sleep fits the clock: how much real time 6 hours of sleep takes (it could
+    fast-forward), and whether sleep can be taken in more than one stretch.
   - Decided: NPC schedules are adjusted to fit the new clock, so morning, day and night
     connect: hours, story and NPC schedules line up across them.
-  - Open: how the shop-hours choice works (picked once, or adjusted during the day?), what
-    the player does outside shop hours, what happens to the lab and zone runs, how "out
-    too late" fits with a day that ends at sleep, how shop customers map onto the longer
-    clock, and how old saves carry over (the clock stores its own day length).
+  - Open: how the shop-hours picker works as a screen (a slider or start and end times,
+    and whether it can be changed during the day), what the player does outside shop hours,
+    what happens to the lab and zone runs, how "out too late" fits with a day that ends at
+    sleep, how shop customers map onto the longer clock, and how old saves carry over (the
+    clock stores its own day length).
   - Superseded: the earlier note that day length/pacing was out of scope. Dusk and dawn
     lighting is still not requested, though a continuous cycle will probably want it.
 - Likely files: `src/game/clock.js`, `src/game/weather.js`, `src/ui/weather-fx.js`,
