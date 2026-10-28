@@ -60,6 +60,8 @@ phase when we plan it.
   - Decided: a sleep is "cut short" when 10 AM arrives before the player has had 6 hours.
     Sleep ends at 10 AM, so anyone who starts sleeping after 4 AM wakes at 10 AM with
     under 6 hours and gets the slow-walking penalty until they next do a full sleep.
+  - Decided: NPC schedules are adjusted to fit the new clock, so morning, day and night
+    connect: hours, story and NPC schedules line up across them.
   - Decided: NPC comments after a collapse vary by relationship. Some NPCs are worried,
     some are annoyed, and some didn't notice. The higher the relationship, the more worried
     the NPC is.
