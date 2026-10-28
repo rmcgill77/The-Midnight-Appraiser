@@ -1,34 +1,34 @@
 // The people this game adds to town (Phase 20, 21), beyond the original's shopkeepers.
 //
-// Custom townsfolk are people made for this game (the first is Brit, drawn from a
+// Custom townsfolk are people made for this game (the first is Morgan, drawn from a
 // tester's own avatar). Each can have a job: a place id (an original location or one of
 // this game's own) where they're found while it's open. With no job, or when their place
-// is shut, they hang around the Gathering Hub, where most of the town ends up sooner or later.
+// is shut, they hang around the Brass Lantern, where most of the town ends up sooner or later.
 
 export const CUSTOM_NPCS = [
-  { id: 'Brit', name: 'Brit', title: 'The Nerdy Librarian', job: 'library', spouse: 'Dex',
+  { id: 'Morgan', name: 'Morgan', title: 'The Nerdy Librarian', job: 'library', spouse: 'Dex',
     blurb: 'Runs the circulation desk at the Kessler University Library. Knows every rumor in town and has a book about most of them.' },
-  // Phase 24: testers with no job yet. They're regulars at the Hub until they get one.
-  { id: 'Dex', name: 'Dex', title: 'Hub regular', job: null, spouse: 'Brit', blurb: 'Tall, unhurried, married to Brit. Saves her a seat at the Hub every night.' },
-  { id: 'Paco', name: 'Paco', title: 'Hub regular', job: null, blurb: 'Knows the best cheap food in every district and will tell you about all of it.' },
-  { id: 'Rando', name: 'Rando', title: 'Hub regular', job: null, blurb: 'Has a theory about everything. Some of them are even right.' },
-  { id: 'Styg', name: 'Styg', title: 'Hub regular', job: null, blurb: 'Dresses for a funeral, laughs at the wrong moments, reads the obituaries for fun.' },
-  { id: 'Jae', name: 'Jae', title: 'Hub regular', job: null, blurb: 'Friendly to everybody, and somehow already knows your name.' },
+  // Phase 24: testers with no job yet. They're regulars at the Lantern until they get one.
+  { id: 'Dex', name: 'Dex', title: 'Lantern regular', job: null, spouse: 'Morgan', blurb: 'Tall, unhurried, married to Morgan. Saves her a seat at the Lantern every night.' },
+  { id: 'Pablo', name: 'Pablo', title: 'Lantern regular', job: null, blurb: 'Knows the best cheap food in every district and will tell you about all of it.' },
+  { id: 'Jackson', name: 'Jackson', title: 'Lantern regular', job: null, blurb: 'Has a theory about everything. Some of them are even right.' },
+  { id: 'Stuart', name: 'Stuart', title: 'Lantern regular', job: null, blurb: 'Dresses for a funeral, laughs at the wrong moments, reads the obituaries for fun.' },
+  { id: 'Jade', name: 'Jade', title: 'Lantern regular', job: null, blurb: 'Friendly to everybody, and somehow already knows your name.' },
   // Phase 28: Erin has a job now: interior designer, at her own shop in Westside.
   { id: 'Erin', name: 'Erin', title: 'Interior Designer', job: 'brush', spouse: 'Ryan', blurb: 'Runs Erin’s Wandering Brush. Married to Ryan. Kind, sharp, and the one everybody goes to for advice, about rooms and everything else.' },
-  // Phase 26: a street act. 'street' is his stand on the sidewalk outside the Hub; on a wet
+  // Phase 26: a street act. 'street' is his stand on the sidewalk outside the Lantern; on a wet
   // day (or whenever it's not open) he takes the act inside.
-  { id: 'Ryan', name: 'Ryan', title: 'The Mystic Magician', job: 'street', spouse: 'Erin', blurb: 'Does card tricks outside the Gathering Hub for $5 a go. Married to Erin, who still can’t work out the coin trick. Sometimes the tricks pay you.' },
-  // Phase 29: a Navy hospital corpsman. Mostly at the Hub with a coffee or a beer; some days
+  { id: 'Ryan', name: 'Ryan', title: 'The Mystic Magician', job: 'street', spouse: 'Erin', blurb: 'Does card tricks outside the Brass Lantern for $5 a go. Married to Erin, who still can’t work out the coin trick. Sometimes the tricks pay you.' },
+  // Phase 29: a Navy hospital corpsman. Mostly at the Lantern with a coffee or a beer; some days
   // she's out walking the town instead, and now and then she drops by your shop.
   { id: 'Kristen', name: 'Kristen', title: 'Navy Corpsman', job: null, wander: 0.3, visits: 0.3, blurb: 'A Navy hospital corpsman on shore leave that never seems to end. Coffee before five, a beer after, and a steady hand either way.' },
   // v2.4: the fisherman. His job is the Bait & Tackle shack on the beach boardwalk (Sundays
-  // he's out on the end of the pier). He's never at the Hub, in the park or out walking.
+  // he's out on the end of the pier). He's never at the Lantern, in the park or out walking.
   { id: 'Kip', name: 'Kip', title: 'Bait & Tackle', job: 'tackle', visits: 0, blurb: 'Runs the Bait & Tackle shack on the Gull Point boardwalk. Says little, knows every fish in the harbor, and won’t tell you where they are until he likes you.' },
   // v2.5: the gravekeeper at St. Brigid's. Always in the churchyard, by his shed.
   { id: 'Mike', name: 'Mike', title: 'The Gravekeeper', job: 'cemetery', visits: 0, blurb: 'Keeps the churchyard behind St. Brigid’s. Knows every grave and who’s in it. Gruff, dry, and kinder than he lets on.' },
 ];
-// Phase 29: how often the others are out walking instead of at the Hub, and how often
+// Phase 29: how often the others are out walking instead of at the Lantern, and how often
 // anyone drops into your shop as a customer while it's open (per person, per shop day).
 export const WANDER_CHANCE = 0.12, VISIT_CHANCE = 0.12, MAX_FRIEND_VISITS = 2;
 export const spouseOf = name => CUSTOM_NPCS.find(n => n.name === name)?.spouse ?? CUSTOM_NPCS.find(n => n.spouse === name)?.name ?? null;
@@ -37,7 +37,7 @@ const pick = (name, day, seed, salt) => dayHash(`${name}:${salt}`, day, seed);
 export const outWalking = (npc, day, seed = 0) => !npc.job && pick(npc.name, day, seed, 'walk') < (npc.wander ?? WANDER_CHANCE);
 export const streetWalkers = (day, seed = 0) => CUSTOM_NPCS.filter(n => outWalking(n, day, seed));
 // v2.2: Lantern Park on a fine day. Townsfolk without a job sometimes spend it there
-// instead of the Hub (and never if they're out walking). On someone's birthday, they and a
+// instead of the Lantern (and never if they're out walking). On someone's birthday, they and a
 // few friends (their spouse among them) have a little party in the park.
 export const PARK_CHANCE = 0.25;
 export function parkPeople(day, seed = 0, birthdayOn = () => false) {
@@ -98,7 +98,7 @@ export const BARKEEP = { id: 'Lou', name: 'Lou' };
 
 // Phase 22: where the shopkeepers spend a day off, by preference. Most days off they're
 // at one of these; now and then they just wander the street instead. Phase 24: the
-// Gathering Hub is where the town gathers, so it's everybody's first choice: about half
+// Brass Lantern is where the town gathers, so it's everybody's first choice: about half
 // of anyone's days off are spent there, the rest at their other haunts.
 export const DAY_OFF = {
   'Mrs. Kowalski': ['bar', 'chapel', 'diner'],

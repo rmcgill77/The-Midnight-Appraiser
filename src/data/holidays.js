@@ -8,7 +8,7 @@
 import { dateOf, monthDay } from '../game/calendar.js';
 
 // shop: { buyers: extra buyers today (negative: fewer), spend: how much more they'll pay }.
-// closed: most places in town shut (the Hub, the diner and the chapel stay open).
+// closed: most places in town shut (the Lantern, the diner and the chapel stay open).
 export const HOLIDAYS = [
   { id: 'newyear', name: 'New Year’s Day', date: '01-01', greeting: 'Happy New Year!', closed: true, shop: { buyers: -2 },
     morning: 'New Year’s Day. Most of the town is sleeping it off. The few who come in are in no hurry.',
@@ -18,7 +18,7 @@ export const HOLIDAYS = [
     radio: 'It’s Valentine’s Day. Call somebody. Or don’t, and listen to us instead. We’re here all night.' },
   { id: 'stpatricks', name: 'St. Patrick’s Day', date: '03-17', greeting: 'Happy St. Patrick’s Day!', shop: { buyers: 1 },
     morning: 'St. Patrick’s Day. Lou has dyed the beer green again. Nobody asked him to.',
-    radio: 'St. Patrick’s Day. Lou at the Gathering Hub says the green beer is “on purpose this year.”' },
+    radio: 'St. Patrick’s Day. Lou at the Brass Lantern says the green beer is “on purpose this year.”' },
   { id: 'july4', name: 'Independence Day', date: '07-04', greeting: 'Happy Fourth!', shop: { buyers: -1 }, fireworks: true,
     morning: 'The Fourth of July. Flags on every lamp post, and fireworks over the harbor tonight.',
     radio: 'Happy Fourth from WKNT. Fireworks off the harbor at dusk. Keep your pets in. Keep your basements locked.' },

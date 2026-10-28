@@ -102,7 +102,7 @@ export const LAB = {
   },
 };
 
-// The Gathering Hub (Phase 20; the Lamplighter until Phase 24, when it grew into the
+// The Brass Lantern (Phase 20; the Lamplighter until Phase 24, when it grew into the
 // place the whole town gathers): a corner bar off the street. 30 x 16. Legend (tiles.js
 // buildBarTiles): H bottle shelf, A/a/I bar counter (the barkeep), i stool, t table with a
 // candle, k booth seat, Y/y the piano, $ framed photos of regulars, M/m the door out.
@@ -110,7 +110,7 @@ export const LAB = {
 // filled in from the city layout.
 export const BAR = {
   id: 'bar',
-  name: 'The Gathering Hub',
+  name: 'The Brass Lantern',
   look: 'bar',
   rows: [
     '##############################',
@@ -270,7 +270,7 @@ export const CHAPEL = {
   },
 };
 
-// The Kessler University Library's reading room: stacks, the circulation desk (Brit),
+// The Kessler University Library's reading room: stacks, the circulation desk (Morgan),
 // the card catalog (the library's own services), and Ms. Achterberg by Special
 // Collections when the library's open. 24 x 12.
 export const LIBRARY = {
@@ -290,13 +290,13 @@ export const LIBRARY = {
     '###########Mm###########',
   ],
   spawn: { tx: 11, ty: 10 },
-  // Brit's desk; the keeper of the place stands by Special Collections.
-  jobSpots: { Brit: { tx: 17, ty: 3, facing: 'down' } },
+  // Morgan's desk; the keeper of the place stands by Special Collections.
+  jobSpots: { Morgan: { tx: 17, ty: 3, facing: 'down' } },
   keeperSpot: { tx: 20, ty: 9, facing: 'left' },
   spots: [{ tx: 14, ty: 2, facing: 'up' }, { tx: 13, ty: 6, facing: 'down' }, { tx: 3, ty: 10, facing: 'up' }],
   extras: [{ tx: 4, ty: 8, facing: 'up' }, { tx: 13, ty: 4, facing: 'left' }],
   interactions: {
-    circ: { label: 'Desk', panel: 'talk', who: 'Brit' },
+    circ: { label: 'Desk', panel: 'talk', who: 'Morgan' },
     catalog: { label: 'Catalog', panel: 'catalog' },
     barDoor: { label: 'Street', panel: 'exitPlace' },
   },

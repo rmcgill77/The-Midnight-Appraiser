@@ -1,4 +1,4 @@
-// Ryan, The Mystic Magician (Phase 26): a street act outside the Gathering Hub. $5 a
+// Ryan, The Mystic Magician (Phase 26): a street act outside the Brass Lantern. $5 a
 // trick, three tricks to choose from, and every win has a 1% chance of turning into a
 // $1,000 payout. He does a few shows a day; each one takes a quarter of an hour.
 // Pure rules (no DOM); ui/magic-panels.js draws the tricks. State in world.magic.

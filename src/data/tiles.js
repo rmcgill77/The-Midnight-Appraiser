@@ -582,7 +582,7 @@ export function tierTileset(ts, look) {
   return look && ts.looks?.[look] ? { ...ts, ...ts.looks[look] } : ts;
 }
 
-// ---- The Gathering Hub (Phase 20): a corner bar, checker floor, green walls, brass ----
+// ---- The Brass Lantern (Phase 20): a corner bar, checker floor, green walls, brass ----
 
 const BAR = {
   check1: '#2b1d1f', check2: '#1d1517', seam: '#140e10',

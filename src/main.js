@@ -158,7 +158,7 @@ AREAS.park.decorate = decorateArea(AREAS.park);
 CITY_ROOM.edges.south = { to: 'beach', from: cityLayout.beach.x0, until: cityLayout.beach.x1, shift: AREAS.beach.edges.north.shift * -1 };
 AREAS.beach.decorate = decorateCity({ locs: { tackle: AREAS.beach.tackle }, plaza: null, gate: null }, S.DATA, cityTiles, [TACKLE]);
 maps.city = new TileMap(CITY_ROOM, cityTiles, CONFIG.tile); maps.city.bake();
-// Phase 20: the Gathering Hub (the Lamplighter until Phase 24), a bar off the street, with its own floor and walls.
+// Phase 20: the Brass Lantern (the Lamplighter until Phase 24), a bar off the street, with its own floor and walls.
 // Phase 21: five more (the Owl Diner, the Bijou, Second Hand Rose, St. Brigid's, and the
 // library's reading room). Each has its own floor and walls.
 for (const r of Object.values(PLACE_ROOMS)) { maps[r.id] = new TileMap(r, tierTileset(tileset, r.look), CONFIG.tile); maps[r.id].bake(); }
@@ -186,7 +186,7 @@ function syncPlaceCrowd() {
   // Shopkeepers on their day off (Phase 22), at the place they like.
   const offHere = Object.entries(SCHEDULES).filter(([id, s]) => placeStatus(id).why === 'off' && offDayPlace(s.keeper) === placeId).map(([, s]) => s.keeper);
   const walking = new Set([...walkersToday().map(n => n.name), ...parkToday().names, ...beachToday().names]);   // out on the street (Phase 29) or in the park (v2.2) instead
-  // Ryan at lunch with Erin: at her shop, off duty, and not at the Hub.
+  // Ryan at lunch with Erin: at her shop, off duty, and not at the Lantern.
   const lunch = ryanAtLunch();
   if (lunch) walking.add('Ryan');
   const regs = [...regularsAt(placeId, isOpen, walking).map(n => n.name), ...offHere, ...(lunch && placeId === 'brush' ? ['Ryan'] : [])];
@@ -308,12 +308,12 @@ const g = {
 };
 
 // ---------- Ryan, The Mystic Magician (Phase 26) ----------
-// His stand is on the sidewalk outside the Gathering Hub; on a wet day the act moves inside
-// (he's one of the Hub's regulars then, and talking to him opens the act the same way).
+// His stand is on the sidewalk outside the Brass Lantern; on a wet day the act moves inside
+// (he's one of the Lantern's regulars then, and talking to him opens the act the same way).
 let magician = null, magicianKey = '';
 const WET = new Set(['rain', 'storm', 'snow']);
 const magicianOutside = () => !!st && !WET.has(todayWeather()) && !isNight();
-// Phase 29: townsfolk out walking the streets today instead of at the Hub (not in the wet).
+// Phase 29: townsfolk out walking the streets today instead of at the Lantern (not in the wet).
 // v2.2: the trees and the grass follow the season. When it turns, the city's tiles are
 // repainted and its maps rebuilt (hand-made art, if any, goes back on top).
 function refreshSeason() {
@@ -575,7 +575,7 @@ function nightInteract(e) {
       step: NC.mysteryStep(world, id), time: clock.label,
       advance: () => { const n = NC.advanceMystery(world, id); N.seen[id] = N.nights; return NC.mysteryDone(world, id) ? [`${s.name}: that’s the end of it, you think.`] : n === 1 ? [] : []; },
       bench: (odds, n) => { const out = []; for (let i = 0; i < n; i++) { const it = S.Items.generate(st, { odds }); it.fromNight = id; st.inventory.loot.push(it); out.push(`${S.Items.name(it)}: on your bench.`); } cue('find'); return out; },
-      flag: k => (k === 'stygWatch' ? !!T.personOf(world, 'Styg').flags.stygWatch : !!N[k]),
+      flag: k => (k === 'stygWatch' ? !!T.personOf(world, 'Stuart').flags.stygWatch : !!N[k]),
       jolt: n => { const l = jolt(nightState().attn, n); if (l) noticed(l); return []; },
       befriend: (name, n, note) => { const p = T.personOf(world, name); p.rel = Math.min(T.REL_MAX, p.rel + n); return note ? [note] : []; },
     };
@@ -1862,7 +1862,7 @@ function update(dt) {
     target = def ? { ...def, hit, label: labelFor(def, hit) } : null;
     // Mina, when she's close and nothing else is: ask her again what to do.
     // A shopkeeper out on the street while their place is shut: stop and talk.
-    // Ryan's street act, outside the Hub.
+    // Ryan's street act, outside the Lantern.
     if (!target && world.room === 'city' && magician && Math.hypot(magician.x - player.x, magician.y - player.y) < 22) target = { panel: 'magician', label: 'Magic' };
     if (!target && world.room === 'city' && magicTable && Math.hypot(magicTable.tx * 16 + 16 - player.x, magicTable.ty * 16 - player.y) < 24) target = { panel: 'lunchSign', label: 'Read' };
     if (!target && world.room === 'city' && pedestrians) {
@@ -2404,7 +2404,7 @@ function talkToExtra(p) {
   talkEnd = () => { talkEnd = null; talkingWith = null; };
 }
 
-// The Gathering Hub's piano: a few notes, and once a day it settles you a little.
+// The Brass Lantern's piano: a few notes, and once a day it settles you a little.
 function playBarPiano() {
   const p = T.personOf(world, 'Lou');
   if (p.flags.piano === st.day) return ui.toast('You play a few more notes. Lou pretends not to listen.', 2200);
@@ -2737,11 +2737,11 @@ function interact(t) {
     case 'gear': return openGear(g);
     case 'otherDoor': return otherDoor();
     case 'keeper': return talkToKeeper(t.keeper);
-    case 'magician': return openMagicAct('Outside the Gathering Hub');
+    case 'magician': return openMagicAct('Outside the Brass Lantern');
     case 'lunchSign': return ui.toast('A card on the table, in loopy handwriting: “BACK AT 1. AT LUNCH WITH MY WIFE (ERIN’S WANDERING BRUSH, WESTSIDE). NO PEEKING AT THE DECK. — R.”', 4200);
-    case 'npc': return t.npc.who === 'Ryan' && world.room === 'bar' ? openMagicAct('Inside the Gathering Hub') : t.npc.who ? talkTo(t.npc.who) : talkToExtra(t.npc);
+    case 'npc': return t.npc.who === 'Ryan' && world.room === 'bar' ? openMagicAct('Inside the Brass Lantern') : t.npc.who ? talkTo(t.npc.who) : talkToExtra(t.npc);
     case 'talk': {
-      if (placeCrowd && !placeCrowd.find(t.who)) return ui.toast(t.who === 'Brit' ? 'Nobody at the desk. A sign says BACK IN 5 MINUTES (PROBABLY).' : 'Nobody’s here right now.', 2400);
+      if (placeCrowd && !placeCrowd.find(t.who)) return ui.toast(t.who === 'Morgan' ? 'Nobody at the desk. A sign says BACK IN 5 MINUTES (PROBABLY).' : 'Nobody’s here right now.', 2400);
       return talkTo(t.who, t.entry ? { entry: t.entry } : {});
     }
     case 'piano': return playBarPiano();
@@ -3617,7 +3617,7 @@ globalThis.__tma = {
   get loop() { return loop; }, placeAt, sleep, openNight, cityLayout, CR, N, zone, enterZone, endRun, morningChoice,
   guide, speech, wt, finishPrologue, syncShop, shopMap, staffFloor, autosave, quitToTitle,
   interact: t => interact(t), openStanding: () => openStanding(g, () => ui.close()), openBag: () => openBag(g, () => ui.close()),
-  board: tab => openRenovation(g, { tab }), chooseDay: w => chooseDay(w), openHomeDoor: () => openHomeDoor(), goHome: () => goHome(), syncHome: () => syncHome(), arranger, openMagic: w => openMagicAct(w ?? 'Outside the Gathering Hub'), get magician() { return magician; }, arrange: () => startArranging(), stopArranging: () => stopArranging(), arrangeAct: () => arrangeAct(), arrangeTo: (tx, ty) => { arranger.point(tx, ty); }, tileToScreen: (tx, ty) => ({ x: (tx * 16 + 8 - camera.ix) * renderer.scale / renderer.dpr, y: (ty * 16 + 8 - camera.iy) * renderer.scale / renderer.dpr }), get layout() { return world.shop?.layout; }, shopRoom: () => shopRoom(), syncLook, god, openGodMenu: () => openGodMenu(() => ui.close()), offerUpdate, whatsNewOnce,
+  board: tab => openRenovation(g, { tab }), chooseDay: w => chooseDay(w), openHomeDoor: () => openHomeDoor(), goHome: () => goHome(), syncHome: () => syncHome(), arranger, openMagic: w => openMagicAct(w ?? 'Outside the Brass Lantern'), get magician() { return magician; }, arrange: () => startArranging(), stopArranging: () => stopArranging(), arrangeAct: () => arrangeAct(), arrangeTo: (tx, ty) => { arranger.point(tx, ty); }, tileToScreen: (tx, ty) => ({ x: (tx * 16 + 8 - camera.ix) * renderer.scale / renderer.dpr, y: (ty * 16 + 8 - camera.iy) * renderer.scale / renderer.dpr }), get layout() { return world.shop?.layout; }, shopRoom: () => shopRoom(), syncLook, god, openGodMenu: () => openGodMenu(() => ui.close()), offerUpdate, whatsNewOnce,
   openCounter: () => { const f = crowd.front('sell'); return f && (f.visit === 'appraise' ? openAppraiser(g, f) : openSeller(g, f)); }, placeStatus, get pedestrians() { return pedestrians; }, openLocation: id => openLocation(g, id, null, { offSpot: name => { const p = offDayPlace(name); return p ? (extraPlace(p) ?? S.City.loc(p))?.name : null; }, talk: name => talkTo(name) }), openCityMap: () => openCityMap(g, cityLayout, player, () => ui.close()),
 };
 

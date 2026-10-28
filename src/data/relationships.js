@@ -7,7 +7,7 @@
 //
 // An entry looks like this:
 //
-//   'Brit': {
+//   'Morgan': {
 //     loves: ['photo'], likes: ['electronics', 'personal'], dislikes: ['medical'],   // item categories:
 //                              // photo, hardware, electronics, coin, medical, personal
 //     birthday: '07-12',       // month and day ('MM-DD'), on the world's real calendar
@@ -164,7 +164,7 @@ export const RELATIONSHIPS = {
   },
 
   // ---------- v2.4: the rest of the custom townsfolk ----------
-  Brit: {
+  Morgan: {
     fish: 'dislike', fishReactions: { dislike: 'Oh no. It’s looking at me. Why is it looking at me? Thank you, but please take it back to the sea.' },
     loves: ['personal'], likes: ['photo', 'coin'], dislikes: ['electronics'],
     birthday: '07-08',
@@ -179,30 +179,30 @@ export const RELATIONSHIPS = {
       4: ['There’s a book in the stacks that isn’t in the catalog. Nobody checks it out. It moves shelves on its own.', 'I followed it for a month. It always ends up next to whatever I’m about to need.', { who: 'you', text: 'That’s… helpful?' }, 'Very. Slightly terrifying. Mostly helpful.'],
       6: ['Dex thinks I collect rumors because I like gossip. I collect them because rumors are how a town warns itself.', 'Half of what I tell you is nonsense. The other half kept somebody out of a basement after dark.', { who: 'you', text: 'Which half is which?' }, 'If I knew that, I wouldn’t need the notebook.'],
       8: ['Your mom used to come in on Thursdays. Always the same table, always the same question: “Anything new about the flood?”', 'I pulled every clipping for her. I still have the folder. I didn’t know what to do with it.', { who: 'you', text: 'Can I see it?' }, 'It’s yours. It was always going to be yours. Come by the desk.'],
-      10: ['I made you something. Don’t laugh.', 'A card. A real one, for the special collections. I signed it myself, which I’m not technically allowed to do.', 'And my own copy of the town’s ghost stories, with my notes in the margins. Every one I could check, I checked.', { who: 'you', text: 'Brit. Thank you.' }, 'Shh. It’s a library.'],
+      10: ['I made you something. Don’t laugh.', 'A card. A real one, for the special collections. I signed it myself, which I’m not technically allowed to do.', 'And my own copy of the town’s ghost stories, with my notes in the margins. Every one I could check, I checked.', { who: 'you', text: 'Morgan. Thank you.' }, 'Shh. It’s a library.'],
     },
     rewards: { 10: { research: { species: 'wraith', n: 20 } } },
   },
   Dex: {
-    fish: 'like', fishReactions: { like: 'Nice one. I’ll grill it. Brit will read the whole time and say it’s the best fish she ever had.' },
+    fish: 'like', fishReactions: { like: 'Nice one. I’ll grill it. Morgan will read the whole time and say it’s the best fish she ever had.' },
     loves: ['hardware'], likes: ['coin', 'electronics'], dislikes: ['photo'],
     birthday: '09-01',
     reactions: {
       love: 'Oh, that’s a good tool. Look at the balance on it. Thanks. Really.',
       like: 'Huh. I’ll figure out what it does. Thanks.',
-      neutral: 'Thanks. Brit will know what it is.',
+      neutral: 'Thanks. Morgan will know what it is.',
       dislike: 'Somebody’s old photos. Feels like reading their mail. Thanks, though.',
     },
     events: {
       2: ['I fix things. Bikes, sinks, Lou’s jukebox twice a month. Not much else to know.', 'If something in your shop breaks, don’t call a guy. Call me. I’m the guy.', { who: 'you', text: 'What do I owe you?' }, 'A beer. And let me look at your basement door. I hear it hums.'],
-      4: ['First of September birthday. Growing up it was always back-to-school week. Nobody had time. Cake out of a box, if I was lucky.', 'Brit makes a whole thing of it now. A theme. Last year the theme was “tall.” She’s not funny. She’s very funny.', { who: 'you', text: 'That’s a good wife.' }, 'Best there is. Don’t tell her I said it. She’ll write it down.'],
+      4: ['First of September birthday. Growing up it was always back-to-school week. Nobody had time. Cake out of a box, if I was lucky.', 'Morgan makes a whole thing of it now. A theme. Last year the theme was “tall.” She’s not funny. She’s very funny.', { who: 'you', text: 'That’s a good wife.' }, 'Best there is. Don’t tell her I said it. She’ll write it down.'],
       6: ['That thing that followed me home, across the street? It came back.', 'I stood under a streetlight and it stopped at the edge of the light. Just sat there. Like a dog that knows it isn’t allowed in.', { who: 'you', text: 'What did you do?' }, 'Waited till sunrise. It got bored first. I didn’t.'],
       8: ['I was supposed to go into the family business. Demolition. Knocking down old buildings.', 'First week, we took down an old house on the river. I found a room in it that wasn’t on the plans. Full of shoes. Just shoes, all lined up.', 'I quit that day. Fixing things felt better than knocking them down.', { who: 'you', text: 'Whose shoes were they?' }, 'Never found out. That’s what bugs me.'],
-      10: ['Here. Don’t make a fuss.', 'My old toolbox. Everything you need to fix a ward or patch a door. I’ve got a new one; Brit bought it. She labeled the drawers.', { who: 'you', text: 'I can’t take your toolbox.' }, 'You can. Somebody should use it on something that matters.'],
+      10: ['Here. Don’t make a fuss.', 'My old toolbox. Everything you need to fix a ward or patch a door. I’ve got a new one; Morgan bought it. She labeled the drawers.', { who: 'you', text: 'I can’t take your toolbox.' }, 'You can. Somebody should use it on something that matters.'],
     },
     rewards: { 10: { kit: { ward: 2 }, supplies: { scrap: 6 } } },
   },
-  Paco: {
+  Pablo: {
     fish: 'love', fishReactions: { love: 'Fish tacos! You read my mind! Lime, cabbage, a little crema. I’m cooking for everyone tonight!' },
     loves: ['coin'], likes: ['personal', 'hardware'], dislikes: ['medical'],
     birthday: '05-05',
@@ -215,13 +215,13 @@ export const RELATIONSHIPS = {
     events: {
       2: ['You want to know the secret to a good taco? It isn’t the meat. It’s the tortilla.', 'Warm it on the flat top until it puffs a little. If it doesn’t puff, it isn’t ready. Same with people.', { who: 'you', text: 'Same with people?' }, 'Give everybody a minute on the heat. They puff up. You’ll see.'],
       4: ['My abuela fed the whole block. Every Sunday. Didn’t matter who you were. You came, you ate.', 'One Sunday a man came nobody knew. Wet hair, no coat, in July. She fed him. He thanked her and walked into the river.', { who: 'you', text: 'He what?' }, 'Walked right in. She set a plate for him every Sunday after. The plate was always clean on Monday.'],
-      6: ['You don’t eat. I watch you. Coffee and nerves.', 'Here. A burrito. Don’t argue. Eat it while it’s warm and don’t tell Kristen, she’ll say something about salt.', { who: 'you', text: 'Thanks, Paco.' }, 'Somebody has to look after the people who look after everybody.'],
+      6: ['You don’t eat. I watch you. Coffee and nerves.', 'Here. A burrito. Don’t argue. Eat it while it’s warm and don’t tell Kristen, she’ll say something about salt.', { who: 'you', text: 'Thanks, Pablo.' }, 'Somebody has to look after the people who look after everybody.'],
       8: ['I want to open a place. Small. Six stools and a window. My abuela’s recipes on the wall.', 'I’ve been saving. I keep the money in a coffee can, which Dex says is a terrible idea.', { who: 'you', text: 'It is a terrible idea.' }, 'It’s a good can! It has a lid!'],
       10: ['I wrote something down for you. My abuela’s remedy, for after a bad night. Ginger, honey, a little chile.', 'She swore it would scare off anything. Even the things out there.', { who: 'you', text: 'Does it work?' }, 'It works on hangovers. The rest, you tell me. I made you a few bottles.'],
     },
     rewards: { 10: { kit: { tincture: 3 } } },
   },
-  Rando: {
+  Jackson: {
     fish: 'neutral', fishReactions: { neutral: 'A fish! Do fish know they’re wet? Probably not. Thanks!' },
     loves: ['electronics'], likes: ['hardware', 'personal'], dislikes: ['coin'],
     birthday: '01-21',
@@ -233,14 +233,14 @@ export const RELATIONSHIPS = {
     },
     events: {
       2: ['Okay, theory. What if every lost sock goes to the same place? A sock place. Sock heaven.', 'And what if the dryers are the door? And what if someone’s on the other side, matching them up?', { who: 'you', text: 'That’s… not entirely wrong.' }, 'I KNEW it. Nobody ever says that. Can you say it again louder?'],
-      4: ['My real name’s not Rando. It’s Randolph. Nobody’s called me that since my grandfather.', 'He said a man should know exactly one thing about everything. I know a lot of things about nothing. Close enough.', { who: 'you', text: 'Randolph suits you.' }, 'Never call me that in front of Paco. He’ll put it on a taco.'],
+      4: ['Everybody calls me Jackson. My grandfather was the last one who called me Randolph.', 'He said a man should know exactly one thing about everything. I know a lot of things about nothing. Close enough.', { who: 'you', text: 'Randolph suits you.' }, 'Never call me that in front of Pablo. He’ll put it on a taco.'],
       6: ['I followed the bus that’s always late. All the way to the depot.', 'It parks. The driver gets out. Then the bus leaves again, without the driver. I checked. Twice.', { who: 'you', text: 'Where does it go?' }, 'I don’t know yet. I’m getting a bike.'],
       8: ['People think I don’t take anything seriously. I do. I just take it seriously in a funny voice.', 'My sister got lost when we were kids. Two days. Found her asleep in the laundromat, holding one sock.', 'She never said where she’d been. That’s why I have theories.', { who: 'you', text: 'Is she all right?' }, 'She’s fine. She’s an accountant. Which is its own kind of lost.'],
       10: ['Here. My Theory Notebook. Volume six. The good one.', 'Pigeons, buses, socks, the change machine at the laundromat, the moon. All cross-referenced.', { who: 'you', text: 'You’re giving me your notes?' }, 'You’re the only one who ever read past page two. That’s a theory too. It turned out true.'],
     },
     rewards: { 10: { research: { species: 'sockling', n: 20 } } },
   },
-  Styg: {
+  Stuart: {
     fish: 'like', fishReactions: { like: 'Hm. It looks the way I feel on Mondays. Thank you. I mean that.' },
     loves: ['photo'], likes: ['personal', 'medical'], dislikes: ['electronics'],
     birthday: '10-31',
@@ -255,11 +255,11 @@ export const RELATIONSHIPS = {
       4: ['I laughed at a funeral once. Not at the dead man. At a joke he’d told me, years ago. It came back during the hymn.', 'His widow came over after. I thought she’d be angry. She asked me to tell her the joke.', { who: 'you', text: 'Did you?' }, 'She laughed too. Then she cried. Then we got coffee. Funerals are for the living.'],
       6: ['The woman on the bridge. I’ve seen her three times now. Always the same night of the week.', 'She asks the time and I tell her. Then she thanks me, and she’s gone, and the air smells like river.', { who: 'you', text: 'Does she ever say anything else?' }, 'Once. “Is it late?” I told her yes. I think that was the wrong answer.'],
       8: ['My brother drowned when I was twelve. In the harbor, in the fog. They never found him.', 'I used to go to the end of the pier every night and wait. I think that’s when I stopped being afraid of the dark.', { who: 'you', text: 'I’m sorry.' }, 'Don’t be. He’d have hated me moping. He’d have liked you. He liked people who poke at things.'],
-      10: ['I want you to have this. My watch. It was my brother’s.', 'It stopped the night he went. It started again the night I met you. I don’t know what that means. I’d rather you had it.', 'If the woman on the bridge asks you the time, you’ll know what to say now.', { who: 'you', text: 'Styg…' }, 'Go on. Before I say something warm. I have a reputation.'],
+      10: ['I want you to have this. My watch. It was my brother’s.', 'It stopped the night he went. It started again the night I met you. I don’t know what that means. I’d rather you had it.', 'If the woman on the bridge asks you the time, you’ll know what to say now.', { who: 'you', text: 'Stuart…' }, 'Go on. Before I say something warm. I have a reputation.'],
     },
     rewards: { 10: { supplies: { salt: 4 }, flag: { stygWatch: true } } },
   },
-  Jae: {
+  Jade: {
     fish: 'like', fishReactions: { like: 'For me? I’m going to name it. Is that weird? I’m naming it Gerald.' },
     loves: ['personal'], likes: ['photo', 'medical'], dislikes: ['hardware'],
     birthday: '04-16',
@@ -270,11 +270,11 @@ export const RELATIONSHIPS = {
       dislike: 'It’s… a wrench? Thank you! I’ll give it to Dex. He’ll love it.',
     },
     events: {
-      2: ['Can I tell you why I’m always at the Hub? My apartment is very quiet. Too quiet.', 'Here, somebody’s always talking. Paco’s cooking, Rando’s theorizing, Lou’s pretending he doesn’t like us.', { who: 'you', text: 'He likes you.' }, 'I know. He keeps the corner booth for me. Don’t tell him I noticed.'],
+      2: ['Can I tell you why I’m always at the Lantern? My apartment is very quiet. Too quiet.', 'Here, somebody’s always talking. Pablo’s cooking, Jackson’s theorizing, Lou’s pretending he doesn’t like us.', { who: 'you', text: 'He likes you.' }, 'I know. He keeps the corner booth for me. Don’t tell him I noticed.'],
       4: ['I’m learning the piano so I can play at Erin and Ryan’s anniversary. It’s a secret.', 'I only know one song. It’s a sad one. I’m going to play it fast so it sounds happy.', { who: 'you', text: 'That might work.' }, 'Ryan says that’s basically how magic works.'],
       6: ['I went back to St. Agnes. To hear the choir again.', 'I didn’t go in this time. I sat on the steps and listened all the way to the end. There’s a part where one voice is a little off. Every time.', { who: 'you', text: 'One voice off?' }, 'Like someone learning the words. I think they let someone new in. I think that’s kind of beautiful.'],
       8: ['I keep everybody’s birthdays in a notebook. And their favorite cakes. And who isn’t talking to who.', 'It started because nobody remembered mine, one year. So I decided to be the person who remembers.', { who: 'you', text: 'I’ll remember yours.' }, 'April sixteenth. Lemon cake. I’m writing down that you said that.'],
-      10: ['Okay, sit down. I wrote you a song. It’s short. Don’t look at me while I sing it.', 'It’s about a pawn shop. And someone who keeps everything everyone else forgot.', { who: 'you', text: '…That was lovely.' }, 'It’s yours. Whenever you’ve had a bad night, hum it. It helps. I tested it on Styg.'],
+      10: ['Okay, sit down. I wrote you a song. It’s short. Don’t look at me while I sing it.', 'It’s about a pawn shop. And someone who keeps everything everyone else forgot.', { who: 'you', text: '…That was lovely.' }, 'It’s yours. Whenever you’ve had a bad night, hum it. It helps. I tested it on Stuart.'],
     },
     rewards: { 10: { stress: -40 } },
   },

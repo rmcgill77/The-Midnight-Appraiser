@@ -385,10 +385,10 @@ export const TEXTS = {
   stockhand: 'All those cases won’t fill themselves. A stock hand would. The board by the back door.',
   hours: 'Everybody in this town keeps their own hours. The map says who’s open, and the morning paper says who isn’t opening at all.',
   ads: 'Slow days? Flyers are cheap, and so is a coat of paint on the sign. Board by the back door, under Customers.',
-  bar: 'The Gathering Hub! Mom and Dad’s coffee place. Everybody ends up there. Say hi to Lou, and to whoever’s in.',
+  bar: 'The Brass Lantern! Mom and Dad’s coffee place. Everybody ends up there. Say hi to Lou, and to whoever’s in.',
   regular: 'Somebody at the bus stop asked me if you’re open tomorrow. That’s a regular. Keep it honest and they keep coming.',
   // v2.4
-  nightCity: 'Out after dark? Stay under the streetlights. The Hub’s open till two, the Owl all night. And be home by four, or somebody will have to walk you.',
+  nightCity: 'Out after dark? Stay under the streetlights. The Lantern’s open till two, the Owl all night. And be home by four, or somebody will have to walk you.',
   nightShop: 'Your parents opened late sometimes, too. Different crowd. They paid well and your dad hated it. Careful who you sell to.',
 };
 

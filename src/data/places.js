@@ -203,7 +203,7 @@ export const TACKLE = { id: 'tackle', name: 'Bait & Tackle', icon: 'fish', front
 // looks from the street (awning stripes, the sign's color).
 export const EXTRA_PLACES = [
   {
-    id: 'bar', name: 'The Gathering Hub', icon: 'mug', district: 'oldmarket', x: 58, y: 42,
+    id: 'bar', name: 'The Brass Lantern', icon: 'mug', district: 'oldmarket', x: 58, y: 42,
     blurb: 'The corner bar where the whole town ends up sooner or later. A piano nobody owns, a booth everybody wants, and regulars at all hours.',
     enter: { room: 'bar' }, front: { awning: ['#4a1a1e', '#8a6a3a'], sign: '#e0a64a', glow: '#e0a64a' },
   },
