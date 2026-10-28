@@ -174,8 +174,9 @@ phase when we plan it.
   joined by paths). The woods open through a story event that takes down the rope across the
   trail.
 - Why after the city look: the new area should match it.
-- Open: the story itself, the creature list, and who runs the shops. These need a design
-  pass before building (see below).
+- Deferred on purpose: the story itself, the creature list, and who runs the shops. They
+  will be designed closer to Phase 33, not now. Phases 30 to 32 don't depend on them.
+- **Status: Phase 33 is specified except for the deferred content above.**
 
 ## Backlog (ideas not yet in a phase)
 
