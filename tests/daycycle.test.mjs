@@ -7,6 +7,7 @@ import { CONFIG } from '../src/config.js';
 const H = 60;
 const cfg = CONFIG.cycle;
 const at = (date, hour, min = 0) => date * 24 * H + hour * H + min;
+const sans = ev => ev.filter(e => e.type !== 'midnight');       // most tests aren't about midnight
 const make = (date = 0, hour = 8, wokeUp = false) => new DayCycle(cfg, { startT: at(date, hour), wokeUp });
 
 test('real time: one real minute is one in-game hour, so 18 awake hours take 18 minutes', () => {
@@ -97,11 +98,11 @@ test('no skipped night when the first window closes (the player just woke up)', 
 test('skipping a night: slower and shop mistakes; two: screen effects; the penalties stack', () => {
   const c = make(0, 12);
   const e1 = c.advance(22 * H);         // noon -> 10 AM next day, the window closes unslept
-  assert.deepEqual(e1.map(e => e.type), ['skipped']);
+  assert.deepEqual(sans(e1).map(e => e.type), ['skipped']);
   assert.equal(c.skipped, 1);
   assert.deepEqual({ ...c.penalties }, { slow: true, shopMistakes: true, screenEffects: false, collapseNext: false });
   const e2 = c.advance(24 * H);
-  assert.deepEqual(e2.map(e => e.type), ['skipped']);
+  assert.deepEqual(sans(e2).map(e => e.type), ['skipped']);
   assert.equal(c.skipped, 2);
   assert.equal(c.penalties.screenEffects, true);
   assert.equal(c.penalties.collapseNext, true);
@@ -111,8 +112,8 @@ test('the third skipped night is a collapse that loses a whole date', () => {
   const c = make(0, 12);
   c.advance(22 * H); c.advance(24 * H);
   const e3 = c.advance(24 * H);
-  assert.deepEqual(e3.map(e => e.type), ['skipped', 'collapse']);
-  assert.equal(e3[1].missedDate, 3);
+  assert.deepEqual(sans(e3).map(e => e.type), ['skipped', 'collapse']);
+  assert.equal(sans(e3)[1].missedDate, 3);
   assert.equal(c.t, at(4, 10));         // wakes at 10 AM the day after the missed date
   assert.equal(c.skipped, 0);
   assert.equal(c.collapses, 1);
@@ -172,4 +173,23 @@ test('windowEnd is when the current sleep window closes (10 AM), or null outside
   assert.equal(make(0, 22).windowEnd, at(1, 10));
   assert.equal(make(1, 3).windowEnd, at(1, 10));
   assert.equal(make(1, 15).windowEnd, null);
+});
+
+test('midnight is an event, once per date, in order with the other events', () => {
+  const c = make(0, 22);
+  const e = c.advance(26 * H);                         // 10 PM -> midnight -> 2 AM next day... to midnight again
+  assert.deepEqual(e.filter(x => x.type === 'midnight').map(x => x.date), [1, 2]);
+  const d = make(0, 22);
+  assert.deepEqual(d.advance(1 * H), []);              // not yet
+  assert.deepEqual(d.advance(1 * H).map(x => x.type), ['midnight']);
+  assert.equal(d.date, 1);
+  assert.deepEqual(d.advance(10 * H).filter(x => x.type === 'midnight'), []);   // no second midnight in the same date
+});
+
+test('a sleep reports how many dates it crossed, and fires no midnight events itself', () => {
+  const c = make(0, 22);
+  const r = c.sleep();
+  assert.equal(r.dates, 1);                            // 10 PM to 4 AM crosses midnight
+  const d = make(1, 3);
+  assert.equal(d.sleep().dates, 0);                    // 3 AM to 9 AM stays on the same date
 });

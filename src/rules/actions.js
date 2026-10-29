@@ -208,6 +208,26 @@ export function sleep(st) {
   return { rentNote, jobs: r.items, fees };
 }
 
+// ---------- the continuous day (Phase 30): the date and the morning are separate ----------
+
+// Midnight: rent if it's due, the new date, and the year's inspections queued for the morning.
+export function rollDate(st) {
+  Y.beforeSleep(st);                        // v2.0: the finale's timing
+  const rentNote = S.Calendar.rollDate(st);
+  Y.afterSleep(st);                         // v2.0: the season's inspection, re-inspections
+  if (rentNote) cue(/short/i.test(rentNote) ? 'warn' : 'coins');
+  return { rentNote };
+}
+
+// Waking up: appraisal owners collect, then the morning.
+export function wake(st) {
+  const r = { items: [], rep: {} };
+  const fees = S.Shop.settleJobs(st, r);
+  S.Calendar.wake(st);
+  cue('morning');
+  return { rentNote: null, jobs: r.items, fees };
+}
+
 // ---------- appraisal jobs and the inspector ----------
 
 export function takeJob(st, c) { S.Shop.takeJob(st, c); cue('stamp'); }

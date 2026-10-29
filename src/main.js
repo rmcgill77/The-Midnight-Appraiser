@@ -1294,6 +1294,26 @@ function useBed() {
   return ui.toast(st.phase === 'morning' ? 'You just got up. The day’s waiting.' : 'Not yet. The day isn’t over.');
 }
 
+// ---- Phase 30 (continuous mode): the sim's day follows the clock's date ----
+// The date changes at midnight. While the shop is open the roll waits for closing time, so an
+// overnight shift stays one day's ledger. Safe to call any time: it only rolls what's behind.
+function syncSimDate() {
+  let note = null;
+  for (let n = 0; !world.shopSession && st.day < clock.cycle.date + 1 && n < 14; n++) {
+    const r = A.rollDate(st);
+    note = [note, r.rentNote].filter(Boolean).join(' ') || note;
+  }
+  return note;
+}
+function midnightRoll() {
+  const before = st.day, note = syncSimDate();
+  if (st.day === before) return;
+  refreshSeason();
+  changed();
+  if (note) ui.toast(note, 2600);
+  if (st.gameOver) openGameOver();
+}
+
 // ---- Phase 30 (continuous mode): night runs ----
 // Night runs start at the front door whenever it's dark and the shop isn't open. How much dark is
 // left depends on the season, so a summer night is a short run and a winter one a long one.
@@ -1421,7 +1441,7 @@ function endShopSession(reason) {
     id: 'news', size: 'wide', eyebrow: `${CAL.formatDate(st.day)} · ${reason === 'early' ? 'Closed early' : 'Closing time'}`, title: report ? 'The evening news' : 'Evening',
     reason: 'dayend', dismissable: false,
     body: report ? newsBody(report, st, heat0) : [el('p', {}, 'You lock up.')],
-    actions: [{ id: 'lock-up', label: 'Lock up', kind: 'primary', onClick: () => ui.close() }],
+    actions: [{ id: 'lock-up', label: 'Lock up', kind: 'primary', onClick: () => { ui.close(); midnightRoll(); } }],
   });
 }
 
@@ -1838,6 +1858,7 @@ function applyState(d) {
   simRules(st);
   snapCamera();
   if (wt.active) wt.resume();
+  if (CONTINUOUS) midnightRoll();
 }
 
 function placeAt(roomId, tx, ty, facing) {
@@ -2021,6 +2042,7 @@ if (CONTINUOUS) {
   clock.onEvent = e => {
     if (e.type === 'skipped') ui.toast(e.count === 1 ? 'You didn’t sleep. You can feel it: you’re slower, and your hands aren’t steady.' : 'Two nights without sleep. The edges of things aren’t right.', 4200);
     else if (e.type === 'collapse') collapseScene(e);
+    else if (e.type === 'midnight') midnightRoll();
   };
 }
 
@@ -3290,15 +3312,13 @@ function confirmSleep() {
 
 let lastSleep = null;
 function sleep() {
-  const res = A.sleep(st);
-  // Phase 30 (continuous mode): the clock's date can be ahead of the sim's day if the player stayed up
-  // past midnight; let the sim's days catch up (rent and all) before the morning.
+  let res;
   if (CONTINUOUS) {
-    for (let n = 0; st.day < clock.cycle.date + 1 && n < 14; n++) {
-      const more = A.sleep(st);
-      res.rentNote = [res.rentNote, more.rentNote].filter(Boolean).join(' ') || res.rentNote;
-    }
-  }
+    // The dates the sleep crossed roll over now (rent and all), then it's morning.
+    const note = syncSimDate();
+    res = A.wake(st);
+    res.rentNote = note;
+  } else res = A.sleep(st);
   lastSleep = res;
   changed();
   if (st.gameOver) { openGameOver(); return; }
@@ -3889,7 +3909,7 @@ globalThis.__tma = {
   audio, talkTo, cityLayout, T, enterPlace: id => enterPlace(extraPlace(id) ?? WALK_INS[id]), leavePlace, spawnEvent: id => spawnEvent(id), setWeather: t => setWeatherOverride(t), get weather() { return todayWeather(); }, weatherFx, get eventEnt() { return eventEnt; }, toggleRide, get placeCrowd() { return placeCrowd; },
   get st() { return st; }, get crowd() { return crowd; }, get world() { return world; }, refreshSeason, parkToday, CAL, get fishing() { return fishing; }, beachToday,
   G, BN, yard: () => nightArea(), tollBell, get target() { return target; }, openGrave, NC, NS, MOON, startNightCity, startNightShop, nightState: () => nightState(), placeSight, nightSpots: () => nightSpots(), nightTarget: () => nightTarget(), nightInteract: e => nightInteract(e), inTheDark: () => inTheDark(), tackleHooks: () => tackleHooks(),
-  get loop() { return loop; }, placeAt, sleep, continuousBed, shopSignCard, endShopSession, openShopHoursPanel, collapseScene, sleepFx, rng: () => rng, openNight, cityLayout, CR, N, zone, enterZone, endRun, morningChoice,
+  get loop() { return loop; }, placeAt, sleep, continuousBed, shopSignCard, endShopSession, openShopHoursPanel, collapseScene, syncSimDate, sleepFx, rng: () => rng, openNight, cityLayout, CR, N, zone, enterZone, endRun, morningChoice,
   guide, speech, wt, finishPrologue, syncShop, shopMap, staffFloor, autosave, quitToTitle,
   interact: t => interact(t), openStanding: () => openStanding(g, () => ui.close()), openBag: () => openBag(g, () => ui.close()),
   board: tab => openRenovation(g, { tab }), chooseDay: w => chooseDay(w), openHomeDoor: () => openHomeDoor(), goHome: () => goHome(), syncHome: () => syncHome(), arranger, openMagic: w => openMagicAct(w ?? 'Outside the Brass Lantern'), get magician() { return magician; }, arrange: () => startArranging(), stopArranging: () => stopArranging(), arrangeAct: () => arrangeAct(), arrangeTo: (tx, ty) => { arranger.point(tx, ty); }, tileToScreen: (tx, ty) => ({ x: (tx * 16 + 8 - camera.ix) * renderer.scale / renderer.dpr, y: (ty * 16 + 8 - camera.iy) * renderer.scale / renderer.dpr }), get layout() { return world.shop?.layout; }, shopRoom: () => shopRoom(), syncLook, god, openGodMenu: () => openGodMenu(() => ui.close()), offerUpdate, whatsNewOnce,

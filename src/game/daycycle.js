@@ -11,6 +11,9 @@
 //   2 skipped: the screen plays tricks as well
 //   3 skipped: the player collapses and misses a whole day (wakes at 10 AM two dates later)
 // A full sleep clears the count.
+//
+// Events from advance()/tick(): 'midnight' (the calendar date changed), 'skipped' and 'collapse'.
+// A sleep fast-forwards without events; the caller catches up on the dates it crossed (`dates`).
 
 import { formatMinute } from './clock.js';
 
@@ -79,8 +82,10 @@ export class DayCycle {
     let left = minutes;
     while (left > 1e-9) {
       const close = this.#close(this.nextClose);
-      const step = Math.min(left, close - this.t);
+      const midnight = (Math.floor(this.t / DAY) + 1) * DAY;
+      const step = Math.min(left, Math.min(close, midnight) - this.t);
       this.t += step; left -= step;
+      if (this.t >= midnight - 1e-9) { this.t = Math.max(this.t, midnight); events.push({ type: 'midnight', date: midnight / DAY }); }
       if (this.t >= close - 1e-9) { this.t = close; events.push(...this.#windowClosed(this.nextClose)); this.nextClose = this.#nextWindowAfter(this.t); }
     }
     return events;
@@ -111,13 +116,13 @@ export class DayCycle {
     const start = this.t, close = this.#close(k);
     const earliest = start + this.cfg.minSleepMinutes;
     const wake = Math.min(close, Math.max(earliest, until ?? earliest));
-    const slept = wake - start, full = slept >= this.cfg.minSleepMinutes;
+    const slept = wake - start, full = slept >= this.cfg.minSleepMinutes, dates = Math.floor(wake / DAY) - Math.floor(start / DAY);
     this.sleptWindow = k;
     this.skipped = full ? 0 : this.skipped;
     this.shortSleep = !full;
     this.t = wake;
     this.nextClose = wake >= close ? this.#nextWindowAfter(wake) : this.nextClose;
-    return { ok: true, start, wake, sleptMinutes: slept, full, cutShort: !full };
+    return { ok: true, start, wake, sleptMinutes: slept, full, cutShort: !full, dates };
   }
 
   // ---- saving ----

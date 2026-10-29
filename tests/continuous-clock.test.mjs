@@ -75,7 +75,7 @@ test('skipped nights and collapses reach the game through onEvent', () => {
   c.advanceMinutes(22 * H);
   c.advanceMinutes(24 * H);
   c.advanceMinutes(24 * H);
-  assert.deepEqual(seen, ['skipped', 'skipped', 'skipped', 'collapse']);
+  assert.deepEqual(seen.filter(t => t !== 'midnight'), ['skipped', 'skipped', 'skipped', 'collapse']);
 });
 
 test('setSpan and extend are accepted and do nothing', () => {
