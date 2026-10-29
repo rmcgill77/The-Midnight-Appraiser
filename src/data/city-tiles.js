@@ -423,7 +423,9 @@ export function buildCityTiles(season = 'summer') {
   defs.D = { solid: true, art: brick(DISTRICTS.h, 2), interact: 'tackle' };
   defs.Z = { solid: true, art: brick(DISTRICTS.h, 3), interact: 'snack' };
   defs.J = { solid: true, art: brick(DISTRICTS.h, 4), interact: 'lifeguard' };
-  return { defs, floors: walks };
+  // Phase 32: which tiles are buildings (roofs and fronts), for the sun's shadows.
+  const mass = new Set([...Object.keys(DISTRICTS), ...Object.keys(DISTRICTS).map(c => c.toUpperCase()), 'o', 'O', 'D', 'Z', 'J']);
+  return { defs, floors: walks, mass, trees: new Set(['t', 'T']), posts: new Set(['L', 'l', 'Q']), glowRgb: [0xc9, 0xa2, 0x4a] };   // glowRgb: the lit windows' colour (Phase 32: they glow at night)
 }
 
 // ---------- dressing the fronts ----------
