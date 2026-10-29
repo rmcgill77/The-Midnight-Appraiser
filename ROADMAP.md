@@ -286,60 +286,88 @@ phase when we plan it.
 
 ### Phase 33: The woods (design settled with the owner; nothing built yet)
 **Decisions (owner):** tone is a blend of folk horror (the forest), a ceremonial lodge (the dungeon) and a
-hedge-witch (the ally in the cabin); the woods unlock through a mix of an investigation chain and friendships,
-with the friendships focused on a **new Town Hall and its staff, including a new Mayor**; the threat is a
-**surviving order**; and for now this is **design only**: nothing here is built until the owner says so.
+hedge-witch (the ally in the cabin). The threat is a **surviving order, the Arcane Society**. The woods are **not
+tied to the player or their parents**: they are a town mystery the player gets drawn into. There are **two ways to
+open the woods**: through relationships with the new **Town Hall** staff (the Mayor above all), or through **Lou the
+barkeep**, who is secretly a member of a group that opposes the Society. The clues that lead the player to either
+are **locked until after the first audit**. Design only for now: nothing here is built until the owner says so.
 
 Why after the city look: the woods should match it. Already in the code: the roped-off trail with a sign
 (`woods` in `src/data/city.js`, rope tiles `%` and `&`), a woods ranger line in `src/game/night-city.js`, and a way
 to open areas off the map edge (`src/data/areas.js`, `src/game/edges.js`).
 
 #### The story in one page
-- Long ago the **Society of the Still Hour** held the woods north of town. They tried to *appraise the unseen*:
-  to measure, price and bind what lives in the dark. Their instrument was **the Eye**, a loupe cut so that the
-  holder sees what hides. It is the player's own loupe (the one on the cord, and the eye on the app icon).
-- Something went wrong at the **Standing Ring** one midwinter. The town sealed the trail "by order of the council"
-  and told a smaller story. The Society went underground, and a few of its members hold seats in town to this day.
-- **The player's parents** were members, left, and took the Eye with them. The shop, the pickups and the inspection
-  were all ways of staying hidden and keeping it out of the Society's hands.
-- The Society wants the Eye back because it is the key to the **inner door of the Lodge**. The woods open
-  because the town (the Mayor above all) has decided, for its own reasons, that it is time.
-- **Payoff, three endings the player steers towards:** *seal* the Ring (the Mayor's way: the order is contained,
-  nothing is told), *break* the Society (expose it to the Office and the town, at a cost to the people who lied for
-  years), or *take the seat* (become the Warden, with the power and the weight). Which one is open depends on
-  whom the player trusted.
+- Long ago the **Arcane Society** held the woods north of town. They tried to *appraise the unseen*: to measure,
+  price and bind what lives in the dark, through rites at the **Standing Ring** and in their **Lodge**.
+- Something went wrong at the Ring one midwinter. The town sealed the trail "by order of the council" and told a
+  smaller story. The Society went underground; a few members still hold seats in town, and the Town Hall is where
+  their influence sits.
+- A second group has watched them ever since. Provisionally **the Lamplighters** (the name is open; it echoes the
+  Lamplighter sight in the night city and the Brass Lantern, soon the Brass Mug). Lou the barkeep is one of them.
+  They know the woods and the Society's habits, and they want the Society ended, not just contained.
+- The player has no secret family tie to any of this. The audit is the trigger: when it has come and gone, the
+  town's quiet breaks, and the player, a pawnbroker who sees the strange for a living, is the right person to
+  notice. Whom they trust decides how the woods open and what they find there.
+- **The Lodge's inner door** is opened by the **Pattern**: the sigil assembled from the six marks found in town.
+- **Payoff, three endings** (which are open depends on the path taken, see below): *seal* the Ring (contain it,
+  tell nobody), *break* the Society (expose it, at a cost to people who lied for years), or *take the seat* (become
+  the Warden, with the power and the weight).
 
-#### The Town Hall (a new building, in the town before the woods open)
+#### The Town Hall (a new building, in the town)
 A civic building in Old Market, facing the square, open weekdays. It is useful on its own (permits, records, the
-council's weekly notices) and it is where the woods story is played out with people.
+council's weekly notices), and it is a normal place to make friends from the start; the woods are never mentioned
+there until the mystery begins.
 - **The Mayor, Constance Hargrove** (woman): warm, tired, hospitable. Publicly the face of the town; secretly the
-  Society's current **Warden**, who wants it contained. Ally or antagonist depending on the player.
-- **The Archivist, Theo Maddox** (man): nervous, precise, keeps the council minutes and the old maps. Finds the
-  parents' file. Frightened of what he has read.
-- **Councillor Ines Valdez** (woman): a sharp-tongued lawyer who chairs planning. Wants the woods developed and
-  the "superstition" ended; a sceptic whose mind can be changed, and the source of the **permit and the hearing**.
-- **Bram, the caretaker** (man): old, keeps the building's keys and the town's folklore; knows the trail's
-  *rules* (never go in at dusk, salt the threshold, don't answer the third call). Gives the **gate key**.
-All four use the existing relationship system (hearts, gifts, likes and dislikes, birthdays, schedules,
-collapse reactions) and get looks from the creator, with pronouns used for the player as elsewhere.
+  Society's current **Warden**, who wants the old rites contained and will say so when she trusts you.
+- **The Archivist, Theo Maddox** (man): nervous, precise, keeps the council minutes and the old maps. Frightened of
+  what he has read.
+- **Councillor Ines Valdez** (woman): a sharp-tongued lawyer who chairs planning. Wants the woods developed and the
+  "superstition" ended; a sceptic whose mind can be changed, and the source of the **permit and the hearing**.
+- **Bram, the caretaker** (man): old, keeps the building's keys and the town's folklore; knows the trail's *rules*
+  (never go in at dusk, salt the threshold, don't answer the third call). Gives the **gate key**.
+All four use the existing relationship system (hearts, gifts, likes and dislikes, birthdays, schedules, collapse
+reactions) and get looks from the creator.
 
-#### The lead-up (the woods open in chapters, so it feels like a whole new set of places)
-0. **Seeds (from the start of Phase 33):** the rope sign's notice changes each week; odd items arrive carved with
-   the same sigil; a customer pays in pressed leaves; the Town Hall opens its doors.
-1. **The Marks.** Six *marks* are hidden around town, each shown only under the UV lamp: an item at the shop, a
-   headstone in Mike's yard, a bottle washed up on Kip's beach, the carved bar top at the Lantern, a page in Ms.
-   Achterberg's special collection, and one on a night-run sight. Each fills in a page of a **Pattern** in a
-   journal. Finding marks is investigation; understanding them needs the people below.
-2. **The Vouching (the friendship gates, all at the Town Hall).**
-   - Theo, 3 hearts and at least 3 marks found: the minutes of the closing, the old maps, the parents' file.
-   - Bram, 4 hearts: the gate key, and the rules of the trail.
-   - Ines, 3 hearts and the file in hand: she calls a **public hearing** on reopening the trail (a scheduled evening).
-   - Constance, 5 hearts and the other three: her blessing, and, if the player's choices say so, her confession.
-3. **The Hearing.** An evening event at the Town Hall. Who spoke for the player, and what the marks showed, decides
-   how the vote goes and what the Mayor reveals.
-4. **The Opening Night.** On the next dark moon (game's moon calendar) the rope comes down at the trailhead, with
-   a short scene. Only the first area opens.
-5. **Opening in layers.** Each further area needs something from the one before (a key, a charm, a name).
+#### Lou, at the bar
+Lou already runs the bar. He becomes a full relationship character: a patient, watchful man who hears everything and
+says little. In truth he is a Lamplighter. His trust is the other way in.
+
+#### The lead-up
+0. **Before the first audit: nothing.** The Town Hall and Lou are ordinary places and people. No woods clues exist,
+   and nobody mentions the woods.
+1. **The first audit, pass or fail, is the trigger.** After it, **strange things begin to turn up all over town**,
+   one every day or two. Some are small (lamps that flicker in daylight, birds gathering and silent, every clock
+   stopping at 3:13, a sigil chalked on a door, a customer paying in pressed leaves, the same dream told by three
+   people), and six are **marks** only the UV lamp shows: an item at the shop, a headstone in Mike's yard, a bottle
+   on Kip's beach, the carved bar top, a page in Ms. Achterberg's collection, and one on a night-run sight.
+   They go into a **Strange Things** page of the journal, with the Pattern filling in as marks are found.
+2. **Asking around.** The way forward is to show what you have found to people and ask. Everyone has something
+   (a story, a rumour, a fear), and each one points at another clue or another person. The more the player has
+   found, the more people say.
+3. **The fork.** After enough has been found, people start saying the same two things: *"the Mayor would know"* and
+   *"Lou hears everything."* The player can go to either, or both.
+4. **Hearts gate the answer.** If the player's relationship with the Mayor (or Lou) is still low, they **hint that
+   they know more** ("I might have something to tell you, if we knew each other a little better") until the player
+   reaches the required hearts. Rough thresholds: the Mayor 5, Lou 4, plus the extra steps below.
+
+**Path A: the Town Hall (the official way).** Needs the Mayor's trust, and the staff's: Theo (3 hearts, 3+ marks
+found) gives the minutes of the closing, the old maps and the Society's name; Bram (4 hearts) the gate key and the
+trail's rules; Ines (3 hearts, with the minutes in hand) calls a **public hearing** on reopening the trail (an
+evening event; how the vote goes depends on whom the player brought round and what the marks showed); the Mayor
+(5 hearts) gives her blessing and, if the player has earned it, her confession. On the next dark moon the rope comes
+down at the trailhead in a short scene. The town reopens the woods, and the Society is quietly in the room.
+
+**Path B: Lou (the covert way).** Needs Lou's trust (4 hearts) and the marks. Lou tells the player what the
+Lamplighters are, takes them through the **cellar of the bar** to the old passage and opens the woods the back way on a dark
+moon, with the rope left up. The woods are the same woods; the town does not know they are open.
+
+The two paths are not exclusive in what you can learn, but the first one taken sets the player's stance: Path A
+leaves them standing with the Mayor and Path B with Lou, and the other side becomes the one they are working
+against (and some endings close). Open question below.
+
+#### Opening in layers
+Whichever way in, the woods open **one area at a time**, each needing something from the one before (a key, a
+charm, a name). That is what makes it feel like a whole new set of places.
 
 #### The areas (several connected places joined by paths)
 - **The Trailhead and the Watch Post:** the ranger station, abandoned; the ranger's logbooks; the way in. The
@@ -350,16 +378,16 @@ collapse reactions) and get looks from the creator, with pronouns used for the p
 - **The Mirror Lake:** a still lake that reflects things that are not there. Fishing with odd catches (and some that
   are not fish).
 - **The Lodge:** the Society's ruined house. The dungeon: the library, the vestry, the cellar, and the inner door
-  that only the Eye opens.
+  that only the Pattern opens.
 - **The Cabin:** a hedge-witch's home deep in the trees, a safe place with a hearth and a trading table.
 
 #### People and shops in the woods
 - **Ranger Dale Whitlock** (man): the Watch Post's last ranger, a decent man haunted by one night.
 - **Hester Fenn** (woman), the hedge-witch of the Cabin: herbs, salt, candles, hex bags and charms; trades for what
   the forest gives back. The woods' **shop** and the ally who teaches wards.
-- **The Brethren** (hooded, in the Lodge): former members who never left. Some can be reasoned with.
-- Members of the Society in town, revealed through the story and not as a list: the Mayor, and the player gets to
-  decide whether to trust the Professor, Mr. Pryce and the library.
+- **The Brethren** (hooded, in the Lodge): members of the Arcane Society who never left. Some can be reasoned with.
+- Members of both groups in town are revealed through the story and not as a list: the Mayor for the Society, Lou for
+  the Lamplighters, and the player gets to decide whom to trust among the Professor, Mr. Pryce and the library.
 
 #### New things for the player (rules and creatures)
 - **Wards:** salt, charms and candles protect a night run in the woods (a ward meter that falls with each strange
@@ -369,21 +397,26 @@ collapse reactions) and get looks from the creator, with pronouns used for the p
 - **Creatures (for the night runs and the bestiary):** *Corpse-candles* (wisps that lead you the wrong way),
   *Black Dogs* (the Hollow's hounds), *Effigy Men* (straw and wicker walkers), *The Salt Wives* (figures in white who
   stand at the threshold lines), *The Horned Judge* (a stag-headed presence at the Ring; appears at the finale),
-  *Moths of the Still Hour* (a swarm that dims lamps), *The Drowned* (what the Mirror Lake gives back), and the
+  *Moths of the Hollow Hour* (a swarm that dims lamps), *The Drowned* (what the Mirror Lake gives back), and the
   Brethren themselves.
-- **The Eye:** the player's loupe gains a use in the woods: it shows what is hidden, and at the inner door of the
-  Lodge it is the key.
+- **The Pattern:** the sigil assembled from the six marks. At the Lodge's inner door it is the key, and the UV lamp shows
+  the Society's hidden writing in the woods.
 
 #### Suggested build order (when the owner decides to build)
-33a Town Hall: the building, the four NPCs, hours and the relationship track. 33b The Marks, the UV reveals and the
-journal's Pattern page. 33c The Vouching, the Hearing and the Opening Night. 33d the Trailhead, the Watch Post and the
+33a Town Hall: the building, the four NPCs, hours and the relationship track, and Lou's relationship track. 33b The
+Strange Things after the first audit, the six marks and the journal's page. 33c Asking around, the fork, the hint
+dialogue, then Path A (the vouching, the hearing, the opening night) and Path B (Lou and the bar cellar). 33d the Trailhead, the Watch Post and the
 Thornwood, with the first creatures and Hester's table. 33e the creature set and the ward rules. 33f the Ring, the
 Lake, the Lodge and the Cabin. 33g the three endings. Each slice can be its own pull request, as in Phases 30-32.
 
 #### Still open (to decide before building)
-Whether the Town Hall NPCs' schedules follow the long day and whether the council meets on a fixed weekday; how hard
-the Hearing should be to fail; what exactly the endings change in the town afterwards; the final names and looks of
-the Brethren and the Horned Judge; whether Mr. Pryce, Professor Okoye or Ms. Achterberg is a member of the Society.
+- The Lamplighters' real name, and who else is one (only Lou, or a few townsfolk?).
+- Are the two paths exclusive (you ally with one), or can the player do both, and which endings does each allow?
+  (Suggestion: Path A allows *seal* or *take the seat*; Path B allows *break*; doing both lets the player choose late.)
+- Is anyone besides the Mayor in the Society (the Professor, Mr. Pryce, Ms. Achterberg)?
+- How the first audit's result (pass or fail) colours the Strange Things, if at all.
+- Whether the Town Hall NPCs' schedules follow the long day and whether the council meets on a fixed weekday; how hard
+  the Hearing should be to fail; the final names and looks of the Brethren and the Horned Judge.
 
 ## Consistency check (done)
 
