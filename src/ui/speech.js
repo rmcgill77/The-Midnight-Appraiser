@@ -201,7 +201,7 @@ export class Speech {
     this.srEl.textContent = `${this.whoEl.textContent}: ${c.text}`;
     if (this.faceOf !== c.who) {
       this.faceOf = c.who;
-      const face = this.portraitFor?.(c.who) ?? null;
+      const face = this.portraitFor?.(c.who, c.mood ? { mood: c.mood } : {}) ?? null;
       this.faceEl.replaceChildren(...(face ? [face] : []));
     }
     r.classList.toggle('has-face', !!this.faceEl.firstChild);
