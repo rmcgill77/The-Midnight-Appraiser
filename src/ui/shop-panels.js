@@ -2,6 +2,7 @@
 // putting tagged stock in the display cases, and the evening news at closing.
 // All numbers and decisions come from Second Sight Pawn's own rules.
 
+import { daysLeft, leftText } from '../game/appraisals.js';
 import { formatDate } from '../game/calendar.js';
 import { el } from './ui.js';
 import { portraitFor, faceRow } from './portraits.js';
@@ -204,10 +205,12 @@ export function openAppraiser(g, customer) {
         el('dt', {}, 'Fee'), el('dd', {}, money(c.fee)),
         el('dt', {}, 'Right'), el('dd', {}, `${money(Math.round(c.fee * P.right))}, or ${money(Math.round(c.fee * P.named))} if you name it`),
         el('dt', {}, 'Wrong'), el('dd', {}, `only ${money(Math.round(c.fee * P.wrong))}`)),
-      el('p', { class: 'note' }, 'It goes on the bench in the basement. Test it tonight and file your report; they come back for it when you close up for the night. An unfinished report earns nothing.'),
+      el('p', { class: 'note' }, g.continuous
+        ? 'It goes on the bench in the basement. The owner gives you up to a week (longer for harder objects). File your report before the due day: they collect it the moment you do, and pay. After the due day they take it back unpaid.'
+        : 'It goes on the bench in the basement. Test it tonight and file your report; they come back for it when you close up for the night. An unfinished report earns nothing.'),
     ],
     actions: [
-      { id: 'take-job', label: 'Take the job', kind: 'primary', onClick: () => { A.takeJob(st, c); g.changed(); ui.close(); crowd.dismiss(customer, 'content'); ui.toast(`The ${S.baseOf(it).name} is on the bench. File the report tonight.`, 3000); } },
+      { id: 'take-job', label: 'Take the job', kind: 'primary', onClick: () => { A.takeJob(st, c); g.afterTakeJob?.(c); g.changed(); ui.close(); crowd.dismiss(customer, 'content'); ui.toast(g.continuous ? `The ${S.baseOf(it).name} is on the bench, ${leftText(daysLeft(c.item.job, st.day))}.` : `The ${S.baseOf(it).name} is on the bench. File the report tonight.`, 3000); } },
       { id: 'send-away', label: 'Send them away', kind: 'quiet', onClick: () => { S.Shop.leave(st); ui.close(); crowd.dismiss(customer, null); } },
     ],
   });

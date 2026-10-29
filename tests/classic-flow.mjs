@@ -22,6 +22,22 @@ await page.click('#get-up');
 await page.evaluate(() => __tma.openHomeDoor());
 await page.waitForSelector('#choose-shop');
 assert.equal(await page.locator('#choose-city').count(), 1);
+// The appraisal settling the normal game uses at bedtime still works after being split in two:
+// a filed report is paid, an unfiled one is taken back unpaid, and the day report gets both lines.
+const settled = await page.evaluate(() => {
+  const st = __tma.st, S = __tma.S;
+  const filed = S.Shop.makeAppraiser(st), open = S.Shop.makeAppraiser(st);
+  __tma.A.takeJob(st, filed); __tma.A.takeJob(st, open);
+  const truth = S.byId(S.DATA.anomalies, filed.item.hidden.anomalyId);
+  filed.item.draft = { alignment: truth.alignment, anomalyId: null };
+  __tma.A.fileReport(st, filed.item.uid);
+  const cash0 = st.cash, appraisals0 = st.counters.appraisals || 0, r = { items: [], rep: {} };
+  const fees = S.Shop.settleJobs(st, r);
+  return { fees, gain: st.cash - cash0, pay: S.Shop.jobPay(filed.item.job).right, rFees: r.fees, items: r.items.map(i => i.kind), left: st.inventory.loot.filter(x => x.job).length, filedLeft: st.shop.jobs.length, count: (st.counters.appraisals || 0) - appraisals0 };
+});
+assert.equal(settled.fees, settled.pay); assert.equal(settled.gain, settled.pay); assert.equal(settled.rFees, settled.pay);
+assert.deepEqual(settled.items, ['ok', 'bad']);
+assert.equal(settled.left, 0); assert.equal(settled.filedLeft, 0); assert.equal(settled.count, 1);
 await close();
 if (problems.length) { console.error('FAIL\n' + problems.join('\n')); process.exit(1); }
 console.log('OK: the normal game still opens on the morning card and offers the shop-or-city choice');

@@ -33,6 +33,7 @@ import { ShopHours } from './game/shophours.js';
 import { openHoursPanel } from './ui/hours-panel.js';
 import * as NW from './game/nightwindow.js';
 import * as EX from './game/exhaustion.js';
+import * as AP from './game/appraisals.js';
 import { SleepFx } from './ui/sleepfx.js';
 import { Player } from './game/player.js';
 import { Crowd } from './game/customers.js';
@@ -323,6 +324,13 @@ const g = {
   get st() { return st; }, get crowd() { return crowd; }, get world() { return world; },
   changed: () => changed(),
   goHome: () => { if (CONTINUOUS && nightCity()) endNightWalk('home'); goHome(); },
+  // Phase 30: an appraisal job taken in the continuous day gets a due day, 1-7 days out.
+  afterTakeJob: c => {
+    if (!CONTINUOUS || !c.item?.job) return;
+    const range = S.DATA.appraisal.fee[c.faction === 'civilian' ? 'civilian' : 'faction'];
+    const closed = d => hoursObj().week[CAL.weekdayOf(d)] === null;
+    c.item.job.due = AP.dueDate(st.day, AP.dueDays(c.fee, range, rng), closed);
+  },
   arrange: () => startArranging(),
   weather: () => (st && !wt.active ? todayWeather() : null),
 };
@@ -1454,6 +1462,7 @@ function collapseScene(e) {
   if (world.night) backToFreeTime();
   clock.stop();
   const known = REL.relationshipNames().filter(n => T.personOf(world, n).met).map(n => ({ name: n, hearts: REL.heartsOf(T.personOf(world, n).rel) }));
+  AP.extendForMissedDay(st.inventory.loot.filter(x => x.job).map(x => x.job));   // a lost day gives open jobs one more
   world.collapse = { found: NC.seenHome('city', known, st.day), reactions: EX.collapseReactions(known, rng), missedDate: e.missedDate };
   for (const n of REL.relationshipNames()) { const p = T.personOf(world, n); if (p.met) p.rel = EX.afterMissedDay(p.rel); }
   changed();
@@ -3909,7 +3918,7 @@ globalThis.__tma = {
   audio, talkTo, cityLayout, T, enterPlace: id => enterPlace(extraPlace(id) ?? WALK_INS[id]), leavePlace, spawnEvent: id => spawnEvent(id), setWeather: t => setWeatherOverride(t), get weather() { return todayWeather(); }, weatherFx, get eventEnt() { return eventEnt; }, toggleRide, get placeCrowd() { return placeCrowd; },
   get st() { return st; }, get crowd() { return crowd; }, get world() { return world; }, refreshSeason, parkToday, CAL, get fishing() { return fishing; }, beachToday,
   G, BN, yard: () => nightArea(), tollBell, get target() { return target; }, openGrave, NC, NS, MOON, startNightCity, startNightShop, nightState: () => nightState(), placeSight, nightSpots: () => nightSpots(), nightTarget: () => nightTarget(), nightInteract: e => nightInteract(e), inTheDark: () => inTheDark(), tackleHooks: () => tackleHooks(),
-  get loop() { return loop; }, placeAt, sleep, continuousBed, shopSignCard, endShopSession, openShopHoursPanel, collapseScene, syncSimDate, sleepFx, rng: () => rng, openNight, cityLayout, CR, N, zone, enterZone, endRun, morningChoice,
+  get loop() { return loop; }, placeAt, sleep, continuousBed, shopSignCard, endShopSession, openShopHoursPanel, collapseScene, syncSimDate, afterTakeJob: c => g.afterTakeJob(c), sleepFx, rng: () => rng, openNight, cityLayout, CR, N, zone, enterZone, endRun, morningChoice,
   guide, speech, wt, finishPrologue, syncShop, shopMap, staffFloor, autosave, quitToTitle,
   interact: t => interact(t), openStanding: () => openStanding(g, () => ui.close()), openBag: () => openBag(g, () => ui.close()),
   board: tab => openRenovation(g, { tab }), chooseDay: w => chooseDay(w), openHomeDoor: () => openHomeDoor(), goHome: () => goHome(), syncHome: () => syncHome(), arranger, openMagic: w => openMagicAct(w ?? 'Outside the Brass Lantern'), get magician() { return magician; }, arrange: () => startArranging(), stopArranging: () => stopArranging(), arrangeAct: () => arrangeAct(), arrangeTo: (tx, ty) => { arranger.point(tx, ty); }, tileToScreen: (tx, ty) => ({ x: (tx * 16 + 8 - camera.ix) * renderer.scale / renderer.dpr, y: (ty * 16 + 8 - camera.iy) * renderer.scale / renderer.dpr }), get layout() { return world.shop?.layout; }, shopRoom: () => shopRoom(), syncLook, god, openGodMenu: () => openGodMenu(() => ui.close()), offerUpdate, whatsNewOnce,
