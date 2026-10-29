@@ -98,9 +98,11 @@ function dressFront(g, map, tx, ty, ch, h, season, d, { isRoof, isFace }) {
       R(g, x, y + 1, 16, 14, '#3a3f48'); for (let i = 2; i < 14; i += 2) R(g, x, y + i, 16, 1, '#2a2e36'); R(g, x, y + 12, 16, 3, '#c8a23a'); for (let i = 0; i < 16; i += 4) R(g, x + i, y + 12, 2, 3, IRON);
       R(g, x, y + 15, 16, 1, '#5a5f6e');
     }
-    if (row === 1 && (tx & 3) >= 1 && (tx & 3) <= 2) {
-      const num = 1 + (gh >>> 6) % 49, dig = (tx & 3) === 1 ? Math.floor(num / 10) : num % 10;
-      if (num >= 10 || (tx & 3) === 2) drawDigit(g, x + 6, y + 3, dig, '#b8b4a8');
+    // a bay number on a painted plate, on about one warehouse in three (not on every one)
+    if (row === 1 && (tx & 3) >= 1 && (tx & 3) <= 2 && (gh >>> 6) % 3 === 0) {
+      const num = 1 + (gh >>> 9) % 49, left = (tx & 3) === 1;
+      R(g, left ? x + 3 : x, y + 1, left ? 13 : 12, 10, '#23262e'); R(g, left ? x + 3 : x, y + 1, left ? 13 : 12, 1, '#c8a23a'); R(g, left ? x + 3 : x, y + 10, left ? 13 : 12, 1, '#c8a23a');
+      drawDigit(g, left ? x + 6 : x + 3, y + 3, left ? Math.floor(num / 10) : num % 10, '#e8e0c8');
     }
     if (lowerRow === 2 && (gh >>> 10) % 4 === 0) { R(g, x, y + 10, 16, 5, '#5a5f6e'); R(g, x, y + 10, 16, 1, '#7a8090'); }
   }

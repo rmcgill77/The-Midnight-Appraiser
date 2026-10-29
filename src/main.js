@@ -2484,7 +2484,7 @@ function drawLighting(ctx, cx, cy, m, opts = {}) {
   ctx.globalCompositeOperation = 'lighter';
   const warm = room === 'lab' ? '169,139,224' : '224,166,74';
   const glow = room === 'city' ? Math.min(1, sky.night * 1.6) : 1;
-  if (room === 'city' && glow > 0.05) m.drawGlow?.(ctx, cx, cy, w, h, glow * (settings.reducedMotion ? 0.7 : 0.85));
+  if (room === 'city' && glow > 0.05) m.drawGlow?.(ctx, cx, cy, w, h, glow * (settings.reducedMotion ? 0.85 : 1));
   seen.forEach((l, i) => {
     if (glow < 0.05) return;
     const x = l.x - cx, y = l.y - cy, r = l.r * 0.8 * flick(i, l);

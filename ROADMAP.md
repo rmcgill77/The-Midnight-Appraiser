@@ -282,7 +282,7 @@ phase when we plan it.
   light across the face, catchlights and fine hair strands on top of the smoothed 48x48 drawing.
   Still smoothed, not redrawn: a full 96x96 redraw of every part.
 - **Roads (done):** lane lines already follow every bend (each street is one smooth curve, and they break only at junctions); the roundabout and turning circles now have a pavement band that follows the circle instead of tile-shaped apron squares; zebra crossings across every arm of every junction.
-- **Look (after):** warehouse numbers, night window glow, evening shadows.
+- **Look (done):** warehouse bay numbers sit on painted plates on about one warehouse in three; night window glow has a wider halo and light spilling onto the pavement; evening sun shadows are softer (lower strength, shorter, fading earlier).
 
 ### Phase 33: The woods
 - **Woods on hold (owner's call):** building the woods waits. First refine what is built (Phases 30-32), then come back here to settle the story, creatures and shops.
