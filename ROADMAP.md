@@ -239,7 +239,14 @@ phase when we plan it.
      rose dawn, golden afternoon, violet dusk, dark), lit windows glow at night, buildings, trees,
      lamps and people throw sun shadows (long at the ends of the day, short at noon, none in the
      dark or under cloud), wet streets reflect lamps and the dusk sky.
-  2. Streets and sidewalks, then buildings and facades, then props and clutter, then seasonal looks,
+  2. **Streets and sidewalks (32b, built):** curbs, gutters and drains, dashed lane lines, dropped
+     kerbs with yellow strips, manholes, cracks, patches, oil stains, litter by season.
+     Then (32b, owner's request after play): **roads that never just end** - every east-west
+     street crosses the river on a bridge, a road runs down both sides and along the top of town,
+     a roundabout (Garden Street x the street at y 50) and three turning circles (true pixel
+     circles), rounded road corners. Still to do for roads: more curves instead of right angles,
+     and traffic (cars, scooters, bikes) that follows the roads.
+     Next: buildings and facades, then props and clutter, then seasonal looks,
      each as its own slice, with the finished puddles, wet streets and snow drawn on the new tiles.
 - **Status: Phase 32 is in progress (32a built).**
 - Likely files: `src/data/city.js`, `src/data/city-tiles.js`, `src/data/tiles.js`.

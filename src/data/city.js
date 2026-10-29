@@ -47,8 +47,9 @@ const NS = [
   { x: 17, a: 4, full: true }, { x: 37, a: 4 }, { x: 73, a: 2 }, { x: 90, a: 3, full: true },
   { x: 108, a: 3, skip: [4] }, { x: 127, a: 0, full: true }, { x: 147, a: 5 }, { x: 167, a: 4, w: 3, full: true }, { x: 186, a: 5 },
 ];
+// Phase 32c: every east-west street crosses the river on a bridge, so none of them stops at the water.
 const EW = [
-  { y: 13, a: 4 }, { y: 26, a: 3, bridge: true }, { y: 39, a: 4 }, { y: 50, a: 1 }, { y: 65, w: 3, main: true, bridge: true }, { y: 80, a: 4 }, { y: 93, a: 3, bridge: true }, { y: 106, a: 4 },
+  { y: 13, a: 4, bridge: true }, { y: 26, a: 3, bridge: true }, { y: 39, a: 4, bridge: true }, { y: 50, a: 1, bridge: true }, { y: 65, w: 3, main: true, bridge: true }, { y: 80, a: 4, bridge: true }, { y: 93, a: 3, bridge: true }, { y: 106, a: 4, bridge: true },
 ];
 const SLANTS = [
   { pts: [[1, 76], [14, 70], [30, 58], [50, 47]] },            // Old Post Road
@@ -140,11 +141,71 @@ export function buildCityLayout(DATA, extra = [], { stops = [] } = {}) {
       }
     }
   });
+  // ---------- Phase 32c: no street just ends ----------
+  // A road down each side of town, from the top east-west street to the waterfront road, so the streets that
+  // used to run into the edge now meet it (and cars can go round).
+  const yTop = Math.min(...ew.map(e => ewY(e, 1)));
+  // The woods trail is at the top of the last street west of the park gate (roped off until the woods open):
+  // work out which street, so the road along the top of town can leave a gap there.
+  let woodsPair = null;
+  for (let x = GATE.x0 - 21; x > 2 && !woodsPair; x--) if (road[W + x] && road[W + x - 1] && !road[W + x + 1]) woodsPair = { x0: x - 1, x1: x };
+  for (let x = 1; x <= W - 2; x++) if (!woodsPair || x < woodsPair.x0 - 2 || x > woodsPair.x1 + 2) for (const y of [1, 2]) mark(x, y, 92, false);
+  for (let y = yTop; y <= coastAt(1) + 2; y++) for (const x of [1, 2]) mark(x, y, 90, true);
+  for (let y = yTop; y <= coastAt(W - 2) + 2; y++) for (const x of [W - 3, W - 2]) mark(x, y, 91, true);
+  // A roundabout where Garden Street (the long north-south street at x 90) meets the street at y 50.
+  const islands = [], circles = [];
+  const stampCircle = (px, py, rIn, rOut, id, kind, entries) => {
+    circles.push({ kind, x: px, y: py, rIn, rOut, entries });
+    for (let y = Math.floor(py - rOut) - 1; y <= Math.ceil(py + rOut) + 1; y++) for (let x = Math.floor(px - rOut) - 1; x <= Math.ceil(px + rOut) + 1; x++) {
+      if (!inside(x, y)) continue;
+      const d = Math.hypot(x + 0.5 - px, y + 0.5 - py), i = y * W + x;
+      if (d <= rIn) { road[i] = 0; cross[i] = 0; lane[i] = 0; islands.push({ x, y, d }); }
+      else if (d <= rOut) { road[i] = -(id + 1); cross[i] = 0; }
+    }
+  };
+  {
+    const sx = ns[3], sy = ew[3];
+    const cy0 = ewY(sy, nsX(sx, sy.y)), cx0 = nsX(sx, cy0);
+    stampCircle(cx0 + 1, cy0 + 1, 3.8, 7.4, 120, 'roundabout', [{ axis: 'x' }, { axis: 'y' }]);
+  }
+  // A few dead-end streets that finish in a turning circle: found by looking along the east-west streets for
+  // a stretch with room to run a short street into the block and swing round.
+  const spurs = [];
+  {
+    const sat = new Int32Array((W + 1) * (H + 1));
+    const blocked = (x, y) => !inside(x, y) || road[y * W + x] !== 0 || lane[y * W + x] !== 0 || Math.abs(x - RIVER.midAt(y)) <= Math.floor(RIVER.width / 2) + 5 || y > coastAt(x) - 3 || y < 3 || x < 6 || x > W - 7;
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) sat[(y + 1) * (W + 1) + x + 1] = sat[y * (W + 1) + x + 1] + sat[(y + 1) * (W + 1) + x] - sat[y * (W + 1) + x] + (blocked(x, y) ? 1 : 0);
+    const clear = (x0, y0, x1, y1) => x0 >= 0 && y0 >= 0 && x1 < W && y1 < H && sat[(y1 + 1) * (W + 1) + x1 + 1] - sat[y0 * (W + 1) + x1 + 1] - sat[(y1 + 1) * (W + 1) + x0] + sat[y0 * (W + 1) + x0] === 0;
+    const LEN = 5, R_OUT = 4.4, R_IN = 1.5, ROOM = 15;      // a spur's length, its circle, and the room it needs
+    const want = [[3, 1], [5, -1], [6, 1], [1, 1], [7, -1], [2, 1], [4, -1]];   // (east-west street, side: -1 north of it, 1 south); the first three that fit
+    for (const [j, side] of want) {
+      if (spurs.length >= 3) break;
+      const e = ew[j];
+      let best = null;
+      for (let x = 20; x < W - 20; x++) {
+        const yr = ewY(e, x), edge = side < 0 ? yr - 1 : yr + e.w;       // the first tile off the street
+        const y0 = side < 0 ? edge - ROOM + 1 : edge, y1 = side < 0 ? edge : edge + ROOM - 1;
+        if (!clear(x - 7, y0, x + 8, y1)) continue;
+        if (!road[(side < 0 ? yr : yr + e.w - 1) * W + x] || !road[(side < 0 ? yr : yr + e.w - 1) * W + x + 1]) continue;
+        const dist = spurs.reduce((m, s) => Math.min(m, Math.abs(s.x - x) + Math.abs(s.y - edge)), 999);
+        if (dist < 40) continue;
+        const score = -Math.abs(x - W / 2);
+        if (!best || score > best.score) best = { x, edge, score };
+      }
+      if (!best) continue;
+      const { x, edge } = best;
+      for (let k = 0; k < LEN; k++) for (const c of [0, 1]) mark(x + c, edge + side * k, 130 + spurs.length, true);
+      stampCircle(x + 1, edge + side * (LEN + 2.4), R_IN, R_OUT, 140 + spurs.length, 'cul-de-sac', [{ axis: 'y', dir: -side }]);
+      spurs.push({ x, y: edge, side, cx: x + 1, cy: edge + side * (LEN + 2.4) });
+    }
+  }
   for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
     const i = y * W + x;
     if (road[i]) g[y][x] = cross[i] ? '+' : '=';
     else if (lane[i]) g[y][x] = ',';
   }
+  // The islands in the middle of the circles: a paved ring and a tree in a planter.
+  for (const { x, y, d } of islands) g[y][x] = d < 1.2 ? 'T' : ',';
 
   // ---------- the harbor, the river, the edges ----------
   for (let x = 0; x < W; x++) {
@@ -152,7 +213,7 @@ export function buildCityLayout(DATA, extra = [], { stops = [] } = {}) {
     for (let y = c + 3; y < H; y++) g[y][x] = y <= c + 4 ? ',' : 's';
   }
   const river = { cols: [], bridges: [] }, half = Math.floor(RIVER.width / 2);
-  const bridgeIds = new Set([...ew.map((s, j) => (s.bridge ? -(j + 1) : 0)).filter(Boolean), -100]);
+  const bridgeIds = new Set([...ew.map((s, j) => (s.bridge ? -(j + 1) : 0)).filter(Boolean), -100, -93]);
   for (let y = 0; y < H; y++) {
     const m = RIVER.midAt(y), x0 = m - half, x1 = m + half;
     river.cols[y] = { x0, x1 };
@@ -425,8 +486,7 @@ export function buildCityLayout(DATA, extra = [], { stops = [] } = {}) {
 
   // v2.5: the woods trail, at the top of the last street west of the park gate past Kessler
   // Heights: roped off, with a sign, until the woods open.
-  let woods = null;
-  for (let x = gate.x0 - 21; x > 2 && !woods; x--) if (g[1][x] === '=' && g[1][x - 1] === '=' && g[1][x + 1] !== '=') woods = { x0: x - 1, x1: x };
+  const woods = woodsPair;
   if (woods) { set(woods.x0, 1, '%'); set(woods.x1, 1, '&'); }
 
   const doors = {};
@@ -437,6 +497,7 @@ export function buildCityLayout(DATA, extra = [], { stops = [] } = {}) {
     rows: g.map(r => r.join('')),
     blocks: blocks.map(({ cells, spans, ...b }) => ({ ...b, size: cells.length })),
     locs, doors, busStops, plaza, river, gate, beach, docks, woods, beachArchY,
+    circles, spurs,
     spawn: home.stand,
     blockAt(tx, ty) { const i = inside(tx, ty) ? regionOf[ty * W + tx] : -1; return i >= 0 ? this.blocks[i] : null; },
     districtAt(tx, ty) {
