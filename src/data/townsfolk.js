@@ -70,8 +70,9 @@ export function beachPeople(day, seed = 0, season = 'summer', inPark = []) {
 
 // Who drops by the shop today (in this order), at most MAX_FRIEND_VISITS visits of them. A
 // married couple comes in together (one visit, two people, side by side in the list).
-export function shopVisitors(day, seed = 0) {
-  const names = CUSTOM_NPCS.filter(n => pick(n.name, day, seed, 'visit') < (n.visits ?? VISIT_CHANCE))
+// boost(name): a multiplier on someone's chance (Phase 30: closer friends come more often).
+export function shopVisitors(day, seed = 0, boost = () => 1) {
+  const names = CUSTOM_NPCS.filter(n => pick(n.name, day, seed, 'visit') < (n.visits ?? VISIT_CHANCE) * boost(n.name))
     .sort((a, b) => pick(a.name, day, seed, 'order') - pick(b.name, day, seed, 'order')).map(n => n.name);
   const out = [];
   let visits = 0;

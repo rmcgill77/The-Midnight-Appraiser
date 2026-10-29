@@ -17,7 +17,7 @@ import { buildTileset, buildShopTiles, buildLabTiles, buildGrowthTiles, buildBar
 import { ROOMS, BAR, PLACE_ROOMS, PLACE_OF_ROOM } from './data/rooms.js';
 import { EXTRA_PLACES, extraPlace, WALK_INS, mapIcon, TACKLE } from './data/places.js';
 import { RoomCrowd, peopleIn } from './game/bar.js';
-import { regularsAt, titleOf, dayOffSpot, streetWalkers, spouseOf, parkPeople, beachPeople } from './data/townsfolk.js';
+import { regularsAt, titleOf, dayOffSpot, streetWalkers, spouseOf, parkPeople, beachPeople, CUSTOM_NPCS } from './data/townsfolk.js';
 import * as FISH from './game/fishing.js';
 import { openTackle, openTackleBox, fishArt } from './ui/fishing-panels.js';
 import { drawLine as drawFishLine, drawReel } from './ui/fishing-art.js';
@@ -35,6 +35,7 @@ import * as NW from './game/nightwindow.js';
 import * as EX from './game/exhaustion.js';
 import * as AP from './game/appraisals.js';
 import * as TR from './game/traffic.js';
+import * as VS from './game/visits.js';
 import { SleepFx } from './ui/sleepfx.js';
 import { Player } from './game/player.js';
 import { Crowd } from './game/customers.js';
@@ -107,7 +108,7 @@ import { dress, lookKey, lookFor, SIGNATURE, spritesFor, offDutyLook } from './g
 import { statusAt, closedAllDay, weekdayName } from './game/schedule.js';
 import { SCHEDULES } from './data/schedules.js';
 import { drawDoorSign } from './ui/draw-art.js';
-import { freshDraw, drawState, extrasToday, comfortMods, adOn, adBooked, regulars } from './game/marketing.js';
+import { freshDraw, drawState, extrasToday, comfortMods, adOn, adBooked, regulars, setVisitBoost } from './game/marketing.js';
 
 const layer = document.getElementById('game');
 const canvas = document.getElementById('view');
@@ -287,6 +288,13 @@ function makeCrowd() {
     seller: sim => (hasEdge(world, 'haggle') ? softenSeller(sim) : sim),
     // Phase 30 (continuous mode): traffic follows the shop's open hours and the time of day.
     hoursScale: () => (CONTINUOUS && world.shopSession ? TR.hoursScale(world.shopSession.to - world.shopSession.opened, CONFIG.shopHours.maxMinutes) : 1),
+    // ...and friends drop by when they're free: not asleep, and not while their own place is open.
+    visitAt: (name, next) => {
+      if (!CONTINUOUS || !world.shopSession) return undefined;
+      const s = world.shopSession, npc = CUSTOM_NPCS.find(n => n.name === name);
+      const jobOpen = (placeId, minute) => !!SCHEDULES[placeId] && statusAt(placeId, st.day, minute, st.seed).open;
+      return VS.visitProgress(npc, s.opened, s.to, { jobOpen }, { next });
+    },
     arrivals: (n, next) => (CONTINUOUS && world.shopSession ? TR.arrivalProgress(n, world.shopSession.opened, world.shopSession.to, { next }) : null),
     dress: (sim, others) => dress(sim.name ?? `customer-${sim.id}`, new Set([playerKey(), ...others.map(o => o.lookKey).filter(Boolean)]), { faction: sim.faction, offDuty: !!sim.friend }),
   }, rng);
@@ -2052,6 +2060,8 @@ function goThrough(go) {
 clock.onDayEnd = reason => (CONTINUOUS ? (world.room === 'zone' && st?.run ? endRun(N.clockOut(st)) : world.night === 'city' ? nightCityClock() : ui.toast('Your bed is at home. Turn in there.', 2400)) : world.room === 'zone' && st?.run ? endRun(N.clockOut(st)) : world.night === 'city' ? nightCityClock() : world.night === 'shop' ? endNightShop() : endDay(reason));
 
 if (CONTINUOUS) {
+  // closer friends drop by the shop more often (game/visits.js)
+  setVisitBoost(name => VS.visitBoost(REL.heartsOf(T.personOf(world, name).rel)));
   clock.onEvent = e => {
     if (e.type === 'skipped') ui.toast(e.count === 1 ? 'You didn’t sleep. You can feel it: you’re slower, and your hands aren’t steady.' : 'Two nights without sleep. The edges of things aren’t right.', 4200);
     else if (e.type === 'collapse') collapseScene(e);

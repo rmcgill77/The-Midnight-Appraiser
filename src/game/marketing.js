@@ -43,8 +43,12 @@ export function regulars(st) {
 
 // Everyone extra who comes in today, in arrival order (regulars first: they know the hours).
 // Phase 29: friends from around town drop by too, first of all (they'd hate to miss you).
+// Phase 30: the continuous day makes closer friends drop by more often (set once, by main.js).
+let visitBoost = () => 1;
+export const setVisitBoost = f => { visitBoost = f ?? (() => 1); };
+
 export function extrasToday(world, st) {
-  const friends = shopVisitors(st.day, st.seed ?? 0);
+  const friends = shopVisitors(st.day, st.seed ?? 0, visitBoost);
   const out = [...friends.map((friend, i) => ({ kind: 'buy', why: 'friend', friend, with: i && spouseOf(friend) === friends[i - 1] ? friends[i - 1] : null })), ...regulars(st)];
   const ad = adOn(world, st.day);
   if (ad) for (let i = 0; i < ad.extra; i++) out.push({ kind: ad.mix[i % ad.mix.length], why: 'ad' });
