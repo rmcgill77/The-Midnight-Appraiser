@@ -15,6 +15,7 @@ import { frontOf, mapIcon } from './places.js';
 import { buildStreetNet } from '../game/street-net.js';
 import { dressBuildingTile } from './building-dress.js';
 import { dressProps, dressShopFront } from './street-props.js';
+import { dressSeason } from './season-dress.js';
 
 const C = {
   asphalt: '#1b1d24', asphaltLight: '#23262f', asphaltDark: '#14161b', lane: '#6b6550',
@@ -795,6 +796,11 @@ export function decorateCity(layout, DATA, tiles, extra = []) {
     for (let ty = ty0; ty <= ty1; ty++) for (let tx = tx0; tx <= tx1; tx++) {
       const ch = map.at(tx, ty);
       if (isRoof(ch) || isFace(ch) || isHouseDoor(ch)) dressBuildingTile(g, map, tx, ty, ch, mixHash(tx, ty), tiles.season ?? 'summer', { districtOf, isRoof, isFace, isHouseDoor });
+    }
+    // Phase 32e: the season on the street
+    for (let ty = ty0; ty <= ty1; ty++) for (let tx = tx0; tx <= tx1; tx++) {
+      const ch = map.at(tx, ty);
+      dressSeason(g, tx, ty, ch, mixHash(tx * 5 + 3, ty * 7 + 1), tiles.season ?? 'summer', { isFace: isFace(ch), isRoofAbove: isRoof(map.at(tx, ty - 1)) });
     }
     // Phase 32d: street furniture and clutter
     for (let ty = ty0; ty <= ty1; ty++) for (let tx = tx0; tx <= tx1; tx++) {

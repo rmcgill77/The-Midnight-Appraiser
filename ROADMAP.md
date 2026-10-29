@@ -264,9 +264,16 @@ phase when we plan it.
   4. **Props and clutter (32d, built, `data/street-props.js`):** fire hydrants, mail boxes,
      newspaper boxes, litter bins and bike racks at the kerb, parking meters along Old Market,
      sandwich boards outside shops, pots by house doors, bags and boxes in the alleys. Painted on
-     the map (not solid), placed by tile hash. Seasonal looks are next,
+     the map (not solid), placed by tile hash. 5. **Seasonal looks (32e, built, `data/season-dress.js`):** leaf piles and pumpkins in autumn,
+     blossom drift and daisies in spring, dappled shade and wildflowers in summer, snow banked
+     at trunks, icicles, door wreaths and frosted fences in winter.
+  6. **Finished ground weather (32f, built, `ui/ground-fx.js`):** snow is soft drifts that run on
+     from tile to tile, build from the hollows and melt away patchily (nine depths), roads are
+     worn clear down the middle with banks at the curbs; puddles are irregular pools in the
+     gutters mirroring the sky, with ripples in the rain. Phase 32 is complete except for any
+     polish after play. Before Phase 33,
      each as its own slice, with the finished puddles, wet streets and snow drawn on the new tiles.
-- **Status: Phase 32 is in progress (32a built).**
+- **Status: Phase 32 is built (32a-32f); polish after play remains.**
 - Likely files: `src/data/city.js`, `src/data/city-tiles.js`, `src/data/tiles.js`.
 
 ### Phase 33: The woods
