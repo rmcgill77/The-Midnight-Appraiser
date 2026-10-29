@@ -128,7 +128,7 @@ function palette(L, opts = {}) {
   const skin = SKINS[L.skin], hair = HAIR_COLORS[L.hairColor], hat = CLOTH[L.hatColor], top = CLOTH[L.topColor];
   const bot = CLOTH[L.bottomColor], ex = CLOTH[L.extraColor], neck = CLOTH[L.neckColor];
   const topName = PARTS.top[L.top], extraName = PARTS.extra[L.extra];
-  const gloves = extraName === 'Gloves';
+  const gloves = extraName === 'Gloves' || extraName === 'Fingerless gloves';
   const R = {
     skin: ramp(skin), ear: ramp(shade(skin, 0.94)), neckSkin: ramp(skin), arm: ramp(skin),
     hand: ramp(gloves ? shade(ex, 0.8) : skin),
@@ -137,7 +137,7 @@ function palette(L, opts = {}) {
     shirt: ramp(topName === 'Shirtsleeves' ? top : SHIRT), cuff: ramp(shade(topName === 'Shirtsleeves' ? top : SHIRT, 1.08)),
     legN: ramp(bot), legF: ramp(shade(bot, 0.8)), skirt: ramp(bot), stocking: ramp(shade(skin, 0.72)),
     shoe: ramp(SHOE_OF(L.shoes, skin)), shoeF: ramp(shade(SHOE_OF(L.shoes, skin), 0.8)),
-    neckw: ramp(neck), ex: ramp(ex), strap: ramp(STRAP), sack: ramp(SACK), gold: ramp(GOLD),
+    neckw: ramp(neck), ex: ramp(ex), ex2: ramp(CLOTH[L.extra2Color ?? L.extraColor]), strap: ramp(STRAP), sack: ramp(SACK), gold: ramp(GOLD),
     wood: ramp('#8a6a3a'), steel: ramp('#8e939e'), cig: ramp('#ece6da'),
     fallback: ramp('#808080'),
   };
@@ -194,6 +194,7 @@ function paintKO(look, opts) {
 
 const HD_NEAREST = {
   hair: { Pixie: 'Crop', 'Space buns': 'Bun', Pigtails: 'Bob', Dreadlocks: 'Shaggy', 'Top knot': 'Bun', 'Side shave': 'Undercut', 'Bowl cut': 'Bob', Pompadour: 'Slick back', Cornrows: 'Crop', Mullet: 'Shaggy' },
+  extra: { Monocle: 'Glasses', 'Round spectacles': 'Glasses', 'Eye cord': 'Pendant', Choker: 'None', Bracelet: 'None', Rings: 'None', 'Fingerless gloves': 'Gloves', Backpack: 'Satchel', Umbrella: 'None', Cane: 'None', Lantern: 'None', Brooch: 'Pendant', Armband: 'None', 'Belt pouches': 'None' },
   top: { Dress: 'Sweater', Poncho: 'Sweater', 'Kimono robe': 'Overcoat', Cardigan: 'Jacket', Apron: 'Shirtsleeves', 'Lab coat': 'Overcoat', Cloak: 'Overcoat', Waistcoat: 'Vest', 'Leather jacket': 'Jacket', Raincoat: 'Trench coat' },
   bottom: { Shorts: 'Trousers', Jeans: 'Trousers', 'Pleated skirt': 'Skirt', 'Wide-leg trousers': 'Trousers', 'Cargo pants': 'Work pants', Overalls: 'Work pants', Leggings: 'Trousers' },
   hat: { Newsboy: 'Flat cap', Deerstalker: 'Flat cap', 'Cowboy hat': 'Wide brim', 'Bucket hat': 'Bowler', Headscarf: 'Beret', 'Hood up': 'Beanie', Veil: 'Trilby', Pillbox: 'Beret', 'Gas mask': 'None', Bandana: 'Beanie' },
@@ -214,11 +215,12 @@ function paintBody(L, look, C, view, frame, pose, opts) {
   const near = (k, n) => HD_NEAREST[k]?.[n] ?? n;   // the small figure draws the newer options as their nearest older one
   const names = {
     hair: near('hair', PARTS.hair[look.hair]), hat: near('hat', PARTS.hat[look.hat]), top: near('top', PARTS.top[look.top]), bottom: near('bottom', PARTS.bottom[look.bottom]),
-    extra: PARTS.extra[look.extra], facial: PARTS.facial[look.facial], face: PARTS.face[look.face],
+    extra: near('extra', PARTS.extra[look.extra || look.extra2 || 0]), facial: PARTS.facial[look.facial], face: PARTS.face[look.face],
     eyes: near('eyes', PARTS.eyes[look.eyes]), brows: near('brows', PARTS.brows[look.brows]), mouth: PARTS.mouth[look.mouth], mark: near('mark', PARTS.mark[look.mark]),
     pattern: PARTS.pattern[look.pattern], neck: PARTS.neck[look.neck],
   };
   names.facial = near('facial', names.facial);
+  names.rawExtra = PARTS.extra[look.extra || look.extra2 || 0];
   const walking = pose === 'walk' || pose === 'carry';
   const bob = (walking && frame % 2 === 1) || (pose === 'idle' && frame === 1) ? 1 : 0;
   // Which leg is forward: +1 the left (or near) leg, -1 the other, 0 both under you.
@@ -741,6 +743,19 @@ function paintExtrasFront(L, ctx) {
   const { R, O, S, P } = L;
   const { names, view, U, x0, x1, C, bob, opts, pose } = ctx;
   const ex = names.extra, front = view === 'down';
+  const raw = names.rawExtra;
+  if (front) {
+    const hx = x0 - 3;
+    if (raw === 'Umbrella') { for (let y = 15; y <= 24; y++) P(hx, U(y), 'ex', y % 3 ? 0 : -1); for (let y = 25; y <= 30; y++) P(hx, y, 'wood'); P(hx, U(14), 'steel'); }
+    if (raw === 'Cane') { for (let y = 22; y <= 30; y++) P(hx, y, 'wood'); P(hx + 1, U(21), 'wood'); P(hx, U(21), 'wood'); }
+    if (raw === 'Lantern') { for (let y = 25; y <= 26; y++) P(hx, U(y), 'steel'); R(hx - 1, U(27), 3, 3, 'steel'); O(hx, U(28), GOLD); O(hx, U(27), '#fff0c8'); O(hx - 2, U(28), 'rgba(224,166,74,0.35)'); O(hx + 2, U(28), 'rgba(224,166,74,0.35)'); }
+    if (raw === 'Bracelet') { O(x0 - 2, U(22), C.ex); O(x0 - 1, U(22), shade(C.ex, 0.8)); }
+    if (raw === 'Rings') { O(x1 + 1, U(24), GOLD); O(x0 - 2, U(24), SILVER); }
+    if (raw === 'Armband') { O(x0 - 2, U(19), C.ex); O(x0 - 1, U(19), C.ex); O(x0 - 2, U(20), shade(C.ex, 0.8)); O(x0 - 1, U(20), shade(C.ex, 0.8)); }
+    if (raw === 'Belt pouches') { for (const bx of [x0 + 1, x1 - 2]) { R(bx, U(22), 2, 2, 'ex'); O(bx, U(22), c => c && shade(c, 1.2)); } }
+    if (raw === 'Choker') { for (let x = 10; x <= 13; x++) O(x, U(16), x % 2 ? C.ex : shade(C.ex, 0.8)); }
+    if (raw === 'Brooch') { O(x0 + 2, U(19), GOLD); O(x0 + 2, U(20), '#c95a8e'); }
+  }
   if (ex === 'Scarf') {
     S({ 16: [8, 15], 17: [8, 15] }, 'ex', null, 0, -bob);
     if (front) { R(13, U(18), 2, 3, 'ex'); for (const y of [18, 20]) O(13, U(y), c => c && shade(c, 0.8)); }
@@ -1452,8 +1467,9 @@ export function paintPortrait(lookIn, opts = {}) {
   }
   if (hat === 'Hair bow') { E(19.5, 6.5, 3.6, 2.6, 'hat'); E(27.5, 6.5, 3.6, 2.6, 'hat'); E(23.5, 6.5, 1.8, 1.8, 'band'); }
 
-  // --- extras ---
-  if (extra === 'Scarf') { fill((x, y) => y >= 33 && y <= 39 && Math.abs(x - cx) <= 11 - Math.max(0, 36 - y), 'ex'); fill((x, y) => x >= 27 && x <= 31 && y >= 39 && y <= 47, 'ex'); for (const y of [41, 44]) for (let x = 27; x <= 31; x++) O(x, y, c => c && shade(c, 0.78)); }
+  // --- extras (two slots) ---
+  const drawExtra = (extra, exM, exC) => {
+  if (extra === 'Scarf') { fill((x, y) => y >= 33 && y <= 39 && Math.abs(x - cx) <= 11 - Math.max(0, 36 - y), exM); fill((x, y) => x >= 27 && x <= 31 && y >= 39 && y <= 47, exM); for (const y of [41, 44]) for (let x = 27; x <= 31; x++) O(x, y, c => c && shade(c, 0.78)); }
   if (extra === 'Glasses') {
     for (const x0 of [15, 27]) for (let y = 20; y <= 25; y++) for (let x = x0; x <= x0 + 5; x++) {
       const edge = y === 20 || y === 25 || x === x0 || x === x0 + 5;
@@ -1478,7 +1494,27 @@ export function paintPortrait(lookIn, opts = {}) {
   if (extra === 'Pocket watch') { for (let x = 29; x <= 34; x++) O(x, 44 + (x % 2), GOLD); }
   if (extra === 'Small hoops') for (const ex0 of [12, 35]) for (const [dx, dy] of [[0, 27], [-1, 28], [1, 28], [0, 29]]) O(ex0 + dx, dy, dy === 29 ? shade(SILVER, 0.7) : SILVER);
   if (extra === 'Earrings') for (const ex0 of [12, 35]) { O(ex0, 27, SILVER); for (const [dx, dy] of [[-1, 29], [0, 29], [1, 29], [-1, 30], [0, 30], [1, 30], [-1, 31], [0, 31], [1, 31], [0, 32]]) O(ex0 + dx, dy, (dx + dy) % 2 ? SILVER : shade(SILVER, 0.75)); O(ex0, 28, shade(SILVER, 0.8)); }
-  if (extra === 'Hair clips') for (const [x0, y0] of [[13, 13], [31, 11], [33, 15]]) for (const [dx, dy] of [[0, 0], [1, 0], [0, 1], [1, 1]]) O(x0 + dx, y0 + dy, dx + dy === 0 ? shade(C.ex, 1.3) : C.ex);
+  if (extra === 'Hair clips') for (const [x0, y0] of [[13, 13], [31, 11], [33, 15]]) for (const [dx, dy] of [[0, 0], [1, 0], [0, 1], [1, 1]]) O(x0 + dx, y0 + dy, dx + dy === 0 ? shade(exC, 1.3) : exC);
+  // Phase 31c: the newer accessories.
+  if (extra === 'Monocle') {
+    each((x, y) => { const r = ((x - 29.5) / 3.7) ** 2 + ((y - 22.5) / 3.7) ** 2; if (r <= 1 && r > 0.55) O(x, y, GOLD); else if (r <= 0.55 && L.ov[y][x] == null) O(x, y, c => c && mix(c, LENS, 0.22)); });
+    for (let i = 0; i < 14; i++) if (i % 2 === 0) O(33 + (i > 7 ? 1 : 0), 26 + i, GOLD);
+  }
+  if (extra === 'Round spectacles') {
+    for (const lx of [18.5, 29.5]) each((x, y) => { const r = ((x - lx) / 3.6) ** 2 + ((y - 22.5) / 3.6) ** 2; if (r <= 1 && r > 0.6) O(x, y, '#5a5a66'); else if (r <= 0.6 && L.ov[y][x] == null) O(x, y, c => c && mix(c, LENS, 0.2)); });
+    for (const x of [22, 23, 24, 25]) O(x, 21, '#5a5a66'); for (const [x, y] of [[13, 21], [14, 21], [34, 21], [35, 21]]) O(x, y, '#5a5a66');
+  }
+  if (extra === 'Eye cord') {
+    for (let i = 0; i < 7; i++) { O(19 + i, 37 + i, GOLD); O(28 - i, 37 + i, GOLD); }
+    each((x, y) => { const r = ((x - 23.5) / 3.4) ** 2 + ((y - 46) / 3.4) ** 2; if (r <= 1 && r > 0.55) O(x, y, GOLD); else if (r <= 0.55) O(x, y, (x + y) % 3 ? LENS : '#e8f4f8'); });
+  }
+  if (extra === 'Choker') { for (let x = 19; x <= 28; x++) for (const y of [34, 35]) O(x, y, (x + y) % 3 ? exC : shade(exC, 0.8)); O(23, 36, SILVER); O(24, 36, GOLD); }
+  if (extra === 'Brooch') { for (const [x, y, c] of [[31, 42, GOLD], [32, 42, GOLD], [31, 43, '#c95a8e'], [32, 43, shade('#c95a8e', 0.8)], [31, 44, GOLD], [32, 44, GOLD]]) O(x, y, c); }
+  if (extra === 'Backpack') for (const sx of [17, 18, 29, 30]) { for (let y = 37; y <= 47; y++) O(sx, y, STRAP); O(sx, 43, SILVER); }
+  if (extra === 'Armband') for (let y = 42; y <= 44; y++) for (let x = 8; x <= 14; x++) if (L.at(x, y) === 'top') O(x, y, y === 43 ? shade(exC, 0.8) : exC);
+  };
+  drawExtra(extra, 'ex', C.ex);
+  if (look.extra2) drawExtra(PARTS.extra[look.extra2], 'ex2', CLOTH[look.extra2Color ?? look.extraColor]);
   // v2.4: a cigarette at the corner of the mouth, and a shovel's handle over the shoulder.
   if (look.smoke) {
     for (let x = 26; x <= 31; x++) { O(x, 31 + (x > 29 ? 1 : 0), '#ece6da'); }

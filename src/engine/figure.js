@@ -39,7 +39,7 @@ export const PARTS = {
   hat: ['None', 'Fedora', 'Flat cap', 'Beanie', 'Bowler', 'Wide brim', 'Trilby', 'Beret', 'Hair bow', 'Top hat', 'Garrison cap', 'Sailor cap', 'Newsboy', 'Deerstalker', 'Cowboy hat', 'Bucket hat', 'Headscarf', 'Hood up', 'Veil', 'Pillbox', 'Gas mask', 'Bandana'],
   top: ['Trench coat', 'Jacket', 'Sweater', 'Vest', 'Hoodie', 'Overcoat', 'Suit jacket', 'Shirtsleeves', 'Tank top', 'Uniform shirt', 'Jumper', 'Dress', 'Poncho', 'Kimono robe', 'Cardigan', 'Apron', 'Lab coat', 'Cloak', 'Waistcoat', 'Leather jacket', 'Raincoat'],
   bottom: ['Trousers', 'Skirt', 'Work pants', 'Long skirt', 'Shorts', 'Jeans', 'Pleated skirt', 'Wide-leg trousers', 'Cargo pants', 'Overalls', 'Leggings'],
-  extra: ['None', 'Scarf', 'Glasses', 'Pendant', 'Satchel', 'Gloves', 'Pocket watch', 'Hair clips', 'Earrings', 'Aviators', 'Small hoops'],
+  extra: ['None', 'Scarf', 'Glasses', 'Pendant', 'Satchel', 'Gloves', 'Pocket watch', 'Hair clips', 'Earrings', 'Aviators', 'Small hoops', 'Monocle', 'Round spectacles', 'Eye cord', 'Choker', 'Bracelet', 'Rings', 'Fingerless gloves', 'Backpack', 'Umbrella', 'Cane', 'Lantern', 'Brooch', 'Armband', 'Belt pouches'],
   // Phase 14: the finer details the bigger figure has room for.
   eyes: ['Round', 'Narrow', 'Hooded', 'Wide', 'Lashes', 'Almond', 'Downturned'],
   brows: ['Straight', 'Arched', 'Heavy', 'Thin', 'Furrowed', 'Bushy', 'Unibrow', 'Shaved'],
@@ -53,17 +53,19 @@ export const PARTS = {
   skinFx: ['None', 'Vitiligo', 'Sun-flushed', 'Pale and veined'],
   eyeFx: ['None', 'Eyeliner', 'Eyeshadow', 'Faint glow', 'Mismatched eyes', 'Eye patch'],
   makeup: ['None', 'Red lipstick', 'Plum lipstick', 'Dark lips', 'Blush', 'Face-paint stripe'],
+  extra2: null,   // the second accessory slot: the same list as `extra` (set just below)
   shoes: ['Default', 'Boots', 'Sneakers', 'Heels', 'Sandals', 'Wellingtons', 'Barefoot'],
   hairFx: ['None', 'Two-tone', 'Faded ends'],
   piercing: ['None', 'Nose stud', 'Septum ring', 'Brow ring', 'Lip ring', 'Ear cuffs'],
 };
 // The keys outside ALL_KEYS that are stored on a look only when set.
-export const EXTRA_KEYS = ['skinFx', 'eyeFx', 'makeup', 'piercing', 'hairFx', 'shoes'];
+PARTS.extra2 = PARTS.extra;
+export const EXTRA_KEYS = ['skinFx', 'eyeFx', 'makeup', 'piercing', 'hairFx', 'shoes', 'extra2'];
 // Which list each color choice comes from.
 // Phase 31b: the faces a portrait can make. 'neutral' is the face as the creator draws it.
 export const MOODS = ['neutral', 'happy', 'sad', 'annoyed', 'angry', 'upset', 'flirty', 'surprised', 'scared', 'embarrassed', 'smug', 'tired'];
 
-export const COLOR_OF = { skin: SKINS, hairColor: HAIR_COLORS, hatColor: CLOTH, topColor: CLOTH, bottomColor: CLOTH, extraColor: CLOTH, eyeColor: EYE_COLORS, neckColor: CLOTH };
+export const COLOR_OF = { skin: SKINS, hairColor: HAIR_COLORS, hatColor: CLOTH, topColor: CLOTH, bottomColor: CLOTH, extraColor: CLOTH, eyeColor: EYE_COLORS, neckColor: CLOTH, extra2Color: CLOTH };
 // The 14 choices every figure has had since Phase 12 (and what tells two people apart in a crowd)...
 export const LOOK_KEYS = ['build', 'skin', 'hair', 'hairColor', 'face', 'facial', 'hat', 'hatColor', 'top', 'topColor', 'bottom', 'bottomColor', 'extra', 'extraColor'];
 // ...and the Phase 14 details, which only the 24x32 figure and the portraits show.
@@ -73,7 +75,7 @@ const LIST_OF = { ...PARTS, ...COLOR_OF };
 // How long each list was in Phase 12. Crowds are still drawn small (until Phase 15), so
 // they only pick from these, and the small painter maps any newer choice to its nearest.
 export const LEGACY_SIZE = { build: 3, skin: 10, hair: 8, hairColor: 12, face: 4, facial: 4, hat: 6, hatColor: 20, top: 6, topColor: 20, bottom: 3, bottomColor: 20, extra: 5, extraColor: 20 };
-const LEGACY_MAP = { build: { 3: 0, 4: 2, 5: 2, 6: 1 }, hair: { 8: 2, 9: 1, 10: 5, 11: 1, 12: 3, 13: 3, 14: 7, 15: 3, 16: 1, 17: 3, 18: 7, 19: 5, 20: 3, 21: 1, 22: 7, 23: 2, 24: 1, 25: 7 }, hat: { 6: 1, 7: 3, 8: 0, 9: 4, 10: 2, 11: 3, 12: 1, 13: 1, 14: 5, 15: 4, 16: 3, 17: 3, 18: 0, 19: 3, 20: 0, 21: 3 }, facial: { 4: 1, 5: 1 }, top: { 6: 1, 7: 3, 8: 2, 9: 3, 10: 2, 11: 2, 12: 2, 13: 0, 14: 1, 15: 3, 16: 0, 17: 0, 18: 3, 19: 1, 20: 0 }, bottom: { 3: 1, 4: 0, 5: 0, 6: 1, 7: 0, 8: 2, 9: 2, 10: 0 }, extra: { 5: 0, 6: 3, 7: 0, 8: 0, 9: 2, 10: 0 } };
+const LEGACY_MAP = { build: { 3: 0, 4: 2, 5: 2, 6: 1 }, hair: { 8: 2, 9: 1, 10: 5, 11: 1, 12: 3, 13: 3, 14: 7, 15: 3, 16: 1, 17: 3, 18: 7, 19: 5, 20: 3, 21: 1, 22: 7, 23: 2, 24: 1, 25: 7 }, hat: { 6: 1, 7: 3, 8: 0, 9: 4, 10: 2, 11: 3, 12: 1, 13: 1, 14: 5, 15: 4, 16: 3, 17: 3, 18: 0, 19: 3, 20: 0, 21: 3 }, facial: { 4: 1, 5: 1 }, top: { 6: 1, 7: 3, 8: 2, 9: 3, 10: 2, 11: 2, 12: 2, 13: 0, 14: 1, 15: 3, 16: 0, 17: 0, 18: 3, 19: 1, 20: 0 }, bottom: { 3: 1, 4: 0, 5: 0, 6: 1, 7: 0, 8: 2, 9: 2, 10: 0 }, extra: { 5: 0, 6: 3, 7: 0, 8: 0, 9: 2, 10: 0, 11: 2, 12: 2, 13: 3, 14: 3, 15: 0, 16: 0, 17: 0, 18: 4, 19: 0, 20: 0, 21: 0, 22: 3, 23: 0, 24: 0 } };
 // How long each list was at the end of Phase 19. Seeded rolls (townsfolk, details) draw from
 // these, so adding options (Phase 20 on) never changes anyone already in town.
 export const ROLL_SIZE = { build: 3, hair: 13, hat: 8, top: 8, facial: 6, bottom: 4, extra: 7, eyes: 5, eyeColor: 6, brows: 5, mouth: 5, mark: 5, pattern: 4, neck: 5, neckColor: 20 };
@@ -96,6 +98,7 @@ export function cleanLook(look) {
   // height: 1 was always 'tall' (Dex); 2 short and 3 very tall came with Phase 31c.
   if (look?.height) out.height = Number.isInteger(look.height) && look.height >= 1 && look.height < PARTS.height.length ? look.height : 1;
   for (const k of EXTRA_KEYS) if (Number.isInteger(look?.[k]) && look[k] > 0 && look[k] < PARTS[k].length) out[k] = look[k];
+  if (out.extra2 && Number.isInteger(look?.extra2Color) && look.extra2Color >= 0 && look.extra2Color < CLOTH.length) out.extra2Color = look.extra2Color;
   // Phase 31a: pronouns NPCs use for the player (0 they, 1 she, 2 he). Outside ALL_KEYS so painters ignore it.
   if (Number.isInteger(look?.pronouns) && look.pronouns > 0 && look.pronouns < PARTS.pronouns.length) out.pronouns = look.pronouns;
   // v2.4: a few touches for one-off characters (Mike, the Gravekeeper): a balding crown, a
