@@ -49,3 +49,12 @@ test('surprise extras are valid', () => {
   let n = 0; const r = () => ((n = (n * 9301 + 49297) % 233280) / 233280);
   for (let i = 0; i < 50; i++) cleanLook({ ...CLASSIC_LOOK, ...randomExtras(r) });
 });
+
+test('the newer hairstyles and hats are drawn on the walking figure itself, not borrowed from an older one', () => {
+  const B = { ...CLASSIC_LOOK, hat: 0 };
+  const all = look => ['down', 'up', 'right'].map(f => JSON.stringify(paintHD(look, f, 0, 'idle', {}))).join('|');
+  const seen = new Set([all(B)]);
+  for (let v = 16; v <= 25; v++) { const img = all({ ...B, hair: v }); assert.ok(!seen.has(img), `hair ${PARTS.hair[v]} looks like another`); seen.add(img); }
+  const seenHat = new Set([all(B)]);
+  for (let v = 12; v <= 21; v++) { const img = all({ ...B, hat: v }); assert.ok(!seenHat.has(img), `hat ${PARTS.hat[v]} looks like another`); seenHat.add(img); }
+});

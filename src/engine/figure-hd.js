@@ -193,11 +193,9 @@ function paintKO(look, opts) {
 }
 
 const HD_NEAREST = {
-  hair: { Pixie: 'Crop', 'Space buns': 'Bun', Pigtails: 'Bob', Dreadlocks: 'Shaggy', 'Top knot': 'Bun', 'Side shave': 'Undercut', 'Bowl cut': 'Bob', Pompadour: 'Slick back', Cornrows: 'Crop', Mullet: 'Shaggy' },
   extra: { Monocle: 'Glasses', 'Round spectacles': 'Glasses', 'Eye cord': 'Pendant', Choker: 'None', Bracelet: 'None', Rings: 'None', 'Fingerless gloves': 'Gloves', Backpack: 'Satchel', Umbrella: 'None', Cane: 'None', Lantern: 'None', Brooch: 'Pendant', Armband: 'None', 'Belt pouches': 'None' },
   top: { Dress: 'Sweater', Poncho: 'Sweater', 'Kimono robe': 'Overcoat', Cardigan: 'Jacket', Apron: 'Shirtsleeves', 'Lab coat': 'Overcoat', Cloak: 'Overcoat', Waistcoat: 'Vest', 'Leather jacket': 'Jacket', Raincoat: 'Trench coat' },
   bottom: { Shorts: 'Trousers', Jeans: 'Trousers', 'Pleated skirt': 'Skirt', 'Wide-leg trousers': 'Trousers', 'Cargo pants': 'Work pants', Overalls: 'Work pants', Leggings: 'Trousers' },
-  hat: { Newsboy: 'Flat cap', Deerstalker: 'Flat cap', 'Cowboy hat': 'Wide brim', 'Bucket hat': 'Bowler', Headscarf: 'Beret', 'Hood up': 'Beanie', Veil: 'Trilby', Pillbox: 'Beret', 'Gas mask': 'None', Bandana: 'Beanie' },
   eyes: { Almond: 'Round', Downturned: 'Hooded' },
   brows: { Bushy: 'Heavy', Unibrow: 'Heavy', Shaved: 'Thin' },
   mark: { 'Burn scar': 'Cheek scar', Birthmark: 'Mole', 'Stitched scar': 'Cheek scar', 'Eye scar': 'Brow scar' },
@@ -583,6 +581,17 @@ HAIR_BACK['Side part'] = HAIR_BACK['Slick back'] = HAIR_BACK.Crop;
 HAIR_BACK.Bun = { 0: [10, 13], 1: [10, 13], 2: [11, 12], ...HAIR_BACK.Crop };
 HAIR_BACK.Ponytail = { ...HAIR_BACK.Crop, 14: [10, 13], 15: [10, 13], 16: [10, 13], 17: [10, 13], 18: [11, 12], 19: [11, 12], 20: [11, 12] };
 HAIR_BACK.Braid = { ...HAIR_BACK.Crop, 14: [10, 13], 15: [10, 13], 16: [10, 13], 17: [10, 13], 18: [10, 13], 19: [10, 13], 20: [10, 13], 21: [10, 13], 22: [11, 12] };
+// Phase 31 (refine): the newer hairstyles, drawn on the walking figure like the old ones (they used to borrow a near neighbour).
+HAIR_FRONT.Pixie = { 2: [10, 13], 3: [9, 14], 4: [8, 15], 5: [8, 15], 6: [8, 15], 7: [[8, 8], [15, 15]] };
+HAIR_FRONT['Space buns'] = { 0: [[7, 9], [14, 16]], 1: [[7, 9], [14, 16]], 2: [[8, 9], [14, 15]], ...HAIR_FRONT.Crop };
+HAIR_FRONT.Pigtails = { ...HAIR_FRONT.Crop, 7: [[5, 7], [16, 18]], 8: [[5, 6], [17, 18]], 9: [[5, 6], [17, 18]], 10: [[5, 6], [17, 18]], 11: [[5, 6], [17, 18]], 12: [[5, 6], [17, 18]], 13: [[5, 6], [17, 18]], 14: [[5, 6], [17, 18]], 15: [[6, 6], [17, 17]] };
+HAIR_FRONT.Dreadlocks = { ...HAIR_FRONT.Curls, 8: [[6, 7], [9, 9], [14, 14], [16, 17]], 9: [[6, 7], [16, 17]], 10: [[5, 6], [8, 8], [15, 15], [17, 18]], 11: [[5, 6], [17, 18]], 12: [[5, 6], [17, 18]], 13: [[5, 6], [17, 18]], 14: [[5, 5], [18, 18]] };
+HAIR_FRONT['Top knot'] = { 0: [11, 12], 1: [10, 13], 2: [10, 13], 3: [9, 14], 4: [9, 15], 5: [9, 15], 6: [12, 15] };
+HAIR_FRONT['Side shave'] = { 1: [11, 16], 2: [11, 16], 3: [11, 16], 4: [12, 16], 5: [12, 16], 6: [14, 16], 7: [[16, 16]] };
+HAIR_FRONT['Bowl cut'] = { 2: [9, 14], 3: [8, 15], 4: [7, 16], 5: [7, 16], 6: [7, 16], 7: [7, 16], 8: [[7, 7], [16, 16]] };
+HAIR_FRONT.Pompadour = { 0: [9, 15], 1: [8, 16], 2: [8, 16], 3: [8, 16], 4: [8, 16], 5: [7, 16], 6: [7, 16], 7: [[7, 7], [16, 16]] };
+HAIR_FRONT.Cornrows = { ...HAIR_FRONT.Crop, 2: [10, 13] };
+HAIR_FRONT.Mullet = { ...HAIR_FRONT.Crop };
 const HAIR_SIDE = {
   Crop: { 3: [10, 14], 4: [9, 15], 5: [8, 16], 6: [8, 15], 7: [8, 12], 8: [[8, 10], [12, 12]], 9: [[8, 10], [12, 12]], 10: [8, 10], 11: [8, 10], 12: [8, 10], 13: [8, 9] },
   'Side part': { 2: [10, 14], 3: [9, 15], 4: [8, 16], 5: [8, 17], 6: [8, 17], 7: [[8, 12], [16, 17]], 8: [[8, 10], [12, 12]], 9: [[8, 10], [12, 12]], 10: [8, 10], 11: [8, 10], 12: [8, 10], 13: [8, 9] },
@@ -610,7 +619,7 @@ HAIR_BACK.Waves = { 3: [9, 14], 4: [8, 15], 5: [7, 16], 6: [6, 17], 7: [6, 17], 
 HAIR_SIDE.Waves = { 3: [10, 14], 4: [9, 15], 5: [8, 16], 6: [7, 17], 7: [[7, 12], [15, 17]], 8: [6, 12], 9: [6, 11], 10: [6, 10], 11: [5, 10], 12: [6, 10], 13: [6, 9], 14: [5, 9], 15: [6, 9], 16: [5, 8], 17: [6, 7] };
 
 // Where a hat cuts the hair off (rows above this go under the hat). A hair bow cuts nothing.
-const HAT_CUT = { 'Garrison cap': 4, 'Sailor cap': 5, 'Top hat': 7, Fedora: 8, 'Flat cap': 8, Beanie: 8, Bowler: 7, 'Wide brim': 8, Trilby: 7, Beret: 7 };
+const HAT_CUT = { Newsboy: 8, Deerstalker: 8, 'Cowboy hat': 6, 'Bucket hat': 7, Headscarf: 6, 'Hood up': 8, Veil: 5, Pillbox: 6, Bandana: 7, 'Garrison cap': 4, 'Sailor cap': 5, 'Top hat': 7, Fedora: 8, 'Flat cap': 8, Beanie: 8, Bowler: 7, 'Wide brim': 8, Trilby: 7, Beret: 7 };
 
 function paintHair(L, ctx) {
   const { names, view, bob, C, U } = ctx;
@@ -685,8 +694,30 @@ function paintHair(L, ctx) {
   if (style === 'Undercut' && view === 'up') for (let y = 8; y <= 13; y++) for (let x = 8; x <= 15; x++) if (L.at(x, U(y)) === 'skin') L.O(x, U(y), c => c && mix(c, C.hair, 0.3));
 }
 
+HAIR_SIDE.Pixie = { 3: [10, 14], 4: [9, 15], 5: [9, 15], 6: [9, 14], 7: [9, 12], 8: [9, 11] };
+HAIR_SIDE['Space buns'] = { 0: [9, 12], 1: [9, 13], 2: [9, 12], ...HAIR_SIDE.Crop };
+HAIR_SIDE.Pigtails = { ...HAIR_SIDE.Crop, 8: [6, 12], 9: [5, 8], 10: [5, 8], 11: [5, 7], 12: [5, 7], 13: [5, 7], 14: [5, 7], 15: [6, 6] };
+HAIR_SIDE.Dreadlocks = { ...HAIR_SIDE.Curls, 11: [6, 10], 12: [6, 8], 13: [6, 7], 14: [6, 7], 15: [6, 6], 16: [6, 6] };
+HAIR_SIDE['Top knot'] = { 0: [10, 12], 1: [9, 13], 2: [9, 13], 3: [9, 14], 4: [9, 15], 5: [9, 15], 6: [9, 12] };
+HAIR_SIDE['Side shave'] = { 1: [10, 15], 2: [10, 16], 3: [10, 16], 4: [11, 16], 5: [11, 15], 6: [11, 14] };
+HAIR_SIDE['Bowl cut'] = { 2: [10, 14], 3: [9, 15], 4: [8, 16], 5: [8, 16], 6: [8, 16], 7: [8, 16], 8: [8, 12], 9: [8, 10] };
+HAIR_SIDE.Pompadour = { 0: [10, 16], 1: [9, 17], 2: [9, 17], 3: [9, 17], 4: [8, 16], 5: [8, 16], 6: [8, 15], 7: [8, 12], 8: [[8, 10], [12, 12]], 9: [8, 10] };
+HAIR_SIDE.Cornrows = HAIR_SIDE.Crop;
+HAIR_SIDE.Mullet = { ...HAIR_SIDE.Crop, 14: [7, 10], 15: [7, 10], 16: [7, 9], 17: [8, 9] };
+
 // ---------- hats ----------
 
+// (the new hairstyles' backs and sides follow HAIR_SIDE below)
+HAIR_BACK.Pixie = { 3: [9, 14], 4: [8, 15], 5: [8, 15], 6: [8, 15], 7: [8, 15], 8: [8, 15], 9: [9, 14] };
+HAIR_BACK['Space buns'] = { 0: [[7, 9], [14, 16]], 1: [[7, 9], [14, 16]], 2: [[8, 9], [14, 15]], ...HAIR_BACK.Crop };
+HAIR_BACK.Pigtails = { ...HAIR_BACK.Crop, 8: [[5, 6], [7, 16], [17, 18]], 9: [[5, 6], [7, 16], [17, 18]], 10: [[5, 6], [7, 16], [17, 18]], 11: [[5, 6], [17, 18]], 12: [[5, 6], [17, 18]], 13: [[5, 6], [17, 18]], 14: [[5, 6], [17, 18]] };
+HAIR_BACK.Dreadlocks = { ...HAIR_BACK.Curls, 12: [[6, 7], [9, 9], [11, 12], [14, 14], [16, 17]], 13: [[6, 7], [10, 10], [13, 13], [16, 17]], 14: [[6, 6], [11, 11], [17, 17]], 15: [[6, 6], [17, 17]], 16: [[6, 6], [17, 17]] };
+HAIR_BACK['Top knot'] = { 0: [11, 12], 1: [10, 13], 2: [10, 13], 3: [9, 14], 4: [9, 15], 5: [9, 15], 6: [9, 15], 7: [9, 15], 8: [9, 15] };
+HAIR_BACK['Side shave'] = { 1: [11, 16], 2: [11, 16], 3: [11, 16], 4: [12, 16], 5: [12, 16], 6: [12, 16] };
+HAIR_BACK['Bowl cut'] = { 2: [9, 14], 3: [8, 15], 4: [7, 16], 5: [7, 16], 6: [7, 16], 7: [7, 16], 8: [7, 16], 9: [7, 16], 10: [8, 15] };
+HAIR_BACK.Pompadour = HAIR_BACK.Crop;
+HAIR_BACK.Cornrows = HAIR_BACK.Crop;
+HAIR_BACK.Mullet = { ...HAIR_BACK.Crop, 14: [8, 15], 15: [8, 15], 16: [8, 15], 17: [9, 14], 18: [10, 13] };
 const HAT_FRONT = {
   Fedora: [['hat', { 1: [[9, 10], [13, 14]], 2: [8, 15], 3: [8, 15], 4: [8, 15] }], ['band', { 5: [8, 15] }], ['brim', { 6: [4, 19] }], ['brim', { 7: [6, 17] }, -1]],
   'Flat cap': [['hat', { 3: [9, 14], 4: [8, 15], 5: [7, 16], 6: [7, 16] }], ['brim', { 7: [7, 16] }, -1]],
@@ -703,6 +734,16 @@ HAT_FRONT['Top hat'] = [['hat', { 0: [9, 14], 1: [9, 14], 2: [9, 14], 3: [9, 14]
 HAT_FRONT['Garrison cap'] = [['hat', { 1: [10, 11], 2: [9, 13], 3: [8, 15] }], ['band', { 4: [8, 16] }]];
 HAT_FRONT['Sailor cap'] = [['hat', { 1: [10, 13], 2: [9, 14], 3: [8, 15], 4: [8, 15] }], ['brim', { 5: [7, 16], 6: [7, 16] }]];
 HAT_FRONT['Hair bow'] = [['hat', { 1: [[8, 9], [12, 13]], 2: [8, 13], 3: [[8, 9], [12, 13]] }], ['band', { 2: [10, 11] }]];
+HAT_FRONT.Newsboy = [['hat', { 2: [9, 14], 3: [8, 15], 4: [7, 16], 5: [7, 16], 6: [7, 16] }], ['band', { 3: [11, 12] }], ['brim', { 7: [8, 15] }, -1]];
+HAT_FRONT.Deerstalker = [['hat', { 2: [9, 14], 3: [8, 15], 4: [7, 16], 5: [7, 16], 6: [7, 16], 7: [[6, 7], [16, 17]], 8: [[6, 7], [16, 17]], 9: [[6, 7], [16, 17]], 10: [[6, 7], [16, 17]] }], ['band', { 6: [7, 16] }], ['brim', { 7: [9, 14] }, -1]];
+HAT_FRONT['Cowboy hat'] = [['hat', { 1: [9, 14], 2: [9, 14], 3: [9, 14], 4: [9, 14] }], ['band', { 5: [9, 14] }], ['brim', { 5: [[1, 2], [21, 22]], 6: [2, 21], 7: [4, 19] }]];
+HAT_FRONT['Bucket hat'] = [['hat', { 2: [9, 14], 3: [8, 15], 4: [8, 15] }], ['band', { 5: [8, 15] }], ['brim', { 6: [5, 18], 7: [6, 17] }]];
+HAT_FRONT.Headscarf = [['hat', { 2: [10, 13], 3: [8, 15], 4: [7, 16], 5: [7, 16], 6: [7, 16], 7: [[7, 8], [15, 16]], 8: [[6, 7], [16, 17]], 9: [[6, 7], [16, 17]], 10: [[6, 7], [16, 17]], 11: [[6, 7], [16, 17]], 12: [[6, 7], [16, 17]] }], ['band', { 7: [9, 14] }]];
+HAT_FRONT['Hood up'] = [['hat', { 1: [9, 14], 2: [7, 16], 3: [6, 17], 4: [6, 17], 5: [6, 17], 6: [6, 17], 7: [[6, 8], [15, 17]], 8: [[5, 7], [16, 18]], 9: [[5, 7], [16, 18]], 10: [[5, 7], [16, 18]], 11: [[5, 7], [16, 18]], 12: [[5, 7], [16, 18]], 13: [[5, 7], [16, 18]], 14: [[6, 8], [15, 17]] }]];
+HAT_FRONT.Veil = [['hat', { 2: [12, 16], 3: [11, 17], 4: [12, 16] }], ['band', { 4: [13, 15] }]];
+HAT_FRONT.Pillbox = [['hat', { 2: [9, 14], 3: [8, 15], 4: [8, 15], 5: [8, 15] }], ['band', { 6: [8, 15] }]];
+HAT_FRONT['Gas mask'] = [['band', { 6: [7, 16] }], ['hat', { 10: [8, 15], 11: [8, 15], 12: [8, 15], 13: [9, 14], 14: [10, 13] }], ['brim', { 11: [[9, 10], [13, 14]], 14: [11, 12] }]];
+HAT_FRONT.Bandana = [['hat', { 3: [8, 15], 4: [7, 16], 5: [7, 16] }], ['band', { 6: [7, 16] }]];
 const HAT_SIDE = {
   Fedora: [['hat', { 1: [[10, 11], [13, 14]], 2: [9, 15], 3: [9, 15], 4: [9, 15] }], ['band', { 5: [9, 15] }], ['brim', { 6: [5, 20] }], ['brim', { 7: [17, 20] }, -1]],
   'Flat cap': [['hat', { 3: [9, 15], 4: [8, 16], 5: [8, 16], 6: [8, 17] }], ['brim', { 7: [14, 19] }, -1]],
@@ -716,6 +757,17 @@ const HAT_SIDE = {
   'Garrison cap': [['hat', { 1: [12, 14], 2: [10, 15], 3: [8, 16] }], ['band', { 4: [8, 15] }]],
   'Sailor cap': [['hat', { 1: [10, 14], 2: [9, 15], 3: [9, 15], 4: [9, 15] }], ['brim', { 5: [8, 16], 6: [8, 16] }]],
 };
+
+HAT_SIDE.Newsboy = [['hat', { 2: [10, 14], 3: [9, 15], 4: [8, 16], 5: [8, 16], 6: [8, 16] }], ['brim', { 7: [14, 19] }, -1]];
+HAT_SIDE.Deerstalker = [['hat', { 2: [10, 14], 3: [9, 15], 4: [8, 16], 5: [8, 16], 6: [8, 16], 7: [9, 12], 8: [9, 12], 9: [9, 11], 10: [9, 11] }], ['brim', { 7: [14, 19] }, -1]];
+HAT_SIDE['Cowboy hat'] = [['hat', { 1: [10, 15], 2: [10, 15], 3: [10, 15], 4: [10, 15] }], ['band', { 5: [10, 15] }], ['brim', { 5: [[3, 4], [21, 22]], 6: [4, 21], 7: [6, 19] }]];
+HAT_SIDE['Bucket hat'] = [['hat', { 2: [10, 14], 3: [9, 15], 4: [9, 15] }], ['band', { 5: [9, 15] }], ['brim', { 6: [6, 19], 7: [7, 18] }]];
+HAT_SIDE.Headscarf = [['hat', { 2: [10, 14], 3: [9, 15], 4: [8, 16], 5: [8, 16], 6: [8, 16], 7: [8, 12], 8: [8, 11], 9: [8, 11], 10: [8, 11], 11: [8, 11], 12: [8, 11] }], ['band', { 7: [9, 15] }]];
+HAT_SIDE['Hood up'] = [['hat', { 1: [10, 14], 2: [8, 16], 3: [7, 17], 4: [7, 17], 5: [7, 17], 6: [7, 17], 7: [7, 12], 8: [7, 11], 9: [7, 11], 10: [7, 11], 11: [7, 11], 12: [7, 11], 13: [7, 11], 14: [8, 10] }]];
+HAT_SIDE.Veil = [['hat', { 2: [12, 16], 3: [11, 17], 4: [12, 16] }]];
+HAT_SIDE.Pillbox = [['hat', { 2: [10, 15], 3: [9, 15], 4: [9, 15], 5: [9, 15] }], ['band', { 6: [9, 15] }]];
+HAT_SIDE['Gas mask'] = [['band', { 6: [8, 16] }], ['hat', { 10: [13, 18], 11: [13, 18], 12: [13, 17], 13: [13, 16], 14: [13, 15] }], ['brim', { 11: [17, 18] }]];
+HAT_SIDE.Bandana = [['hat', { 3: [9, 15], 4: [8, 16], 5: [8, 16] }], ['band', { 6: [8, 16] }]];
 
 function paintHat(L, ctx) {
   const { names, view, bob } = ctx;
@@ -1434,16 +1486,23 @@ export function paintPortrait(lookIn, opts = {}) {
     for (let x = 22; x <= 25; x++) O(x, 1, shade(HATC, 0.6));
   }
   if (hat === 'Cowboy hat') {
-    fill((x, y) => y >= 3 && y <= 12 && dd(x) <= 8.5 - (y < 5 ? 2 : 0) && !(y <= 5 && dd(x) < 1.5), 'hat');
-    fill((x, y) => y >= 10 && y <= 12 && dd(x) <= 8.5, 'band');
-    fill((x, y) => y >= 12 && y <= 15 && dd(x) <= 19 && (y >= 13 || dd(x) <= 15) && !(y === 12 && dd(x) <= 8.5) && (dd(x) < 13 || y <= 14 - (dd(x) - 13) * 0.4), 'brim');
-    for (let x = 4; x <= 43; x++) if (L.at(x, 14) === 'brim' && dd(x) > 13) O(x, 14, c => c && shade(c, 1.25));
+    // a creased crown with a pinch at the front, a ribbon band, and a wide brim whose sides curl up
+    fill((x, y) => y >= 3 && y <= 12 && dd(x) <= 8.8 - (y < 5 ? 1.8 : 0) && !(y <= 5 && dd(x) < 1.6), 'hat');
+    fill((x, y) => y >= 10 && y <= 11 && dd(x) <= 9, 'band');
+    const brimTop = x => 13 - 3.4 * (dd(x) / 19) ** 2;
+    fill((x, y) => dd(x) <= 19 && y >= brimTop(x) && y < brimTop(x) + 3.2, 'brim');
+    for (let x = 4; x <= 43; x++) if (dd(x) <= 19) { const yt = Math.ceil(brimTop(x)); O(x, yt, c => c && shade(c, 1.3)); O(x, yt + 3, c => c && shade(c, 0.6)); }
+    for (let y = 4; y <= 9; y++) O(cx - 3 + (y % 2), y, c => c && shade(c, 1.2));
   }
   if (hat === 'Bucket hat') { fill((x, y) => inEll(x, y, cx, 10, 11, 7) && y <= 12, 'hat'); fill((x, y) => y >= 11 && y <= 12 && dd(x) <= 11.5, 'band'); fill((x, y) => y >= 12 && y <= 16 && dd(x) <= 12 + (y - 12) * 1.1 - (dd(x) > 15 ? 1 : 0), 'brim'); for (let x = 12; x <= 36; x++) O(x, 13, c => c && shade(c, 0.82)); }
   if (hat === 'Headscarf') {
-    fill((x, y) => head(x, y, 2.5) && !inEll(x, y, cx, 24, 8.6, 10.5) && y >= 2 && y <= 30, 'hat');
-    fill((x, y) => inEll(x, y, cx, 35, 3.5, 2.5), 'band');
-    for (let y = 2; y <= 30; y++) for (let x = 8; x <= 40; x++) if (L.at(x, y) === 'hat' && (x * 3 + y * 5) % 7 === 0) O(x, y, c => c && shade(c, 1.45));
+    // tied over the hair: across the crown and down past the ears, the knot at one side with two tails
+    fill((x, y) => y >= 3 && y <= 13 && head(x, y, 2.6), 'hat');
+    fill((x, y) => head(x, y, 2.6) && y > 13 && y <= 23 && dd(x) >= 9.6, 'hat');
+    for (let x = 12; x <= 35; x++) if (L.at(x, 13) === 'hat') O(x, 13, c => c && shade(c, 0.7));
+    for (const sx of [-1, 1]) for (let y = 14; y <= 22; y++) if (L.at(Math.round(cx + sx * 10.4), y) === 'hat') O(Math.round(cx + sx * 10.4), y, c => c && shade(c, 0.78));
+    E(38, 14, 3.4, 2.6, 'band'); for (const [x, y] of [[39, 17], [40, 18], [41, 20], [38, 18], [37, 20], [38, 22]]) { P(x, y, 'band'); P(x + 1, y, 'band'); }
+    for (let y = 3; y <= 23; y++) for (let x = 6; x <= 41; x++) if (L.at(x, y) === 'hat' && (x * 3 + y * 5) % 9 === 0) O(x, y, c => c && shade(c, 1.45));
   }
   if (hat === 'Hood up') {
     clearOv((x, y) => inEll(x, y, cx, 19, 15.5, 16) && !inEll(x, y, cx, 25, 9.2, 11) && y >= 2);
@@ -1548,6 +1607,30 @@ export function scale2x(g) {
   }
   return out;
 }
-export const paintPortraitHD = (lookIn, opts = {}) => scale2x(paintPortrait(lookIn, opts));
+// The portrait shown in the interface: the 48 x 48 drawing smoothed up to 96 x 96, then finished at the finer size
+// with things a coarse grid can't hold: a light across the face (lit top left, shaded lower right), catchlights in
+// the eyes, and fine strands through the hair.
+export function paintPortraitHD(lookIn, opts = {}) {
+  const look = cleanLook(lookIn), g = scale2x(paintPortrait(look, opts)), C = palette(look, opts);
+  const N = g.length, skin = new Set(Object.values(C.R.skin)), hair = new Set(C.R.hair), eye = C.eye;
+  for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
+    const c = g[y][x];
+    if (!c) continue;
+    if (skin.has(c)) {
+      // a soft light from the top left: up to 7% brighter there, 7% darker at the lower right
+      const t = ((N - x) + (N - y)) / (2 * N) - 0.5;
+      g[y][x] = shade(c, 1 + t * 0.14);
+    } else if (hair.has(c)) {
+      const h = (Math.imul(x, 73856093) ^ Math.imul(y >> 1, 19349663)) >>> 0;     // strands run a couple of pixels down
+      if (h % 23 === 0) g[y][x] = shade(c, 1.2);
+      else if (h % 31 === 1) g[y][x] = shade(c, 0.82);
+    }
+  }
+  // catchlights: the top-left pixel of each iris
+  for (let y = 1; y < N; y++) for (let x = 1; x < N; x++) {
+    if (g[y][x] === eye && g[y][x + 1] === eye && g[y + 1]?.[x] === eye && g[y - 1][x] !== eye && g[y][x - 1] !== eye) g[y][x] = '#f4f8fb';
+  }
+  return g;
+}
 
 export function portraitCanvas(look, opts = {}) { return hdCanvas(paintPortraitHD(look, opts)); }
