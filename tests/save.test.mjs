@@ -9,12 +9,28 @@ const put = (storage, key, obj) => storage.set(key, JSON.stringify(obj));
 const sim = { cash: 10 };
 const NEW = SAVE_VERSION, OLD = SAVE_VERSION - 1;   // pretend the current version is the first supported one
 
-test('today every older save still loads (nothing is marked old yet)', () => {
-  assert.equal(FIRST_SUPPORTED, 0);
+test('the first supported version is the day-and-night save version; earlier saves are old', () => {
+  assert.equal(FIRST_SUPPORTED, SAVE_VERSION);
   const storage = createStorage(mem()), slots = new SaveSlots(storage, 3);
   put(storage, 'tma.save.1', { version: SAVE_VERSION, sim, savedAt: 5 });
-  const [one] = slots.list();
+  put(storage, 'tma.save.2', { version: SAVE_VERSION - 1, sim, savedAt: 5 });
+  const [one, two] = slots.list();
   assert.ok(one.data); assert.equal(one.legacy, false);
+  assert.equal(two.data, null); assert.equal(two.legacy, true);
+});
+
+test('preview saves are adopted once into free slots; old saves are left alone', () => {
+  const storage = createStorage(mem()), slots = new SaveSlots(storage, 3);
+  put(storage, 'tma.save.1', { version: SAVE_VERSION - 1, sim, savedAt: 5 });                 // an old normal save
+  put(storage, 'tma-cont.save.1', { version: 5, sim: { cash: 77 }, savedAt: 9 });            // a preview save
+  put(storage, 'tma-cont.save.2', { version: 5, sim: { cash: 88 }, savedAt: 10 });
+  assert.equal(slots.adoptPreviewSaves(), 2);
+  const [one, two, three] = slots.list();
+  assert.equal(one.legacy, true);                                                             // not overwritten
+  assert.equal(two.data.sim.cash, 77); assert.equal(two.data.version, SAVE_VERSION);
+  assert.equal(three.data.sim.cash, 88);
+  assert.ok(storage.get('tma-cont.save.1'));                                                  // originals stay
+  assert.equal(slots.adoptPreviewSaves(), 0);                                                 // only once
 });
 
 test('a save older than the first supported version is marked old, not loaded or migrated', () => {

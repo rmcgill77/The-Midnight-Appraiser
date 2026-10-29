@@ -17,7 +17,7 @@ const server = createServer(async (req, res) => {
     const file = path === '/' ? 'index.html' : path;
     let body = await readFile(join(ROOT, file));
     // Pretend a later version has shipped: every save older than this one is "old".
-    if (file === '/src/game/save.js') body = Buffer.from(String(body).replace('export const FIRST_SUPPORTED = 0;', 'export const FIRST_SUPPORTED = 99;'));
+    if (file === '/src/game/save.js') body = Buffer.from(String(body).replace('export const FIRST_SUPPORTED = 6;', 'export const FIRST_SUPPORTED = 99;'));
     res.writeHead(200, { 'content-type': TYPES[extname(file)] || 'application/octet-stream' }).end(body);
   } catch { res.writeHead(404).end('not found'); }
 });
