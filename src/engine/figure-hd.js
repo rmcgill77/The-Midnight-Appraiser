@@ -190,6 +190,8 @@ function paintKO(look, opts) {
 }
 
 const HD_NEAREST = {
+  hair: { Pixie: 'Crop', 'Space buns': 'Bun', Pigtails: 'Bob', Dreadlocks: 'Shaggy', 'Top knot': 'Bun', 'Side shave': 'Undercut', 'Bowl cut': 'Bob', Pompadour: 'Slick back', Cornrows: 'Crop', Mullet: 'Shaggy' },
+  hat: { Newsboy: 'Flat cap', Deerstalker: 'Flat cap', 'Cowboy hat': 'Wide brim', 'Bucket hat': 'Bowler', Headscarf: 'Beret', 'Hood up': 'Beanie', Veil: 'Trilby', Pillbox: 'Beret', 'Gas mask': 'None', Bandana: 'Beanie' },
   eyes: { Almond: 'Round', Downturned: 'Hooded' },
   brows: { Bushy: 'Heavy', Unibrow: 'Heavy', Shaved: 'Thin' },
   mark: { 'Burn scar': 'Cheek scar', Birthmark: 'Mole', 'Stitched scar': 'Cheek scar', 'Eye scar': 'Brow scar' },
@@ -206,7 +208,7 @@ function paintBody(L, look, C, view, frame, pose, opts) {
   const { P, R, S, O } = L;
   const near = (k, n) => HD_NEAREST[k]?.[n] ?? n;   // the small figure draws the newer options as their nearest older one
   const names = {
-    hair: PARTS.hair[look.hair], hat: PARTS.hat[look.hat], top: PARTS.top[look.top], bottom: PARTS.bottom[look.bottom],
+    hair: near('hair', PARTS.hair[look.hair]), hat: near('hat', PARTS.hat[look.hat]), top: PARTS.top[look.top], bottom: PARTS.bottom[look.bottom],
     extra: PARTS.extra[look.extra], facial: PARTS.facial[look.facial], face: PARTS.face[look.face],
     eyes: near('eyes', PARTS.eyes[look.eyes]), brows: near('brows', PARTS.brows[look.brows]), mouth: PARTS.mouth[look.mouth], mark: near('mark', PARTS.mark[look.mark]),
     pattern: PARTS.pattern[look.pattern], neck: PARTS.neck[look.neck],
@@ -990,7 +992,7 @@ export function bakeHD(look, opts = {}) {
 // from shapes (ellipses and bands) rather than a pixel table, then shaded two pixels deep.
 
 export const PORTRAIT_SIZE = 48;
-const PHAT_BOTTOM = { 'Garrison cap': 6, 'Sailor cap': 12, 'Top hat': 15, Fedora: 16, 'Flat cap': 16, Beanie: 17, Bowler: 15, 'Wide brim': 17, Trilby: 15, Beret: 15 };
+const PHAT_BOTTOM = { 'Garrison cap': 6, 'Sailor cap': 12, 'Top hat': 15, Fedora: 16, 'Flat cap': 16, Beanie: 17, Bowler: 15, 'Wide brim': 17, Trilby: 15, Beret: 15, Newsboy: 16, Deerstalker: 16, 'Cowboy hat': 14, 'Bucket hat': 15, Headscarf: 14, 'Hood up': 16, Pillbox: 9, Bandana: 12 };
 
 
 // Phase 31b: what each mood changes on the portrait. brows: [offset from the outer end, y]
@@ -1078,6 +1080,9 @@ export function paintPortrait(lookIn, opts = {}) {
 
   // --- behind: a ponytail, long hair falling behind the shoulders ---
   if (hair === 'Ponytail' && hat === 'None') { E(37, 26, 3, 9, 'hair'); }
+  if (hair === 'Pigtails' && hatCut < 0) { E(9.5, 28, 3, 10, 'hair'); E(37.5, 28, 3, 10, 'hair'); }
+  if (hair === 'Dreadlocks') fill((x, y) => y >= 16 && y <= 34 + ((x * 5) % 7) && Math.abs(x - cx) >= 7 && Math.abs(x - cx) <= 14 && x % 3 !== 0, 'hair', null, 1);
+  if (hair === 'Mullet') fill((x, y) => y >= 16 && y <= 38 && Math.abs(x - cx) <= 10 - Math.max(0, y - 30) * 0.8 && Math.abs(x - cx) >= 4, 'hair', null, 1);
   if (hair === 'Long' || hair === 'Streaked long') fill((x, y) => y >= 16 && y <= 44 && Math.abs(x - cx) <= 12 + Math.min(2.5, (y - 16) * 0.2) && Math.abs(x - cx) >= 6, 'hair', null, 1);
   if (hair === 'Waves') fill((x, y) => y >= 16 && y <= 40 && Math.abs(x - cx) <= 12 && Math.abs(x - cx) >= 6, 'hair', null, 1);
   if (hair === 'Bob') fill((x, y) => y >= 16 && y <= 34 && Math.abs(x - cx) <= 13.5 - Math.max(0, y - 29) * 1.1 && Math.abs(x - cx) >= 6, 'hair', null, 1);
@@ -1263,6 +1268,16 @@ export function paintPortrait(lookIn, opts = {}) {
     Afro: (x, y) => inEll(x, y, cx, 17, 17, 15) && (y <= 14 || Math.abs(x - cx) >= 11.5),
     Undercut: (x, y) => head(x, y, 2) && (y <= 9 || (y <= 14 && x >= 21 && x <= 33 - (y - 9))),
     Braid: cap(1.5, 13),
+    Pixie: cap(1, 10),
+    'Space buns': (x, y) => cap(1.5, 12)(x, y) || inEll(x, y, 14, 6, 4, 3.5) || inEll(x, y, 33, 6, 4, 3.5),
+    Pigtails: cap(1.5, 13),
+    Dreadlocks: (x, y) => head(x, y, 3.5) && (y <= 15 || Math.abs(x - cx) >= 10) && y <= 30,
+    'Top knot': (x, y) => (head(x, y, 1.2) && y <= 11 && Math.abs(x - cx) <= 8.5) || inEll(x, y, cx, 3, 3.5, 3.5),
+    'Side shave': (x, y) => head(x, y, 2.5) && (y <= 10 || (x >= 22 && y <= 14)),
+    'Bowl cut': (x, y) => head(x, y, 3) && y <= 17 - (Math.abs(x - cx) < 6 ? 0 : 1),
+    Pompadour: (x, y) => cap(1.5, 12)(x, y) || (inEll(x, y, cx + 3, 6, 11, 6) && y >= 0),
+    Cornrows: cap(1.5, 12),
+    Mullet: cap(1.5, 13),
   };
   styles['Streaked long'] = styles.Long;
   // Waves: a deep side part on the left, the hair swept across the forehead to the right.
@@ -1281,6 +1296,11 @@ export function paintPortrait(lookIn, opts = {}) {
   if (look.balding) each((x, y) => { if (L.mat[y][x]?.m === 'hair' && (x + y) % 3 === 0) O(x, y, c => c && shade(c, 1.15)); });
   if (hair === 'Braid') for (let y = 26; y <= 46; y++) for (let x = 11; x <= 15; x++) { if (Math.abs(x - 13 + Math.sin(y / 2)) <= 2) { P(x, y, 'hair'); if ((x + y) % 3 === 0) O(x, y, c => c && shade(c, 0.7)); } }
   if (hair === 'Curls' || hair === 'Afro') each((x, y) => { if (L.mat[y][x]?.m !== 'hair') return; const k = (x + (Math.floor(y / 3) % 2) * 3) % 5; if (y % 3 === 0 && k === 0) O(x, y, c => c && shade(c, 1.3)); else if (y % 3 === 1 && k === 1) O(x, y, c => c && shade(c, 0.7)); });
+  if (hair === 'Cornrows') each((x, y) => { if (L.mat[y][x]?.m === 'hair' && y <= 14 && x % 3 === 0) O(x, y, c => c && shade(c, 0.6)); });
+  if (hair === 'Dreadlocks') each((x, y) => { if (L.mat[y][x]?.m === 'hair' && y % 4 === 0 && (x + y) % 2 === 0) O(x, y, c => c && shade(c, 0.7)); });
+  if (hair === 'Pigtails' && hatCut < 0) for (const x of [9, 10, 37, 38]) O(x, 17, C.hairD);
+  if (hair === 'Side shave') each((x, y) => { if (L.at(x, y) === 'skin' && x < 20 && y >= 7 && y <= 17 && L.ov[y][x] == null && Math.abs(x - cx) >= 4) O(x, y, c => c && mix(c, C.hair, 0.3)); });
+  if (hair === 'Top knot' && hatCut < 0) for (const x of [21, 22, 23, 24, 25, 26]) O(x, 6, C.hairD);
   if (hair === 'Bun' && hatCut < 0) for (let x = 21; x <= 26; x++) O(x, 7, C.hairD);
   if (hair === 'Waves') each((x, y) => {
     if (L.mat[y][x]?.m !== 'hair') return;
@@ -1332,6 +1352,55 @@ export function paintPortrait(lookIn, opts = {}) {
     fill((x, y) => y >= 10 && y <= 13 && Math.abs(x - cx) <= 13.5 - (y === 13 ? 0.5 : 0), 'brim');
     for (let x = 11; x <= 36; x++) O(x, 10, c => c && shade(c, 1.1));
     for (const y of [5, 7]) for (let x = 16; x <= 31; x++) if (L.at(x, y) === 'hat' && x % 2) O(x, y, c => c && shade(c, 0.88));
+  }
+  if (look.hairFx) each((x, y) => {
+    if (L.mat[y][x]?.m !== 'hair') return;
+    if (look.hairFx === 1 && x < cx) O(x, y, c => c && mix(c, '#efe6d6', 0.6));
+    if (look.hairFx === 2) O(x, y, c => c && mix(c, '#d890c0', Math.min(0.75, Math.max(0.1, (y - 3) * 0.04))));
+  });
+  const clearOv = pred => each((x, y) => { if (pred(x, y)) L.ov[y][x] = null; });
+  const dd = x => Math.abs(x - cx), HATC = CLOTH[look.hatColor];
+  if (hat === 'Newsboy') { fill((x, y) => inEll(x, y, cx, 11, 14, 8.5) && y <= 15, 'hat'); fill((x, y) => y >= 15 && y <= 17 && dd(x) <= 12 - (y - 15), 'brim'); O(cx, 3, shade(HATC, 1.4)); O(cx + 1, 3, shade(HATC, 1.4)); for (let y = 5; y <= 13; y++) O(cx - 6 - (y > 9 ? 1 : 0), y, c => c && shade(c, 0.78)); }
+  if (hat === 'Deerstalker') {
+    fill((x, y) => inEll(x, y, cx, 11, 12.5, 8) && y <= 14, 'hat'); fill((x, y) => y >= 14 && y <= 16 && dd(x) <= 11, 'band');
+    fill((x, y) => y >= 16 && y <= 18 && dd(x) <= 9.5, 'brim'); fill((x, y) => y >= 2 && y <= 5 && dd(x) <= 6, 'brim');
+    fill((x, y) => y >= 14 && y <= 27 && dd(x) >= 11 && dd(x) <= 13.5 - (y - 14) * 0.12, 'hat');
+    for (let x = 22; x <= 25; x++) O(x, 1, shade(HATC, 0.6));
+  }
+  if (hat === 'Cowboy hat') {
+    fill((x, y) => y >= 3 && y <= 12 && dd(x) <= 8.5 - (y < 5 ? 2 : 0) && !(y <= 5 && dd(x) < 1.5), 'hat');
+    fill((x, y) => y >= 10 && y <= 12 && dd(x) <= 8.5, 'band');
+    fill((x, y) => y >= 12 && y <= 15 && dd(x) <= 19 && (y >= 13 || dd(x) <= 15) && !(y === 12 && dd(x) <= 8.5) && (dd(x) < 13 || y <= 14 - (dd(x) - 13) * 0.4), 'brim');
+    for (let x = 4; x <= 43; x++) if (L.at(x, 14) === 'brim' && dd(x) > 13) O(x, 14, c => c && shade(c, 1.25));
+  }
+  if (hat === 'Bucket hat') { fill((x, y) => inEll(x, y, cx, 10, 11, 7) && y <= 12, 'hat'); fill((x, y) => y >= 11 && y <= 12 && dd(x) <= 11.5, 'band'); fill((x, y) => y >= 12 && y <= 16 && dd(x) <= 12 + (y - 12) * 1.1 - (dd(x) > 15 ? 1 : 0), 'brim'); for (let x = 12; x <= 36; x++) O(x, 13, c => c && shade(c, 0.82)); }
+  if (hat === 'Headscarf') {
+    fill((x, y) => head(x, y, 2.5) && !inEll(x, y, cx, 24, 8.6, 10.5) && y >= 2 && y <= 30, 'hat');
+    fill((x, y) => inEll(x, y, cx, 35, 3.5, 2.5), 'band');
+    for (let y = 2; y <= 30; y++) for (let x = 8; x <= 40; x++) if (L.at(x, y) === 'hat' && (x * 3 + y * 5) % 7 === 0) O(x, y, c => c && shade(c, 1.45));
+  }
+  if (hat === 'Hood up') {
+    clearOv((x, y) => inEll(x, y, cx, 19, 15.5, 16) && !inEll(x, y, cx, 25, 9.2, 11) && y >= 2);
+    fill((x, y) => inEll(x, y, cx, 19, 15.5, 16) && !inEll(x, y, cx, 25, 9.2, 11) && y >= 2, 'hat');
+    each((x, y) => { if (L.at(x, y) === 'hat' && inEll(x, y, cx, 25, 11.2, 13) && !inEll(x, y, cx, 25, 9.2, 11)) O(x, y, c => c && shade(c, 0.6)); });
+  }
+  if (hat === 'Veil') {
+    fill((x, y) => inEll(x, y, cx + 5, 7, 8, 3.8) && y <= 9, 'hat'); E(cx + 5, 6, 3, 2, 'band');
+    each((x, y) => { if (y >= 14 && y <= 29 && head(x, y) && (L.at(x, y) === 'skin') && L.ov[y][x] == null && (x + y) % 2 === 0) O(x, y, c => c && mix(c, '#101018', 0.32)); });
+  }
+  if (hat === 'Pillbox') { fill((x, y) => y >= 3 && y <= 10 && dd(x) <= 8 - (y === 3 ? 1.5 : 0), 'hat'); fill((x, y) => y >= 9 && y <= 10 && dd(x) <= 8, 'band'); for (let x = 16; x <= 31; x++) O(x, 4, c => c && shade(c, 1.25)); }
+  if (hat === 'Gas mask') {
+    fill((x, y) => y >= 15 && y <= 16 && dd(x) <= 13.5, 'band');
+    clearOv((x, y) => inEll(x, y, cx, 29, 9.2, 8.5) && y >= 24);
+    fill((x, y) => inEll(x, y, cx, 29, 9.2, 8.5) && y >= 24 && head(x, y, 0.5), 'hat');
+    for (const lx of [19, 28]) { fill((x, y) => inEll(x, y, lx, 22.5, 3.6, 3.6), 'brim'); each((x, y) => { if (inEll(x, y, lx, 22.5, 2.4, 2.4)) O(x, y, (x + y) % 3 ? '#4a7a6a' : '#7ab0a0'); }); }
+    fill((x, y) => inEll(x, y, cx, 32, 3.4, 3.4), 'brim'); for (const y of [30, 32, 34]) for (let x = 21; x <= 26; x++) O(x, y, c => c && shade(c, 0.6));
+  }
+  if (hat === 'Bandana') {
+    fill((x, y) => head(x, y, 2) && y <= 13 && (y <= 10 || dd(x) >= 9), 'hat');
+    fill((x, y) => y >= 12 && y <= 13 && dd(x) <= 12, 'band');
+    E(37, 14, 3, 2.4, 'band'); for (const [x, y] of [[38, 17], [39, 18], [37, 18], [38, 19]]) P(x, y, 'band');
+    for (let y = 3; y <= 11; y++) for (let x = 10; x <= 38; x++) if (L.at(x, y) === 'hat' && (x + y * 2) % 6 === 0) O(x, y, c => c && shade(c, 1.4));
   }
   if (hat === 'Hair bow') { E(19.5, 6.5, 3.6, 2.6, 'hat'); E(27.5, 6.5, 3.6, 2.6, 'hat'); E(23.5, 6.5, 1.8, 1.8, 'band'); }
 

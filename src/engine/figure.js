@@ -12,7 +12,9 @@ export const OUTLINE = '#07080c';
 const SHOE = '#1c1614', EYE = '#141016', SHIRT = '#d8d0bc', LENS = '#9fc6d6', GOLD = '#e0a64a', STRAP = '#5a3b24';
 
 export const SKINS = ['#c9a88a', '#f0d2b8', '#e3b994', '#d6a77e', '#b88f70', '#a07a5e', '#8a6248', '#6e4a36', '#573826', '#3f281c'];
-export const HAIR_COLORS = ['#2a1e1a', '#0e0c0c', '#4a2e1c', '#6e4424', '#8a5a2e', '#b07a3e', '#d6b46a', '#9a3a22', '#7a7470', '#cfc8bc', '#3a4a6e', '#6a3a5e'];
+export const HAIR_COLORS = ['#2a1e1a', '#0e0c0c', '#4a2e1c', '#6e4424', '#8a5a2e', '#b07a3e', '#d6b46a', '#9a3a22', '#7a7470', '#cfc8bc', '#3a4a6e', '#6a3a5e',
+  // Phase 31c: silver, pastels and a few vivid dyes.
+  '#c9ced6', '#e8a0b8', '#8ab8e8', '#2aa59a', '#7a3ad0', '#d8581e'];
 // Cloth: the first few are the original appraiser's (hat felt, coat), then a noir range.
 export const CLOTH = ['#23202a', '#4a4f63', '#3a3542', '#5a4a3a', '#2e3442', '#4a2a2e', '#3a4a3e', '#6a5a72', '#7a3a34', '#24474a', '#5a5f6e', '#8a7a5a',
   '#1e2a2a', '#4a4a2c', '#2a3a5a', '#7a6230', '#c9b98f', '#6e2e3e', '#16181e', '#a3843e',
@@ -31,10 +33,10 @@ export const EYE_COLORS = ['#3a2a1e', '#1c1a18', '#4a6a3a', '#3a5a7a', '#6a6a6e'
 export const PARTS = {
   pronouns: ['They/them', 'She/her', 'He/him'],
   build: ['Slim', 'Regular', 'Broad', 'Lean', 'Stocky', 'Heavyset', 'Athletic'],
-  hair: ['Bald', 'Crop', 'Side part', 'Long', 'Bun', 'Curls', 'Mohawk', 'Bob', 'Slick back', 'Ponytail', 'Afro', 'Undercut', 'Braid', 'Streaked long', 'Shaggy', 'Waves'],
+  hair: ['Bald', 'Crop', 'Side part', 'Long', 'Bun', 'Curls', 'Mohawk', 'Bob', 'Slick back', 'Ponytail', 'Afro', 'Undercut', 'Braid', 'Streaked long', 'Shaggy', 'Waves', 'Pixie', 'Space buns', 'Pigtails', 'Dreadlocks', 'Top knot', 'Side shave', 'Bowl cut', 'Pompadour', 'Cornrows', 'Mullet'],
   face: ['Plain', 'Freckles', 'Tired eyes', 'Rosy'],
   facial: ['None', 'Stubble', 'Mustache', 'Beard', 'Goatee', 'Sideburns', 'Handlebar', 'Soul patch', 'Chinstrap'],
-  hat: ['None', 'Fedora', 'Flat cap', 'Beanie', 'Bowler', 'Wide brim', 'Trilby', 'Beret', 'Hair bow', 'Top hat', 'Garrison cap', 'Sailor cap'],
+  hat: ['None', 'Fedora', 'Flat cap', 'Beanie', 'Bowler', 'Wide brim', 'Trilby', 'Beret', 'Hair bow', 'Top hat', 'Garrison cap', 'Sailor cap', 'Newsboy', 'Deerstalker', 'Cowboy hat', 'Bucket hat', 'Headscarf', 'Hood up', 'Veil', 'Pillbox', 'Gas mask', 'Bandana'],
   top: ['Trench coat', 'Jacket', 'Sweater', 'Vest', 'Hoodie', 'Overcoat', 'Suit jacket', 'Shirtsleeves', 'Tank top', 'Uniform shirt', 'Jumper'],
   bottom: ['Trousers', 'Skirt', 'Work pants', 'Long skirt'],
   extra: ['None', 'Scarf', 'Glasses', 'Pendant', 'Satchel', 'Gloves', 'Pocket watch', 'Hair clips', 'Earrings', 'Aviators', 'Small hoops'],
@@ -51,10 +53,11 @@ export const PARTS = {
   skinFx: ['None', 'Vitiligo', 'Sun-flushed', 'Pale and veined'],
   eyeFx: ['None', 'Eyeliner', 'Eyeshadow', 'Faint glow', 'Mismatched eyes', 'Eye patch'],
   makeup: ['None', 'Red lipstick', 'Plum lipstick', 'Dark lips', 'Blush', 'Face-paint stripe'],
+  hairFx: ['None', 'Two-tone', 'Faded ends'],
   piercing: ['None', 'Nose stud', 'Septum ring', 'Brow ring', 'Lip ring', 'Ear cuffs'],
 };
 // The keys outside ALL_KEYS that are stored on a look only when set.
-export const EXTRA_KEYS = ['skinFx', 'eyeFx', 'makeup', 'piercing'];
+export const EXTRA_KEYS = ['skinFx', 'eyeFx', 'makeup', 'piercing', 'hairFx'];
 // Which list each color choice comes from.
 // Phase 31b: the faces a portrait can make. 'neutral' is the face as the creator draws it.
 export const MOODS = ['neutral', 'happy', 'sad', 'annoyed', 'angry', 'upset', 'flirty', 'surprised', 'scared', 'embarrassed', 'smug', 'tired'];
@@ -69,7 +72,7 @@ const LIST_OF = { ...PARTS, ...COLOR_OF };
 // How long each list was in Phase 12. Crowds are still drawn small (until Phase 15), so
 // they only pick from these, and the small painter maps any newer choice to its nearest.
 export const LEGACY_SIZE = { build: 3, skin: 10, hair: 8, hairColor: 12, face: 4, facial: 4, hat: 6, hatColor: 20, top: 6, topColor: 20, bottom: 3, bottomColor: 20, extra: 5, extraColor: 20 };
-const LEGACY_MAP = { build: { 3: 0, 4: 2, 5: 2, 6: 1 }, hair: { 8: 2, 9: 1, 10: 5, 11: 1, 12: 3, 13: 3, 14: 7, 15: 3 }, hat: { 6: 1, 7: 3, 8: 0, 9: 4, 10: 2, 11: 3 }, facial: { 4: 1, 5: 1 }, top: { 6: 1, 7: 3, 8: 2, 9: 3, 10: 2 }, bottom: { 3: 1 }, extra: { 5: 0, 6: 3, 7: 0, 8: 0, 9: 2, 10: 0 } };
+const LEGACY_MAP = { build: { 3: 0, 4: 2, 5: 2, 6: 1 }, hair: { 8: 2, 9: 1, 10: 5, 11: 1, 12: 3, 13: 3, 14: 7, 15: 3, 16: 1, 17: 3, 18: 7, 19: 5, 20: 3, 21: 1, 22: 7, 23: 2, 24: 1, 25: 7 }, hat: { 6: 1, 7: 3, 8: 0, 9: 4, 10: 2, 11: 3, 12: 1, 13: 1, 14: 5, 15: 4, 16: 3, 17: 3, 18: 0, 19: 3, 20: 0, 21: 3 }, facial: { 4: 1, 5: 1 }, top: { 6: 1, 7: 3, 8: 2, 9: 3, 10: 2 }, bottom: { 3: 1 }, extra: { 5: 0, 6: 3, 7: 0, 8: 0, 9: 2, 10: 0 } };
 // How long each list was at the end of Phase 19. Seeded rolls (townsfolk, details) draw from
 // these, so adding options (Phase 20 on) never changes anyone already in town.
 export const ROLL_SIZE = { build: 3, hair: 13, hat: 8, top: 8, facial: 6, bottom: 4, extra: 7, eyes: 5, eyeColor: 6, brows: 5, mouth: 5, mark: 5, pattern: 4, neck: 5, neckColor: 20 };
