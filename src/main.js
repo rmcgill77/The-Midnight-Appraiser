@@ -3843,12 +3843,13 @@ function openTitle() {
     el('button', { type: 'button', class: 'title-save-btn', id: `title-load-${x.slot}`, onclick: () => doLoad(x.slot) },
       el('strong', {}, slotName(x.slot)), el('span', {}, slotSummary(x.data))));
   ui.open({
-    id: 'title', eyebrow: `Version ${CONFIG.version}`, title: CONFIG.title, reason: 'title', dismissable: false,
+    id: 'title', eyebrow: `Version ${CONFIG.version}${CONTINUOUS ? ' · preview' : ''}`, title: CONFIG.title, reason: 'title', dismissable: false,
     body: [
       el('p', { class: 'title-tag' }, 'A pawnbroker who buys the uncanny by day and works out what it really is by night.'),
       saves.length
         ? el('div', { class: 'title-saves' }, el('p', { class: 'label' }, 'Your saves'), el('ul', {}, saves.slice(0, 4).map(row)))
         : el('p', { class: 'note' }, 'No saves yet. A new game starts with Mina showing you around the shop.'),
+      CONTINUOUS ? el('p', { class: 'note', id: 'preview-note' }, 'Preview: the new day and night. This game keeps its own saves, separate from your normal ones.') : null,
       oldSaves ? el('p', { class: 'note warn', id: 'old-saves-note' }, `${oldSaves === 1 ? 'You have a save' : `You have ${oldSaves} saves`} from an older version of the game. ${oldSaves === 1 ? 'It' : 'They'} can’t be loaded in this version, so a new game starts fresh. Open Manage saves to export ${oldSaves === 1 ? 'it' : 'them'} as a file.`) : null,
       storage.persistent ? null : el('p', { class: 'note warn' }, 'This browser is blocking storage. Saves last until you close the page.'),
     ],
@@ -3857,6 +3858,9 @@ function openTitle() {
       { id: 'new-game', label: 'New game', kind: latest ? '' : 'primary', onClick: () => { ui.close(); newGame(true); } },
       ...(saves.length || oldSaves ? [{ id: 'title-load', label: 'Manage saves', onClick: () => openSlots('load', true) }] : [{ id: 'title-import', label: 'Import a save file', kind: 'quiet', onClick: () => importSave(true) }]),
       { id: 'title-settings', label: 'Settings', onClick: () => openSettings() },
+      CONTINUOUS
+        ? { id: 'back-to-normal', label: 'Back to the normal game', kind: 'quiet', onClick: () => { location.href = location.pathname; } }
+        : { id: 'try-new-day', label: 'Try the new day and night (preview)', kind: 'quiet', onClick: () => { location.href = `${location.pathname}?continuous=1`; } },
       { id: 'title-cases', label: 'Case files', kind: 'quiet', onClick: () => openCaseFiles(ui, null, openTitle, 'title') },
       ...(installPrompt ? [{ id: 'install', label: 'Install the game', kind: 'quiet', onClick: installGame }] : []),
     ],

@@ -140,6 +140,11 @@ phase when we plan it.
   Rent, prices, customer counts per shop tier and wages are unchanged: a full eight-hour shift brings
   the same crowd the old twelve-hour day did, and a shorter or late shift scales it down.
   Not play-tested over weeks: tune these numbers once the new flow is live and people have played it.
+- **Trying the new flow (preview).** The new day and night is on the live site behind a switch: the
+  title screen has "Try the new day and night (preview)", which opens the same game with `?continuous=1`
+  (its saves are kept apart from the normal ones), and "Back to the normal game" returns. Flipping it
+  on for everyone means making it the default, raising `FIRST_SUPPORTED` in `src/game/save.js` to the
+  new save version, adding a changelog entry, bumping the version, and removing the old day loop.
 - **Status: Phase 30 is fully specified. No open questions.** Suggested build order:
   1. New save version and the new clock (15-20 minute day, wake-to-sleep days, sleep).
   2. Shop hours slider, closed weekly day, shop locked while open, floor pricing.

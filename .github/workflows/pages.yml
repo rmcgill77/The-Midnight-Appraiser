@@ -22,6 +22,8 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
+      - name: Update the offline file list and cache name
+        run: node scripts/make-sw.mjs
       - name: Stage site files
         run: |
           mkdir _site

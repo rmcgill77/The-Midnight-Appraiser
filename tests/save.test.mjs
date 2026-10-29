@@ -72,3 +72,14 @@ test('a broken file is still reported as corrupt, not old', () => {
   const [one] = slots.list();
   assert.equal(one.corrupt, true); assert.equal(one.legacy, false);
 });
+
+test('the preview mode keeps its own saves, apart from the normal ones', () => {
+  const storage = createStorage(mem());
+  const normal = new SaveSlots(storage, 3), preview = new SaveSlots(storage, 3, undefined, 'tma-cont');
+  put(storage, 'tma.save.1', { version: SAVE_VERSION, sim, savedAt: 5 });
+  assert.ok(normal.list()[0].data); assert.equal(preview.list()[0].data, null);
+  preview.write(2, { sim });
+  assert.ok(preview.list()[1].data); assert.equal(normal.list()[1].data, null);
+  assert.equal(storage.get('tma-cont.lastSlot'), '2'); assert.equal(storage.get('tma.lastSlot'), null);
+  assert.equal(preview.lastSlot(), 2); assert.equal(normal.lastSlot(), null);
+});
