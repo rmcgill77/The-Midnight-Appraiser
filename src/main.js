@@ -370,6 +370,7 @@ function refreshSeason() {
   if (season === tileSeason) return;
   tileSeason = season;
   const fresh = buildCityTiles(season);
+  cityTiles.season = season;
   for (const k of Object.keys(cityTiles.defs)) delete cityTiles.defs[k];
   Object.assign(cityTiles.defs, fresh.defs); cityTiles.floors = fresh.floors;
   applyTileArt(cityTiles, 'city', season);

@@ -239,7 +239,9 @@ phase when we plan it.
      rose dawn, golden afternoon, violet dusk, dark), lit windows glow at night, buildings, trees,
      lamps and people throw sun shadows (long at the ends of the day, short at noon, none in the
      dark or under cloud), wet streets reflect lamps and the dusk sky.
-  2. Streets and sidewalks, then buildings and facades, then props and clutter, then seasonal looks,
+  2. **Streets and sidewalks (32b, built):** curbs, gutters and drains, dashed lane lines, dropped
+     kerbs with yellow strips, manholes, cracks, patches, oil stains, litter by season.
+     Next: buildings and facades, then props and clutter, then seasonal looks,
      each as its own slice, with the finished puddles, wet streets and snow drawn on the new tiles.
 - **Status: Phase 32 is in progress (32a built).**
 - Likely files: `src/data/city.js`, `src/data/city-tiles.js`, `src/data/tiles.js`.
