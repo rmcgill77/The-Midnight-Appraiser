@@ -72,6 +72,18 @@ export class Crowd {
     const times = this.world.arrivals?.(n, () => this.rng.next());
     this.plan = kinds.map(({ kind, faction, friend, with: w }, i) => ({ kind, faction, friend, with: w, at: times?.length === n ? times[i] : Math.min(0.97, ((i + 0.35 + this.rng.next() * 0.3) / Math.max(1, n)) * this.t.spreadOver) }));
     // Phase 29: a couple comes in together, a step apart.
+    // Phase 30: a friend drops by when they're free, not at a random moment; one who is never free doesn't come.
+    if (this.world.visitAt) {
+      const gone = new Set();
+      this.plan = this.plan.flatMap(p => {
+        if (!p.friend) return [p];
+        if (p.with && gone.has(p.with)) { gone.add(p.friend); return []; }
+        if (p.with) return [p];                                   // the second of a couple follows the first
+        const at = this.world.visitAt(p.friend, () => this.rng.next());
+        if (at == null) { gone.add(p.friend); return []; }
+        return [{ ...p, at }];
+      }).sort((a, b) => a.at - b.at);
+    }
     this.plan.forEach((p, i) => { if (p.with && i && this.plan[i - 1].friend === p.with) p.at = Math.min(0.98, this.plan[i - 1].at + 0.004); });
     return this.plan;
   }
