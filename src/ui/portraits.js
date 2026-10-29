@@ -4,13 +4,13 @@
 
 import { artImage, drawPortraitArt } from '../engine/art.js';
 import { paintPortrait, PORTRAIT_SIZE } from '../engine/figure-hd.js';
-import { ALL_KEYS } from '../engine/figure.js';
+import { ALL_KEYS, EXTRA_KEYS } from '../engine/figure.js';
 import { SIGNATURE, nameOfLook } from '../game/people.js';
 
 const cache = new Map();
 let player = null;   // { name, look }
 
-const keyOf = (look, sig, mood) => ALL_KEYS.map(k => look[k] ?? '').join('.') + (sig ? '*' : '') + (mood && mood !== 'neutral' ? `:${mood}` : '');
+const keyOf = (look, sig, mood) => [...ALL_KEYS, ...EXTRA_KEYS].map(k => look[k] ?? '').join('.') + (sig ? '*' : '') + (mood && mood !== 'neutral' ? `:${mood}` : '');
 
 function grid(look, sig, mood) {
   const k = keyOf(look, sig, mood);

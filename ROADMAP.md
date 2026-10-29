@@ -204,8 +204,10 @@ phase when we plan it.
 - **Status: Phase 31 is in progress.** Item lists and portrait size are settled while
   building. Built: 31a pronouns (creator Body tab; `{they}`-style tokens in any spoken line,
   `src/game/pronouns.js`; stored as optional `look.pronouns`). 31b moods (12 faces via
-  `paintPortrait(look, { mood })`; a speech line can carry `mood`). Next: 31c creator
-  item lists (to review with the user first), 31d 96x96 portraits.
+  `paintPortrait(look, { mood })`; a speech line can carry `mood`). 31c step 1 (body, height, face
+  details; tattoos cut): 4 new builds, height (Average/Tall/Short/Very tall), skin details,
+  eye shapes, brows, marks, beards, eye details, makeup, piercings. Next: 31c step 2 hair and
+  hats, step 3 outfit and shoes, step 4 accessories; then 31d 96x96 portraits.
 - Likely files: `src/ui/creator.js`, `src/ui/portraits.js`, `src/engine/figure.js`,
   `src/engine/figure-hd.js`, `src/game/people.js`.
 
