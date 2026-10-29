@@ -21,3 +21,12 @@ test('lane lines: one divider at the centre of a two-wide street, found by dista
   const f = net.field(40, 100);
   assert.ok(f.d < 1 && f.w === 2);
 });
+
+test('a zebra crossing is laid over each arm of a junction, just outside it, as stripes across the street', () => {
+  assert.ok(net.crossings.length >= 4, `${net.crossings.length} crossings`);     // the crossing of the two streets has four arms (and the curved end, more)
+  let stripe = 0, gap = 0;
+  const c = net.crossings[0];
+  for (let k = -c.half; k <= c.half; k += 1) { const x = c.cx - c.dy * k, y = c.cy + c.dx * k; net.crosswalk(x, y) ? stripe++ : gap++; }
+  assert.ok(stripe > 4 && gap > 4, 'alternating stripes');
+  assert.equal(net.crosswalk(c.cx + c.dx * 40, c.cy + c.dy * 40), false);         // none well along the street
+});

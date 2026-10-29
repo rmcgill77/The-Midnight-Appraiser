@@ -281,7 +281,7 @@ phase when we plan it.
   the Headscarf (tied, knot and tails) were redrawn on portraits; portraits at 96x96 now get a
   light across the face, catchlights and fine hair strands on top of the smoothed 48x48 drawing.
   Still smoothed, not redrawn: a full 96x96 redraw of every part.
-- **Roads (next):** lane lines through bends, the roundabout apron.
+- **Roads (done):** lane lines already follow every bend (each street is one smooth curve, and they break only at junctions); the roundabout and turning circles now have a pavement band that follows the circle instead of tile-shaped apron squares; zebra crossings across every arm of every junction.
 - **Look (after):** warehouse numbers, night window glow, evening shadows.
 
 ### Phase 33: The woods
