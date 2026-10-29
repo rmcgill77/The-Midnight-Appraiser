@@ -232,7 +232,7 @@ function makePedestrians() {
 const player = new Player(CONFIG.player);
 const zone = new ZoneRunner(player);
 const clock = CONTINUOUS ? new ContinuousClock(CONFIG) : new Clock(CONFIG);
-if (CONTINUOUS) sleepFx = new SleepFx({ canvas, layer, sound: S.Sound });
+if (CONTINUOUS) { sleepFx = new SleepFx({ canvas, layer, sound: S.Sound }); clock.errandHours = () => st?.ap?.left ?? 0; }
 const ui = new UI(pause);
 const guide = new Guide();
 // Phase 16: the dialog box. Talk waits for a tap, the radio runs on a timer, and every
@@ -270,7 +270,7 @@ let pedestrians = null, lastDistrict = null;
 let light = makeCanvas(1, 1), lg = light.getContext('2d');
 
 function freshWorld() {
-  return { room: 'apartment', dayMode: null, night: null, shopHours: null, shopSession: null, shopClosedDate: null, collapse: null, displays: {}, crowd: null, playTimeMs: 0, shop: freshShop(), staff: freshStaff(), draw: freshDraw(), look: null, background: null, tutorial: { done: true, step: null }, notes: {}, guide: null };
+  return { room: 'apartment', dayMode: null, night: null, shopHours: null, shopSession: null, shopClosedDate: null, collapse: null, nightRunWindow: null, displays: {}, crowd: null, playTimeMs: 0, shop: freshShop(), staff: freshStaff(), draw: freshDraw(), look: null, background: null, tutorial: { done: true, step: null }, notes: {}, guide: null };
 }
 
 const godBadge = document.getElementById('god-badge');
@@ -447,7 +447,7 @@ function startNightCity() {
   night = null; nightState();
   clock.setSpan(NIGHT_SPAN);
   clock.load({ ...clock.save(), state: 'stopped', elapsedMs: 0, day: st.day });
-  if (CONTINUOUS) clock.beginTimed(nightRunMinutes());
+  if (CONTINUOUS) { clock.beginTimed(nightRunMinutes()); world.nightRunWindow = clock.cycle.window; }
   pedestrians = null;
   const L = cityLayout.locs.apartment;
   goThrough({ room: 'city', tx: L.stand.tx, ty: L.stand.ty, facing: 'down' });
@@ -1244,6 +1244,7 @@ function openHomeDoor() {
       body: [
         el('p', {}, world.shopSession ? 'The shop across the street is open.' : 'The shop is across the street. The rest of town is out the other way.'),
         nightOk ? el('p', { class: 'note', id: 'door-dark' }, `It’s dark until ${clockText(NW.dawnMinute(CAL.seasonOf(st.day)))}. ${MOON.moonOn(st.day).name} tonight.`) : null,
+        !nightOk && !world.shopSession && !world.night && nightRunUsed() && NW.canRun(CAL.seasonOf(st.day), clock.cycle.minuteOfDay) ? el('p', { class: 'note', id: 'door-been-out' }, 'You’ve already been out tonight.') : null,
       ],
       actions: [
         { id: 'door-shop', label: 'Across the street: the shop', kind: 'primary', onClick: () => { ui.close(); const sp = shopRoom().spawn; goThrough({ room: 'shop', tx: sp.tx, ty: sp.ty, facing: 'down' }); } },
@@ -1341,7 +1342,9 @@ function midnightRoll() {
 // ---- Phase 30 (continuous mode): night runs ----
 // Night runs start at the front door whenever it's dark and the shop isn't open. How much dark is
 // left depends on the season, so a summer night is a short run and a winter one a long one.
-const nightRunOk = () => !!st && !world.shopSession && !world.night && NW.canRun(CAL.seasonOf(st.day), clock.cycle.minuteOfDay);
+// One night run a night, like the original's one choice for the whole night.
+const nightRunUsed = () => world.nightRunWindow != null && world.nightRunWindow === clock.cycle.window;
+const nightRunOk = () => !!st && !world.shopSession && !world.night && !nightRunUsed() && NW.canRun(CAL.seasonOf(st.day), clock.cycle.minuteOfDay);
 const nightRunMinutes = () => NW.runMinutes(CAL.seasonOf(st.day), clock.cycle.minuteOfDay, CONFIG.night.hours * 60);
 
 function startNightWalk() {
@@ -3309,7 +3312,7 @@ function enterZone(zoneId) {
   snapCamera();
   clock.setSpan(NIGHT_SPAN);
   clock.load({ ...clock.save(), state: 'stopped', elapsedMs: 0, day: st.day });
-  if (CONTINUOUS) clock.beginTimed(nightRunMinutes());
+  if (CONTINUOUS) { clock.beginTimed(nightRunMinutes()); world.nightRunWindow = clock.cycle.window; }
   changed();
   ui.close();
   clock.start();

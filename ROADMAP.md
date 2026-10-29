@@ -130,6 +130,16 @@ phase when we plan it.
     `DayCycle` and `ShopHours`), so most of the old code keeps working unchanged. The calendar
     date rolling over at midnight and sleeping are separated in the sim (today
     `Calendar.sleep` does both).
+- **Economy rebalance (built, behind the continuous switch).** The continuous day lets one player do
+  the shop, errands, the lab and a night run in a single day, where the original made them one choice
+  each. To keep the pace the original had, the continuous day keeps its daily limits:
+  - errands spend the original's daily budget of errand hours (6, plus ride upgrades), refilled when
+    the player wakes, no matter how many hours of free time there are;
+  - one night run a night (a city walk or a zone run), refreshed with each night;
+  - bench time and energy still reset at waking, as before.
+  Rent, prices, customer counts per shop tier and wages are unchanged: a full eight-hour shift brings
+  the same crowd the old twelve-hour day did, and a shorter or late shift scales it down.
+  Not play-tested over weeks: tune these numbers once the new flow is live and people have played it.
 - **Status: Phase 30 is fully specified. No open questions.** Suggested build order:
   1. New save version and the new clock (15-20 minute day, wake-to-sleep days, sleep).
   2. Shop hours slider, closed weekly day, shop locked while open, floor pricing.

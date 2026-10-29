@@ -160,3 +160,11 @@ test('a timed window survives save and load', () => {
   assert.equal(d.hoursLeft, c.hoursLeft);
   assert.equal(d.progress, c.progress);
 });
+
+test('it says it is the continuous clock, and the errand budget is whatever the game says', () => {
+  const c = make(0, 12);
+  assert.equal(c.continuous, true);
+  assert.equal(c.errandHours, null);
+  c.errandHours = () => 4;
+  assert.equal(c.errandHours(), 4);
+});
