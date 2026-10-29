@@ -244,10 +244,9 @@ phase when we plan it.
      Then (32b, owner's request after play): **roads that never just end** - every east-west
      street crosses the river on a bridge, a road runs down both sides and along the top of town,
      a roundabout (Garden Street x the street at y 50) and three turning circles (true pixel
-     circles), rounded road corners. Traffic is built (`game/vehicles.js`: cars, scooters and bikes keep to the right-hand lane,
-     take curves smoothly, go round the roundabout and into the turning circles, stop for you and
-     for pedestrians, busy at the rush hours, quiet at night, headlights in the dark). Still to do
-     for roads: more curves instead of right angles.
+     circles), rounded road corners. Traffic (cars, scooters, bikes) was built and then **removed at the owner's request**: the
+     streets are for people on foot, the player's own ride aside. A pavement strip is now laid beside
+     every curb whatever is under it, so grass and gravel never touch the road.
      Roads are now painted as **true curves** (owner feedback: tile staircases read as 90-degree
      bends): `game/street-net.js` holds every street's smooth centre line, and `decorateCity`
      paints asphalt, curbs, gutters, dashed lane lines and junction rounding from each pixel's

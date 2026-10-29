@@ -635,9 +635,12 @@ function parkGate(g, x0, x1) {
 const ROADISH = new Set(['=', '+', 'G']);
 const isRoadCh = c => ROADISH.has(c);
 const isWalkCh = c => c === ',';
+// Other ground a street's curve can run over (grass, parking, paving, the cobbles): the road is painted on top of it.
+const OVERLAPPED = new Set(['"', 'q', 'p', 'P', 'y']);
 const CURB = { hi: '#555b72', mid: '#3d4256', lo: '#23262f', gutter: '#101217' };
 const SOFT = 5;           // how softly two streets blend (px): the rounding at a junction
 const CURB_W = 3;         // px of curb stone beside the asphalt
+const WALK_W = 10;        // px of pavement laid beside the curb whatever is under it, so grass or gravel never touches a curb
 
 const unit = (a, b, c = 0) => { let n = Math.imul(a, 73856093) ^ Math.imul(b, 19349663) ^ Math.imul(c, 83492791); n = Math.imul(n ^ (n >>> 15), 0x2c1b3c6d); n = Math.imul(n ^ (n >>> 12), 0x297a2d39); return ((n ^ (n >>> 15)) >>> 0) / 4294967296; };
 const slab = (px, py) => { const li = px & 15, lj = py & 15; return lj === 7 || lj === 15 || (li === 7 && lj < 7) || (li === 11 && lj > 7) ? C.paveLine : unit(px, py, 3) < 0.04 ? C.paveLight : C.pave; };
@@ -667,7 +670,7 @@ function paintStreetTile(g, net, tx, ty, ch, h, season) {
   const mid = net.field(x0 + 8, y0 + 8);
   if (!mid) { if (road) for (let j = 0; j < 16; j++) for (let i = 0; i < 16; i++) g.rect(x0 + i, y0 + j, 1, 1, slab(x0 + i, y0 + j)); return; }
   // f changes by at most 1 px per px, so a tile whose centre is far enough in or out is all one thing
-  const inside = mid.f < -13, outside = mid.f > CURB_W + 13;
+  const inside = mid.f < -13, outside = mid.f > CURB_W + WALK_W + 12;
   if (outside && !road) return;
   const off = mid.w === 2 ? 0 : mid.w === 3 ? 8 : -99;
   const lanes = inside && mid.close < 2 && Math.abs(mid.d - off) < 13;       // might a lane line cross this tile?
@@ -693,7 +696,7 @@ function paintStreetTile(g, net, tx, ty, ch, h, season) {
           if (season === 'winter' && unit(px, py, 5) < 0.3) col = '#6a7078';
         }
       } else if (F.f <= CURB_W) col = F.f <= 1 ? CURB.hi : F.f <= 2 ? CURB.mid : CURB.lo;
-      else if (road) col = slab(px, py);
+      else if (road || F.f <= CURB_W + WALK_W) col = slab(px, py);
     }
     if (col !== runCol) { if (runCol != null) g.rect(x0 + runX, py, i - runX, 1, runCol); runCol = col; runX = i; }
    }
@@ -761,7 +764,7 @@ export function decorateCity(layout, DATA, tiles, extra = []) {
       const bx0 = Math.max(0, r.tx0), by0 = Math.max(0, r.ty0), bx1 = Math.min(map.cols - 1, r.tx1), by1 = Math.min(map.rowsN - 1, r.ty1);   // (each tile's pixels stay in its own chunk)
       if (bx1 >= bx0 && by1 >= by0) {
         const buf = new PixelBlock(bx0 * 16, by0 * 16, (bx1 - bx0 + 1) * 16, (by1 - by0 + 1) * 16);
-        for (let ty = by0; ty <= by1; ty++) for (let tx = bx0; tx <= bx1; tx++) { const ch = map.at(tx, ty); if (isRoadCh(ch) || isWalkCh(ch)) paintStreetTile(buf, net, tx, ty, ch, mixHash(tx, ty), tiles.season ?? 'summer'); }
+        for (let ty = by0; ty <= by1; ty++) for (let tx = bx0; tx <= bx1; tx++) { const ch = map.at(tx, ty); if (isRoadCh(ch) || isWalkCh(ch) || OVERLAPPED.has(ch)) paintStreetTile(buf, net, tx, ty, ch, mixHash(tx, ty), tiles.season ?? 'summer'); }
         buf.flush(g);
       }
     }
