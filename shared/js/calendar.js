@@ -109,5 +109,47 @@ const Calendar = {
     Story.morning(st);
     Endless.morning(st);
     return rentNote;
+  },
+
+  /* ---- Continuous mode (Phase 30): the date rolls over at midnight, and waking up is separate. ---- */
+
+  /* Midnight: the day ends. Rent is settled if it's a due day, the date moves on, and the day's tally
+     starts over. What the day looked like waits in st.rollPre for the next morning's ledger. */
+  rollDate(st) {
+    const pre = { day: st.day, cash: st.cash, today: Recap.today(st), dayStart: st.dayStart, arrears: st.rent.arrears };
+    const rentNote = Calendar.collectRent(st);
+    pre.rentPaid = Math.max(0, pre.cash - st.cash); pre.rentShort = st.rent.arrears > pre.arrears; pre.heat = st.heat;
+    st.day += 1;
+    st.heat -= Endless.heatDecay(st);
+    Endless.add(st, 'day');
+    st.dayStart = { cash: st.cash, heat: clamp(Math.round(st.heat), 0, DATA.config.heatMax) };
+    st.today = Recap.fresh(st);
+    st.rollPre = pre;
+    return rentNote;
+  },
+
+  /* Waking up: rested, the morning's news, and the day's ledger for the date that just ended. */
+  wake(st) {
+    Shop.settleJobs(st, null);               // anything left from appraisals goes home with its owner
+    st.phase = 'morning';
+    st.energy = st.maxEnergy;
+    st.battery = 100;
+    st.stress = Math.max(0, st.stress - 30);
+    st.overnight = Lab.overnight(st);        // unsealed curses leak while you sleep
+    st.overnightCells = Containment.overnight(st);   // cell seals weaken; anything at 0 breaks out
+    st.bench.max = Lab.benchMax(st);
+    st.bench.mins = st.bench.max;
+    st.ap.left = 0;
+    st.ui.tab = 'shop';
+    RNG.within(st, ['morning', st.day], () => {
+      st.morningLine = Story.nameRatio(st) >= 0.3 && rnd() < 0.4 ? pick(rnd, DATA.nameLines) : pick(rnd, DATA.morningLines);
+      log(st, pick(rnd, DATA.news), 'news');
+    });
+    const pre = st.rollPre ?? { day: st.day - 1, cash: st.cash, today: Recap.today(st), dayStart: st.dayStart, arrears: st.rent.arrears, rentPaid: 0, rentShort: false, heat: st.heat };
+    st.rollPre = null;
+    st.recap = Recap.build(st, pre);
+    if (Calendar.isAuditDay(st)) { Audit.run(st); return; }
+    Story.morning(st);
+    Endless.morning(st);
   }
 };
