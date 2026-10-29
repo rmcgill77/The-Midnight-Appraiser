@@ -6,7 +6,6 @@ export const SAVE_VERSION = 5;
 // be exported or deleted. Phase 30 changes the clock, the day and the shop so much that it
 // raises this to its own save version when it ships; until then every older save still loads.
 export const FIRST_SUPPORTED = 0;
-const KEY = slot => `tma.save.${slot}`;
 
 const RENAMED = { Brit: 'Morgan', Styg: 'Stuart', Jae: 'Jade', Rando: 'Jackson', Paco: 'Pablo' };
 
@@ -38,17 +37,23 @@ export function migrate(data, target = SAVE_VERSION, migrations = MIGRATIONS) {
 }
 
 export class SaveSlots {
-  constructor(storage, count, firstSupported = FIRST_SUPPORTED) { this.storage = storage; this.count = count; this.firstSupported = firstSupported; }
+  // prefix: the storage key stem. The continuous-day test mode keeps its saves apart from real ones.
+  constructor(storage, count, firstSupported = FIRST_SUPPORTED, prefix = 'tma') {
+    this.storage = storage; this.count = count; this.firstSupported = firstSupported;
+    this.key = slot => `${prefix}.save.${slot}`;
+    this.lastKey = `${prefix}.lastSlot`;
+  }
+  setLast(slot) { this.storage.set(this.lastKey, String(slot)); }
 
   write(slot, state) {
     const data = { ...state, version: SAVE_VERSION, savedAt: Date.now(), slot };
-    const ok = this.storage.set(KEY(slot), JSON.stringify(data));
-    this.storage.set('tma.lastSlot', String(slot));
+    const ok = this.storage.set(this.key(slot), JSON.stringify(data));
+    this.setLast(slot);
     return { ok, persistent: this.storage.persistent, data };
   }
 
   read(slot) {
-    const raw = this.storage.get(KEY(slot));
+    const raw = this.storage.get(this.key(slot));
     if (!raw) return null;
     try {
       const parsed = JSON.parse(raw);
@@ -59,15 +64,15 @@ export class SaveSlots {
   }
 
   erase(slot) {
-    this.storage.remove(KEY(slot));
-    if (this.lastSlot() === slot) this.storage.remove('tma.lastSlot');
+    this.storage.remove(this.key(slot));
+    if (this.lastSlot() === slot) this.storage.remove(this.lastKey);
   }
 
   // The autosave: written every morning and when the game is put away. It lives beside
   // the numbered slots and never overwrites them.
   writeAuto(state) {
     const data = { ...state, version: SAVE_VERSION, savedAt: Date.now(), slot: 'auto' };
-    return this.storage.set(KEY('auto'), JSON.stringify(data));
+    return this.storage.set(this.key('auto'), JSON.stringify(data));
   }
   readAuto() { return this.read('auto'); }
 
@@ -79,7 +84,7 @@ export class SaveSlots {
   }
 
   // A save as a file you can keep, and back again. Import goes into the first empty slot.
-  exportText(slot) { return this.storage.get(KEY(slot)); }
+  exportText(slot) { return this.storage.get(this.key(slot)); }
   importText(text) {
     let data;
     try {
@@ -90,7 +95,7 @@ export class SaveSlots {
     if (!data || typeof data !== 'object' || !data.sim || typeof data.sim !== 'object') return { error: 'That file isn’t a Midnight Appraiser save.' };
     const free = this.list().find(s => !s.data && !s.corrupt);
     if (!free) return { error: 'Every slot is full. Delete one first.' };
-    this.storage.set(KEY(free.slot), JSON.stringify({ ...data, version: SAVE_VERSION, slot: free.slot, savedAt: data.savedAt || Date.now() }));
+    this.storage.set(this.key(free.slot), JSON.stringify({ ...data, version: SAVE_VERSION, slot: free.slot, savedAt: data.savedAt || Date.now() }));
     return { slot: free.slot };
   }
 
@@ -102,7 +107,7 @@ export class SaveSlots {
   }
 
   lastSlot() {
-    const n = parseInt(this.storage.get('tma.lastSlot'), 10);
+    const n = parseInt(this.storage.get(this.lastKey), 10);
     return n >= 1 && n <= this.count ? n : null;
   }
 }

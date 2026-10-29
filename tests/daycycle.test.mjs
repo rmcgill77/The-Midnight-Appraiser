@@ -167,3 +167,9 @@ test('save and load round-trip', () => {
   d.advance(10 * H); c.advance(10 * H);
   assert.deepEqual(d.save(), c.save());
 });
+
+test('windowEnd is when the current sleep window closes (10 AM), or null outside one', () => {
+  assert.equal(make(0, 22).windowEnd, at(1, 10));
+  assert.equal(make(1, 3).windowEnd, at(1, 10));
+  assert.equal(make(1, 15).windowEnd, null);
+});
