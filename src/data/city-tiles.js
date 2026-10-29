@@ -723,6 +723,40 @@ function dressWalk(g, map, tx, ty, h, season) {
   if (season === 'spring' && h % 6 === 0) R(g, x + (h >> 2) % 14, y + (h >> 5) % 14, 2, 1, '#c98a9a');   // blossom petals
 }
 
+// A roundabout or a turning circle, painted as a true circle over the tiles that approximate it: the road
+// inside the outer edge, the island inside the inner one, a curb round each, and the entries left open.
+// Pixel work, so the shape is smooth however coarse the tiles are.
+function paintCircle(g, map, c, r) {
+  const T = 16, cx = c.x * T, cy = c.y * T, reach = Math.ceil(c.rOut + 2);
+  const tx0 = Math.max(r.tx0, Math.floor(c.x - reach)), tx1 = Math.min(r.tx1, Math.ceil(c.x + reach));
+  const ty0 = Math.max(r.ty0, Math.floor(c.y - reach)), ty1 = Math.min(r.ty1, Math.ceil(c.y + reach));
+  if (tx0 > tx1 || ty0 > ty1) return;
+  const inEntry = (px, py) => (c.entries ?? []).some(e => {
+    const dx = px - cx, dy = py - cy;
+    if (e.axis === 'x') return Math.abs(dy) <= T && (e.dir == null || dx * e.dir > 0);
+    return Math.abs(dx) <= T && (e.dir == null || dy * e.dir > 0);
+  });
+  for (let ty = ty0; ty <= ty1; ty++) for (let tx = tx0; tx <= tx1; tx++) {
+    const ch = map.at(tx, ty), td = Math.hypot(tx + 0.5 - c.x, ty + 0.5 - c.y);
+    const ringTile = ch === '=' || ch === '+', islandTile = (ch === ',' || ch === 'T') && td < c.rIn + 1.2, apron = ch === ',' && td >= c.rIn + 1.2 && td < c.rOut + 1.8;
+    if (!ringTile && !islandTile && !apron) continue;
+    for (let j = 0; j < T; j++) for (let i = 0; i < T; i++) {
+      const px = tx * T + i, py = ty * T + j, D = Math.hypot(px + 0.5 - cx, py + 0.5 - cy) / T;
+      let col = null;
+      const slab = () => { const li = px & 15, lj = py & 15; return lj === 7 || lj === 15 || (li === 7 && lj < 7) || (li === 11 && lj > 7) ? C.paveLine : (px * 31 + py * 17) % 23 === 0 ? C.paveLight : C.pave; };
+      if (D <= c.rIn) {
+        if (ch === 'T' && Math.hypot(px + 0.5 - cx, py + 0.5 - cy) < 11) continue;      // the planter's own art
+        col = D > c.rIn - 0.2 ? CURB.hi : D > c.rIn - 0.34 ? CURB.mid : slab();
+      } else if (D <= c.rOut) {
+        if (islandTile || ringTile || apron) col = D < c.rIn + 0.12 ? CURB.lo : ((px * 7 + py * 3) % 53 === 0 ? C.asphaltLight : C.asphalt);
+      } else if (!inEntry(px, py) && (ringTile || apron)) {
+        col = D <= c.rOut + 0.2 ? CURB.hi : D <= c.rOut + 0.34 ? CURB.mid : D <= c.rOut + 0.48 ? CURB.lo : slab();
+      }
+      if (col != null) R(g, px, py, 1, 1, col);
+    }
+  }
+}
+
 export function decorateCity(layout, DATA, tiles, extra = []) {
   const locOf = id => DATA.locations.find(l => l.id === id) ?? extra.find(l => l.id === id);
   return (g, map, r) => {
@@ -759,6 +793,7 @@ export function decorateCity(layout, DATA, tiles, extra = []) {
         if (map.at(tx, ty + 1) === '~') { R(g, x, y + 14, 16, 2, '#2a1e16'); R(g, x, y + 14, 16, 1, '#6a5038'); }
       }
     }
+    for (const c of layout.circles ?? []) paintCircle(g, map, c, r);
     if (layout.plaza) {
       const f = layout.plaza.fountain;
       if (f.tx <= tx1 && f.tx + f.w >= tx0 && f.ty <= ty1 && f.ty + f.h >= ty0) fountain(g, f.tx * 16, f.ty * 16, f.w * 16, f.h * 16);
