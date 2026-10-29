@@ -9,7 +9,7 @@ import { paintHD, HD_W, HD_H, PORTRAIT_SIZE } from '../engine/figure-hd.js';
 import { paintInto } from './portraits.js';
 
 const TABS = [
-  ['body', 'Body', [['build', 'Build'], ['skin', 'Skin', 'color']]],
+  ['body', 'Body', [['build', 'Build'], ['skin', 'Skin', 'color'], ['pronouns', 'Pronouns']]],
   ['face', 'Face', [['eyes', 'Eyes'], ['eyeColor', 'Eye color', 'color'], ['brows', 'Brows'], ['mouth', 'Mouth'], ['face', 'Complexion'], ['mark', 'Marks'], ['facial', 'Facial hair']]],
   ['hair', 'Hair', [['hair', 'Style'], ['hairColor', 'Color', 'color']]],
   ['hat', 'Hat', [['hat', 'Hat'], ['hatColor', 'Hat color', 'color']]],
@@ -63,13 +63,13 @@ export function openCreator(ui, { look: start, onDone, onBack, eyebrow = 'New ga
   const set = (key, v) => { look[key] = v; sync(); };
   const stepper = (key, label) => {
     const list = PARTS[key], val = el('output', { class: 'creator-val', id: `val-${key}` });
-    controls[key] = () => { val.textContent = list[look[key]]; };
+    controls[key] = () => { val.textContent = list[look[key] ?? 0]; };
     return el('div', { class: 'creator-row' },
       el('span', { class: 'label' }, label),
       el('div', { class: 'creator-step' },
-        el('button', { type: 'button', class: 'icon-btn', id: `prev-${key}`, 'aria-label': `Previous ${label.toLowerCase()}`, onclick: () => set(key, (look[key] - 1 + list.length) % list.length) }, '‹'),
+        el('button', { type: 'button', class: 'icon-btn', id: `prev-${key}`, 'aria-label': `Previous ${label.toLowerCase()}`, onclick: () => set(key, ((look[key] ?? 0) - 1 + list.length) % list.length) }, '‹'),
         val,
-        el('button', { type: 'button', class: 'icon-btn', id: `next-${key}`, 'aria-label': `Next ${label.toLowerCase()}`, onclick: () => set(key, (look[key] + 1) % list.length) }, '›')));
+        el('button', { type: 'button', class: 'icon-btn', id: `next-${key}`, 'aria-label': `Next ${label.toLowerCase()}`, onclick: () => set(key, ((look[key] ?? 0) + 1) % list.length) }, '›')));
   };
   const swatches = (key, label) => {
     const list = COLOR_OF[key];
