@@ -261,7 +261,10 @@ phase when we plan it.
      character is built too: Kessler Heights halls have pilasters, dentil cornices and arches;
      Harbour warehouses have roll-up doors, stencilled numbers and loading docks; shop fronts
      have blade signs; Eastgate has striped awnings; the Narrows have washing lines.
-     Next: props and clutter, then seasonal looks,
+  4. **Props and clutter (32d, built, `data/street-props.js`):** fire hydrants, mail boxes,
+     newspaper boxes, litter bins and bike racks at the kerb, parking meters along Old Market,
+     sandwich boards outside shops, pots by house doors, bags and boxes in the alleys. Painted on
+     the map (not solid), placed by tile hash. Seasonal looks are next,
      each as its own slice, with the finished puddles, wet streets and snow drawn on the new tiles.
 - **Status: Phase 32 is in progress (32a built).**
 - Likely files: `src/data/city.js`, `src/data/city-tiles.js`, `src/data/tiles.js`.
