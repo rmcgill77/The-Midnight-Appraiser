@@ -36,9 +36,9 @@ export function openLocation(g, locId, pick = null, hooks = {}) {
   if (loc.home) {
     ui.open({
       id: 'loc', eyebrow: `${dist.name} · ${clock.label}`, title: loc.name,
-      body: [el('p', {}, loc.blurb), el('p', { class: 'note' }, `${hoursText(clock)} of errands left today.`)],
+      body: [el('p', {}, loc.blurb), g.continuous ? null : el('p', { class: 'note' }, `${hoursText(clock)} of errands left today.`)],
       actions: [
-        { id: 'go-home', label: 'Head home and end the day', kind: 'primary', onClick: () => { ui.close(); clock.endDay(); } },
+        { id: 'go-home', label: g.continuous ? 'Head home' : 'Head home and end the day', kind: 'primary', onClick: () => { ui.close(); if (g.continuous) g.goHome(); else clock.endDay(); } },
         { label: 'Keep going', kind: 'quiet', onClick: () => ui.close() },
       ],
     });
