@@ -1038,7 +1038,10 @@ export function bakeHD(look, opts = {}) {
 // the panels: the sprite carries the silhouette, the portrait carries the face. Drawn
 // from shapes (ellipses and bands) rather than a pixel table, then shaded two pixels deep.
 
-export const PORTRAIT_SIZE = 48;
+// The portrait is drawn on a 48x48 grid; the one the interface shows is smoothed up to 96x96
+// (Phase 31d) so edges and curves come out finer.
+export const PORTRAIT_BASE = 48;
+export const PORTRAIT_SIZE = 96;
 const PHAT_BOTTOM = { 'Garrison cap': 6, 'Sailor cap': 12, 'Top hat': 15, Fedora: 16, 'Flat cap': 16, Beanie: 17, Bowler: 15, 'Wide brim': 17, Trilby: 15, Beret: 15, Newsboy: 16, Deerstalker: 16, 'Cowboy hat': 14, 'Bucket hat': 15, Headscarf: 14, 'Hood up': 16, Pillbox: 9, Bandana: 12 };
 
 
@@ -1113,7 +1116,7 @@ function paintLookFx(look, { O, each, inEll, C, L, mouthPx, eye }) {
 
 export function paintPortrait(lookIn, opts = {}) {
   const look = cleanLook(lookIn);
-  const N = PORTRAIT_SIZE, L = makeLayer(N, N), C = palette(look, opts);
+  const N = PORTRAIT_BASE, L = makeLayer(N, N), C = palette(look, opts);
   const { P, E, O } = L;
   const nm = k => PARTS[k][look[k]];
   const hair = nm('hair'), hat = nm('hat'), top = nm('top'), neck = nm('neck'), extra = nm('extra');
@@ -1532,4 +1535,19 @@ export function paintPortrait(lookIn, opts = {}) {
   return compose(L, C.R, { band: 2, rim: true, outline: true });
 }
 
-export function portraitCanvas(look, opts = {}) { return hdCanvas(paintPortrait(look, opts)); }
+// Scale2x (EPX): each pixel becomes four, and a corner takes its neighbor's color where two
+// neighbors agree and the others don't. Diagonals and curves stay smooth and no new colors appear.
+export function scale2x(g) {
+  const h = g.length, w = g[0].length, out = Array.from({ length: h * 2 }, () => Array(w * 2).fill(null));
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    const p = g[y][x], a = y > 0 ? g[y - 1][x] : p, d = y < h - 1 ? g[y + 1][x] : p, c = x > 0 ? g[y][x - 1] : p, b = x < w - 1 ? g[y][x + 1] : p;
+    out[y * 2][x * 2] = c === a && c !== d && a !== b ? a : p;
+    out[y * 2][x * 2 + 1] = a === b && a !== c && b !== d ? b : p;
+    out[y * 2 + 1][x * 2] = d === c && d !== b && c !== a ? c : p;
+    out[y * 2 + 1][x * 2 + 1] = b === d && b !== a && d !== c ? d : p;
+  }
+  return out;
+}
+export const paintPortraitHD = (lookIn, opts = {}) => scale2x(paintPortrait(lookIn, opts));
+
+export function portraitCanvas(look, opts = {}) { return hdCanvas(paintPortraitHD(look, opts)); }
