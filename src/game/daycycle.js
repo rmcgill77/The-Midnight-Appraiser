@@ -51,6 +51,8 @@ export class DayCycle {
   }
 
   get window() { return this.#windowAt(this.t); }
+  // When the window the player is in closes (10 AM), or null outside a window.
+  get windowEnd() { const k = this.#windowAt(this.t); return k === null ? null : this.#close(k); }
   get canSleep() { const k = this.#windowAt(this.t); return this.running && k !== null && this.sleptWindow !== k; }
   // Why not, for the bed's message.
   get sleepBlock() {
