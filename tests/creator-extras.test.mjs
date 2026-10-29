@@ -13,10 +13,10 @@ test('extras are stored only when set and kept in range', () => {
   for (const k of EXTRA_KEYS) assert.ok(PARTS[k][0] === 'None');
 });
 test('every new option paints, in the portrait and on the figure, and changes the face', () => {
-  const base = paintPortrait(CLASSIC_LOOK);
-  const tries = [['eyes', 5, 6], ['brows', 5, 7], ['mark', 5, 8], ['facial', 6, 8], ['build', 3, 6], ...EXTRA_KEYS.map(k => [k, 1, PARTS[k].length - 1])];
+  const B = { ...CLASSIC_LOOK, hat: 0 }, base = paintPortrait(B);
+  const tries = [['eyes', 5, 6], ['brows', 5, 7], ['mark', 5, 8], ['facial', 6, 8], ['build', 3, 6], ['hair', 16, 25], ['hat', 12, 21], ['hairColor', 12, 17], ...EXTRA_KEYS.map(k => [k, 1, PARTS[k].length - 1])];
   for (const [k, a, b] of tries) for (let v = a; v <= b; v++) {
-    const look = { ...CLASSIC_LOOK, [k]: v };
+    const look = { ...B, [k]: v };
     assert.doesNotThrow(() => { for (const f of ['down', 'up', 'right']) paintHD(look, f, 0, 'walk', {}); paintHD(look, 'down', 0, 'ko', {}); });
     if (k !== 'build' && k !== 'facial') assert.notEqual(sig(paintPortrait(look)), sig(base), `${k}=${v}`);
   }
@@ -25,7 +25,7 @@ test('every new option paints, in the portrait and on the figure, and changes th
 test('townsfolk looks do not change with the new options', () => {
   const l = lookFor('Morgan');
   for (const k of EXTRA_KEYS) assert.equal(k in l, false);
-  assert.ok(l.build <= 2 && l.eyes <= 4 && l.brows <= 4 && l.mark <= 4 && l.facial <= 5);
+  assert.ok(l.build <= 2 && l.eyes <= 4 && l.brows <= 4 && l.mark <= 4 && l.facial <= 5 && l.hair <= 15 && l.hat <= 11 && l.hairColor <= 11);
 });
 test('surprise extras are valid', () => {
   let n = 0; const r = () => ((n = (n * 9301 + 49297) % 233280) / 233280);

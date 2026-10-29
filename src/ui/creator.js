@@ -11,7 +11,7 @@ import { paintInto } from './portraits.js';
 const TABS = [
   ['body', 'Body', [['build', 'Build'], ['height', 'Height'], ['skin', 'Skin', 'color'], ['skinFx', 'Skin details'], ['pronouns', 'Pronouns']]],
   ['face', 'Face', [['eyes', 'Eyes'], ['eyeColor', 'Eye color', 'color'], ['brows', 'Brows'], ['mouth', 'Mouth'], ['face', 'Complexion'], ['mark', 'Marks'], ['eyeFx', 'Eye details'], ['makeup', 'Makeup'], ['piercing', 'Piercings'], ['facial', 'Facial hair']]],
-  ['hair', 'Hair', [['hair', 'Style'], ['hairColor', 'Color', 'color']]],
+  ['hair', 'Hair', [['hair', 'Style'], ['hairColor', 'Color', 'color'], ['hairFx', 'Dye']]],
   ['hat', 'Hat', [['hat', 'Hat'], ['hatColor', 'Hat color', 'color']]],
   ['clothes', 'Outfit', [['top', 'Top'], ['topColor', 'Top color', 'color'], ['pattern', 'Pattern'], ['neck', 'Neck'], ['neckColor', 'Neck color', 'color'], ['bottom', 'Bottoms'], ['bottomColor', 'Bottoms color', 'color']]],
   ['extras', 'Extras', [['extra', 'Accessory'], ['extraColor', 'Color', 'color']]],
