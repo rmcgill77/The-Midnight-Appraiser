@@ -277,6 +277,7 @@ phase when we plan it.
 - Likely files: `src/data/city.js`, `src/data/city-tiles.js`, `src/data/tiles.js`.
 
 ### Phase 33: The woods
+- **Woods on hold (owner's call):** building the woods waits. First refine what is built (Phases 30-32), then come back here to settle the story, creatures and shops.
 - **Woods expansion to the north.** Decided scope: a big expansion (its own story,
   creatures, shops and night events), not just a small walkable area.
 - Already in the code: a roped-off trail with a sign at the top of the last street west of
