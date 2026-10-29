@@ -203,7 +203,8 @@ phase when we plan it.
   Phase 30 on, so no save migration is needed for the new creator.)
 - **Status: Phase 31 is in progress.** Item lists and portrait size are settled while
   building. Built: 31a pronouns (creator Body tab; `{they}`-style tokens in any spoken line,
-  `src/game/pronouns.js`; stored as optional `look.pronouns`). Next: 31b moods, 31c creator
+  `src/game/pronouns.js`; stored as optional `look.pronouns`). 31b moods (12 faces via
+  `paintPortrait(look, { mood })`; a speech line can carry `mood`). Next: 31c creator
   item lists (to review with the user first), 31d 96x96 portraits.
 - Likely files: `src/ui/creator.js`, `src/ui/portraits.js`, `src/engine/figure.js`,
   `src/engine/figure-hd.js`, `src/game/people.js`.

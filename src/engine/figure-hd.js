@@ -16,7 +16,7 @@
 // drawing it at (x - 4, y - 15).
 
 import { makeCanvas } from './sprites.js';
-import { cleanLook, shade, SKINS, HAIR_COLORS, CLOTH, EYE_COLORS, PARTS } from './figure.js';
+import { cleanLook, MOODS, shade, SKINS, HAIR_COLORS, CLOTH, EYE_COLORS, PARTS } from './figure.js';
 
 export const HD_W = 24, HD_H = 32;
 export const HD_OFFSET = { x: -4, y: -15 };   // from the 16x16 entity box to the 24x32 sprite
@@ -977,6 +977,45 @@ export function bakeHD(look, opts = {}) {
 export const PORTRAIT_SIZE = 48;
 const PHAT_BOTTOM = { 'Garrison cap': 6, 'Sailor cap': 12, 'Top hat': 15, Fedora: 16, 'Flat cap': 16, Beanie: 17, Bowler: 15, 'Wide brim': 17, Trilby: 15, Beret: 15 };
 
+
+// Phase 31b: what each mood changes on the portrait. brows: [offset from the outer end, y]
+// pairs for the left brow (browsR for the right, else mirrored); mouth: pixels drawn instead
+// of the chosen mouth; eyes: a different eye shape; lid: 'half' or 'heavy'; and touches.
+const MOOD_SPECS = {
+  neutral: {},
+  happy: { brows: [[0, 18], [1, 17], [2, 16], [3, 16], [4, 17]], mouth: m => [[20, 30, m.lip], [21, 31, m.lip], [22, 31, m.WHITE], [23, 31, m.WHITE], [24, 31, m.WHITE], [25, 31, m.WHITE], [26, 31, m.lip], [27, 30, m.lip], [22, 32, m.lip], [23, 32, m.lip], [24, 32, m.lip], [25, 32, m.lip]], blush: 0.18 },
+  sad: { brows: [[0, 19], [1, 18], [2, 18], [3, 17], [4, 17]], mouth: m => [[21, 32, m.lip], [22, 31, m.lip], [23, 31, m.lip], [24, 31, m.lip], [25, 31, m.lip], [26, 32, m.lip], [23, 33, m.lipL], [24, 33, m.lipL]], tears: 1 },
+  annoyed: { brows: [[0, 18], [1, 18], [2, 18], [3, 19], [4, 19]], lid: 'half', mouth: m => [[21, 32, m.lip], [22, 32, m.lip], [23, 32, m.lip], [24, 32, m.lip], [25, 31, m.lip], [26, 31, m.lip]] },
+  angry: { brows: [[0, 17], [1, 17], [2, 18], [3, 18], [4, 19], [1, 18], [3, 19]], mouth: m => [[21, 30, m.lip], [22, 30, m.lip], [23, 30, m.lip], [24, 30, m.lip], [25, 30, m.lip], [22, 31, m.WHITE], [23, 31, m.WHITE], [24, 31, m.WHITE], [25, 31, m.WHITE], [22, 32, shade(m.WHITE, 0.78)], [23, 32, shade(m.WHITE, 0.78)], [24, 32, shade(m.WHITE, 0.78)], [25, 32, shade(m.WHITE, 0.78)], [21, 33, m.lip], [22, 33, m.lip], [23, 33, m.lip], [24, 33, m.lip], [25, 33, m.lip], [26, 33, m.lip]], flush: 0.2 },
+  upset: { brows: [[0, 19], [1, 18], [2, 18], [3, 17], [4, 16]], mouth: m => [[20, 33, m.lip], [21, 32, m.lip], [22, 31, m.lip], [23, 32, m.lip], [24, 32, m.lip], [25, 31, m.lip], [26, 32, m.lip], [27, 33, m.lip]], tears: 2 },
+  flirty: { brows: [[0, 18], [1, 17], [2, 17], [3, 17], [4, 18]], browsR: [[0, 18], [1, 16], [2, 16], [3, 16], [4, 17]], lid: 'half', mouth: m => [[21, 31, m.lip], [22, 31, m.lip], [23, 31, m.lip], [24, 31, m.lip], [25, 30, m.lip], [26, 29, m.lip], [22, 32, m.LIP], [23, 32, m.LIP], [24, 32, m.LIP]], blush: 0.3 },
+  surprised: { brows: [[0, 16], [1, 15], [2, 15], [3, 15], [4, 16]], eyes: 'Wide', mouth: m => [[23, 30, m.lip], [24, 30, m.lip], [22, 31, m.lip], [25, 31, m.lip], [22, 32, m.lip], [25, 32, m.lip], [23, 33, m.lip], [24, 33, m.lip], [23, 31, m.dark], [24, 31, m.dark], [23, 32, m.dark], [24, 32, m.dark]] },
+  scared: { brows: [[0, 17], [1, 16], [2, 16], [3, 15], [4, 15]], eyes: 'Wide', mouth: m => [[21, 31, m.lip], [22, 31, m.WHITE], [23, 31, m.WHITE], [24, 31, m.WHITE], [25, 31, m.WHITE], [26, 31, m.lip], [22, 32, m.dark], [23, 32, m.dark], [24, 32, m.dark], [25, 32, m.dark], [23, 33, m.lip], [24, 33, m.lip]], sweat: true, pale: 0.18 },
+  embarrassed: { brows: [[0, 18], [1, 17], [2, 17], [3, 16], [4, 16]], mouth: m => [[21, 31, m.lip], [22, 32, m.lip], [23, 31, m.lip], [24, 32, m.lip], [25, 31, m.lip], [26, 30, m.lip]], blush: 0.5, sweat: true },
+  smug: { brows: [[0, 18], [1, 18], [2, 18], [3, 18], [4, 18]], browsR: [[0, 18], [1, 16], [2, 16], [3, 16], [4, 17]], lid: 'half', mouth: m => [[20, 31, m.lip], [21, 31, m.lip], [22, 31, m.lip], [23, 31, m.lip], [24, 31, m.lip], [25, 30, m.lip], [26, 29, m.lip], [27, 29, m.lip], [22, 32, m.lipL], [23, 32, m.lipL]] },
+  tired: { brows: [[0, 19], [1, 19], [2, 18], [3, 18], [4, 18]], lid: 'heavy', mouth: m => [[21, 32, m.lip], [22, 32, m.lip], [23, 32, m.lip], [24, 32, m.lip], [25, 32, m.lip], [23, 33, m.lipL], [24, 33, m.lipL]] },
+};
+export { MOOD_SPECS };
+
+// Lids, bags, blush, tears and sweat for a mood, drawn over the finished face.
+function paintMoodTouches(mood, { O, each, inEll, C, L }) {
+  const eyes = [[16, 19], [28, 31]];
+  if (mood.lid) for (const [a, b] of eyes) {
+    for (let x = a; x <= b; x++) O(x, 22, C.skinD);
+    if (mood.lid === 'heavy') { for (let x = a; x <= b; x++) { O(x, 21, C.skinDD); O(x, 25, c => c && mix(c, '#5a4a6a', 0.35)); } }
+  }
+  const tint = (ex, ey, rx, ry, col, amt) => each((x, y) => { if (inEll(x, y, ex, ey, rx, ry) && L.at(x, y) === 'skin' && L.ov[y][x] == null) O(x, y, c => c && mix(c, col, amt)); });
+  if (mood.blush) for (const ex of [16.5, 30.5]) tint(ex, 27.5, 3, 1.9, '#d0504e', mood.blush);
+  if (mood.flush) tint(23.5, 22, 11, 8, '#c04040', mood.flush);
+  if (mood.pale) tint(23.5, 24, 10, 9, '#cfd8d4', mood.pale);
+  if (mood.tears) {
+    for (const x of [16, 17, 18, 19, 28, 29, 30, 31]) O(x, 24, c => c && mix(c, '#d06a6a', 0.45));
+    const drops = mood.tears === 2 ? [[17, 25], [17, 26], [17, 27], [17, 28], [30, 25], [30, 26], [30, 27], [30, 28]] : [[17, 25], [17, 26], [17, 27], [30, 25], [30, 26]];
+    for (const [x, y] of drops) O(x, y, y % 2 ? '#bcd8ee' : '#8fb8d8');
+  }
+  if (mood.sweat) for (const [x, y, c] of [[35, 16, '#8ab4d4'], [34, 17, '#cfe6f5'], [35, 17, '#cfe6f5'], [35, 18, '#8ab4d4']]) O(x, y, c);
+}
+
 export function paintPortrait(lookIn, opts = {}) {
   const look = cleanLook(lookIn);
   const N = PORTRAIT_SIZE, L = makeLayer(N, N), C = palette(look, opts);
@@ -1075,10 +1114,11 @@ export function paintPortrait(lookIn, opts = {}) {
   });
 
   // --- face ---
+  const mood = MOOD_SPECS[MOODS.includes(opts.mood) ? opts.mood : 'neutral'];
   const eye = C.eye, ink = INK;
   const drawEye = (x0, flip) => {
     const X = i => (flip ? x0 + 3 - i : x0 + i);
-    const shape = nm('eyes');
+    const shape = mood.eyes ?? nm('eyes');
     const lid = (y, c, w = 4) => { for (let i = 0; i < w; i++) O(X(i), y, c); };
     if (shape === 'Narrow') { lid(22, ink); lid(23, WHITE); O(X(2), 23, eye); O(X(3), 23, ink); lid(24, C.skinD); return; }
     if (shape === 'Wide') { lid(20, ink); for (const y of [21, 22, 23, 24]) lid(y, WHITE); for (const y of [22, 23]) { O(X(1), y, eye); O(X(2), y, y === 23 ? ink : eye); } O(X(1), 22, '#f4f8fb'); return; }
@@ -1093,14 +1133,16 @@ export function paintPortrait(lookIn, opts = {}) {
   drawEye(16, false); drawEye(28, true);
   const brow = hair === 'Bald' ? shade(C.skin, 0.5) : C.hairD;
   const bc = nm('brows') === 'Thin' ? mix(brow, C.skin, 0.4) : brow;
-  const brows = {
+  const browsBase = {
     Straight: [[0, 18], [1, 18], [2, 18], [3, 18], [4, 18]],
     Arched: [[-1, 19], [0, 18], [1, 17], [2, 17], [3, 17], [4, 18]],
     Heavy: [[-1, 18], [0, 18], [1, 18], [2, 18], [3, 18], [4, 18], [0, 17], [1, 17], [2, 17], [3, 17], [4, 19]],
     Thin: [[0, 18], [1, 18], [2, 18], [3, 18]],
     Furrowed: [[0, 17], [1, 17], [2, 18], [3, 18], [4, 19]],
   }[nm('brows')];
-  for (const [i, y] of brows) { O(16 + i, y, bc); O(31 - i, y, bc); }
+  const browsL = mood.brows ?? browsBase, browsR = mood.browsR ?? browsL;
+  for (const [i, y] of browsL) O(16 + i, y, bc);
+  for (const [i, y] of browsR) O(31 - i, y, bc);
   // Nose: the shadow side of the bridge, the tip, the nostrils.
   // Lashes (a softer face, Phase 29b): a shorter, lighter line down the nose.
   for (let y = nm('eyes') === 'Lashes' ? 25 : 23; y <= 27; y++) O(25, y, nm('eyes') === 'Lashes' ? mix(C.skin, C.skinD, 0.6) : C.skinD);
@@ -1119,7 +1161,8 @@ export function paintPortrait(lookIn, opts = {}) {
     'Soft smile': [[21, 31, mix(C.skin, '#c46a6e', 0.45)], [22, 32, mix(LIP, '#c8686c', 0.55)], [23, 32, mix(LIP, '#b8585e', 0.4)], [24, 32, mix(LIP, '#b8585e', 0.4)], [25, 32, mix(LIP, '#c8686c', 0.55)], [26, 31, mix(C.skin, '#c46a6e', 0.45)],
       [22, 33, mix(C.skin, '#d8888a', 0.55)], [23, 33, mix(C.skin, '#e8a8a4', 0.7)], [24, 33, mix(C.skin, '#d8888a', 0.6)], [25, 33, mix(C.skin, '#d8888a', 0.5)]],
   }[nm('mouth')];
-  for (const [x, y, c] of mouth) O(x, y, c);
+  for (const [x, y, c] of (mood.mouth ? mood.mouth({ lip, lipL, LIP, WHITE, dark: shade(LIP, 0.35) }) : mouth)) O(x, y, c);
+  paintMoodTouches(mood, { O, each, inEll, C, L });
   const face = nm('face'), mark = nm('mark');
   if (face === 'Freckles') for (const [x, y] of [[16, 26], [18, 27], [17, 28], [20, 26], [27, 26], [29, 27], [30, 26], [31, 28]]) O(x, y, c => c && shade(c, 0.8));
   if (face === 'Tired eyes') for (let i = 0; i < 4; i++) { O(16 + i, 25, c => c && mix(c, '#5a4a6a', 0.3)); O(28 + i, 25, c => c && mix(c, '#5a4a6a', 0.3)); }

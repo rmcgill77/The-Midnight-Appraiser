@@ -238,7 +238,7 @@ const guide = new Guide();
 // Phase 16: the dialog box. Talk waits for a tap, the radio runs on a timer, and every
 // line (and every notice) goes into the conversation log.
 const speech = new Speech(document.getElementById('say'), { hintEl: document.getElementById('say-hint'), dimEl: document.getElementById('say-dim') });
-speech.portraitFor = who => portraitFor(who);
+speech.portraitFor = (who, opts) => portraitFor(who, opts);
 speech.settings = settings;
 speech.titleOf = who => [titleOf(who), REL.hasRelationship(who) ? heartsText(T.personOf(world, who).rel) : null].filter(Boolean).join(' · ') || null;
 speech.nameOf = who => (who === 'you' ? (st?.player?.name && st.player.name !== 'Owner' ? st.player.name : 'You') : who);

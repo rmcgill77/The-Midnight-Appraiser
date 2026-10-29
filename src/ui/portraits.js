@@ -10,12 +10,12 @@ import { SIGNATURE, nameOfLook } from '../game/people.js';
 const cache = new Map();
 let player = null;   // { name, look }
 
-const keyOf = (look, sig) => ALL_KEYS.map(k => look[k] ?? '').join('.') + (sig ? '*' : '');
+const keyOf = (look, sig, mood) => ALL_KEYS.map(k => look[k] ?? '').join('.') + (sig ? '*' : '') + (mood && mood !== 'neutral' ? `:${mood}` : '');
 
-function grid(look, sig) {
-  const k = keyOf(look, sig);
+function grid(look, sig, mood) {
+  const k = keyOf(look, sig, mood);
   let g = cache.get(k);
-  if (!g) { g = paintPortrait(look, { signature: sig }); cache.set(k, g); if (cache.size > 64) cache.delete(cache.keys().next().value); }
+  if (!g) { g = paintPortrait(look, { signature: sig, mood }); cache.set(k, g); if (cache.size > 64) cache.delete(cache.keys().next().value); }
   return g;
 }
 
@@ -35,21 +35,21 @@ export function lookOf(who) {
 }
 
 // A <canvas> with the portrait painted on it, sized by CSS.
-export function portraitCanvas(look, { signature = false, cls = 'portrait', label = '' } = {}) {
+export function portraitCanvas(look, { signature = false, cls = 'portrait', label = '', mood = null } = {}) {
   const cv = document.createElement('canvas');
   cv.width = PORTRAIT_SIZE; cv.height = PORTRAIT_SIZE; cv.className = cls;
   if (label) { cv.setAttribute('role', 'img'); cv.setAttribute('aria-label', label); } else cv.setAttribute('aria-hidden', 'true');
-  paintInto(cv, look, signature);
+  paintInto(cv, look, signature, mood);
   return cv;
 }
 
-export function paintInto(cv, look, signature = false) {
+export function paintInto(cv, look, signature = false, mood = null) {
   // v2.1: a named character with a hand-made portrait (data/art.js) uses it.
   const art = artImage(`portraits/${nameOfLook(look) ?? ''}`);
   if (art) return drawPortraitArt(cv, art);
   const g = cv.getContext('2d');
   g.clearRect(0, 0, cv.width, cv.height);
-  grid(look, signature).forEach((row, y) => row.forEach((c, x) => { if (c) { g.fillStyle = c; g.fillRect(x, y, 1, 1); } }));
+  grid(look, signature, mood).forEach((row, y) => row.forEach((c, x) => { if (c) { g.fillStyle = c; g.fillRect(x, y, 1, 1); } }));
 }
 
 export function portraitFor(who, opts = {}) {

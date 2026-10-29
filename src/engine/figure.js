@@ -47,6 +47,9 @@ export const PARTS = {
   neck: ['Open collar', 'Necktie', 'Bow tie', 'Turtleneck', 'Bandana'],
 };
 // Which list each color choice comes from.
+// Phase 31b: the faces a portrait can make. 'neutral' is the face as the creator draws it.
+export const MOODS = ['neutral', 'happy', 'sad', 'annoyed', 'angry', 'upset', 'flirty', 'surprised', 'scared', 'embarrassed', 'smug', 'tired'];
+
 export const COLOR_OF = { skin: SKINS, hairColor: HAIR_COLORS, hatColor: CLOTH, topColor: CLOTH, bottomColor: CLOTH, extraColor: CLOTH, eyeColor: EYE_COLORS, neckColor: CLOTH };
 // The 14 choices every figure has had since Phase 12 (and what tells two people apart in a crowd)...
 export const LOOK_KEYS = ['build', 'skin', 'hair', 'hairColor', 'face', 'facial', 'hat', 'hatColor', 'top', 'topColor', 'bottom', 'bottomColor', 'extra', 'extraColor'];
