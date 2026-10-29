@@ -34,6 +34,7 @@ import { openHoursPanel } from './ui/hours-panel.js';
 import * as NW from './game/nightwindow.js';
 import * as EX from './game/exhaustion.js';
 import * as AP from './game/appraisals.js';
+import * as TR from './game/traffic.js';
 import { SleepFx } from './ui/sleepfx.js';
 import { Player } from './game/player.js';
 import { Crowd } from './game/customers.js';
@@ -284,6 +285,9 @@ function makeCrowd() {
     weather: () => (wt.active ? null : todayWeather()),
     barred: () => (wt.active ? [] : Y.blockedKinds(st)), restricted: (sim, it) => (wt.active ? null : Y.saleBlock(st, sim, it)),
     seller: sim => (hasEdge(world, 'haggle') ? softenSeller(sim) : sim),
+    // Phase 30 (continuous mode): traffic follows the shop's open hours and the time of day.
+    hoursScale: () => (CONTINUOUS && world.shopSession ? TR.hoursScale(world.shopSession.to - world.shopSession.opened, CONFIG.shopHours.maxMinutes) : 1),
+    arrivals: (n, next) => (CONTINUOUS && world.shopSession ? TR.arrivalProgress(n, world.shopSession.opened, world.shopSession.to, { next }) : null),
     dress: (sim, others) => dress(sim.name ?? `customer-${sim.id}`, new Set([playerKey(), ...others.map(o => o.lookKey).filter(Boolean)]), { faction: sim.faction, offDuty: !!sim.friend }),
   }, rng);
   c.events.pay = (cust, paid, it) => {
@@ -3918,7 +3922,7 @@ globalThis.__tma = {
   audio, talkTo, cityLayout, T, enterPlace: id => enterPlace(extraPlace(id) ?? WALK_INS[id]), leavePlace, spawnEvent: id => spawnEvent(id), setWeather: t => setWeatherOverride(t), get weather() { return todayWeather(); }, weatherFx, get eventEnt() { return eventEnt; }, toggleRide, get placeCrowd() { return placeCrowd; },
   get st() { return st; }, get crowd() { return crowd; }, get world() { return world; }, refreshSeason, parkToday, CAL, get fishing() { return fishing; }, beachToday,
   G, BN, yard: () => nightArea(), tollBell, get target() { return target; }, openGrave, NC, NS, MOON, startNightCity, startNightShop, nightState: () => nightState(), placeSight, nightSpots: () => nightSpots(), nightTarget: () => nightTarget(), nightInteract: e => nightInteract(e), inTheDark: () => inTheDark(), tackleHooks: () => tackleHooks(),
-  get loop() { return loop; }, placeAt, sleep, continuousBed, shopSignCard, endShopSession, openShopHoursPanel, collapseScene, syncSimDate, afterTakeJob: c => g.afterTakeJob(c), sleepFx, rng: () => rng, openNight, cityLayout, CR, N, zone, enterZone, endRun, morningChoice,
+  get loop() { return loop; }, placeAt, sleep, continuousBed, shopSignCard, endShopSession, openShopHoursPanel, collapseScene, syncSimDate, afterTakeJob: c => g.afterTakeJob(c), openDisplay: slot => openDisplay(g, slot), sleepFx, rng: () => rng, openNight, cityLayout, CR, N, zone, enterZone, endRun, morningChoice,
   guide, speech, wt, finishPrologue, syncShop, shopMap, staffFloor, autosave, quitToTitle,
   interact: t => interact(t), openStanding: () => openStanding(g, () => ui.close()), openBag: () => openBag(g, () => ui.close()),
   board: tab => openRenovation(g, { tab }), chooseDay: w => chooseDay(w), openHomeDoor: () => openHomeDoor(), goHome: () => goHome(), syncHome: () => syncHome(), arranger, openMagic: w => openMagicAct(w ?? 'Outside the Brass Lantern'), get magician() { return magician; }, arrange: () => startArranging(), stopArranging: () => stopArranging(), arrangeAct: () => arrangeAct(), arrangeTo: (tx, ty) => { arranger.point(tx, ty); }, tileToScreen: (tx, ty) => ({ x: (tx * 16 + 8 - camera.ix) * renderer.scale / renderer.dpr, y: (ty * 16 + 8 - camera.iy) * renderer.scale / renderer.dpr }), get layout() { return world.shop?.layout; }, shopRoom: () => shopRoom(), syncLook, god, openGodMenu: () => openGodMenu(() => ui.close()), offerUpdate, whatsNewOnce,

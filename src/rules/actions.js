@@ -56,6 +56,29 @@ export function nudgePrice(st, it, dir) {
   it.draft.price = S.clamp(it.draft.price + dir * step, Math.max(1, Math.round(s * 0.5)), Math.round(s * 2.5));
 }
 
+// Phase 30: change the price on a piece that's already tagged and in stock, from the shop floor.
+// Steps of 10% of the suggested price, kept between half and two and a half times it (like at the bench).
+export function shelfSuggest(st, it) {
+  const a = it.appraisal;
+  if (!a) return null;
+  const v = S.Lab.suggest(st, it, { alignment: a.alignment, anomalyId: a.anomalyId, price: it.price });
+  return Number.isFinite(v) && v > 0 ? v : S.Items.estimate(it);     // no known match yet: fall back to what it looks worth
+}
+export function nudgeShelfPrice(st, it, dir) {
+  const s = shelfSuggest(st, it);
+  if (!s || it.price == null) return null;
+  const step = Math.max(1, Math.round(s * 0.1));
+  it.price = S.clamp(it.price + dir * step, Math.max(1, Math.round(s * 0.5)), Math.round(s * 2.5));
+  if (it.appraisal) it.appraisal.price = it.price;
+  return it.price;
+}
+export function resetShelfPrice(st, it) {
+  const s = shelfSuggest(st, it);
+  if (s == null) return null;
+  it.price = s; if (it.appraisal) it.appraisal.price = s;
+  return s;
+}
+
 export function tagAndShelve(st, it) {
   const f = S.Items.find(st, it.uid);
   if (!f || f.list !== 'loot' || it.job || !it.draft || !it.draft.alignment) return false;
