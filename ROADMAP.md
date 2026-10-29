@@ -150,8 +150,9 @@ phase when we plan it.
   Decided: play it more before making it the real game, and fix what feels off first.
   **Shipped as version 3.0.0:** the new day and night is the game. Save version 6 is the first
   supported; preview saves were copied into free slots; the preview switch and the classic-flow
-  tests are gone. Still to do: delete the old day-loop branches left behind `CONTINUOUS` in
-  `src/main.js` (the constant is now `true`), and the old `Clock`.
+  tests are gone. The `CONTINUOUS` switch is gone from `src/main.js`. Still in the code, unused or
+  barely used: `endDay` (the old end-of-day flow), `A.sleep` and the old `Clock` in
+  `src/game/clock.js`; remove them once nothing in the shop or the sim needs them.
   Update: the leftovers below are now built (wind drives the wind sound, each friend has their own
   collapse comments, townsfolk move between parts of the day, the four-in-the-morning line is
   fixed). Economy numbers stay as they are until real play says otherwise.

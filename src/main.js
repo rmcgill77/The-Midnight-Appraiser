@@ -27,7 +27,6 @@ import { RELATIONSHIPS } from './data/relationships.js';
 import * as T from './game/talk.js';
 import { convoFor, KEEPER_TALK, EXTRA_LINES, extraName, kristenGuard } from './data/conversations.js';
 import { shopTierRoom, shopSpan, hoursText as shopHours } from './data/shop-tiers.js';
-import { Clock } from './game/clock.js';
 import { ContinuousClock } from './game/continuous-clock.js';
 import { ShopHours } from './game/shophours.js';
 import { openHoursPanel } from './ui/hours-panel.js';
@@ -119,8 +118,6 @@ const canvas = document.getElementById('view');
 let sleepFx = null;   // continuous mode only: what the second skipped night does to the screen
 // Phase 30: the continuous day and night, still being built. It's switched on with ?continuous=1
 // and keeps its saves apart (tma-cont.*), so the real game and its saves are untouched.
-// The day-and-night flow (Phase 30) is the game now. The constant stays while the old branches are cleared out.
-const CONTINUOUS = true;
 const pause = new PauseStack();
 const storage = createStorage();
 const slots = new SaveSlots(storage, CONFIG.saveSlots);
@@ -235,8 +232,9 @@ function makePedestrians() {
 }
 const player = new Player(CONFIG.player);
 const zone = new ZoneRunner(player);
-const clock = CONTINUOUS ? new ContinuousClock(CONFIG) : new Clock(CONFIG);
-if (CONTINUOUS) { sleepFx = new SleepFx({ canvas, layer, sound: S.Sound }); clock.errandHours = () => st?.ap?.left ?? 0; }
+const clock = new ContinuousClock(CONFIG);
+sleepFx = new SleepFx({ canvas, layer, sound: S.Sound });
+clock.errandHours = () => st?.ap?.left ?? 0;
 const ui = new UI(pause);
 const guide = new Guide();
 // Phase 16: the dialog box. Talk waits for a tap, the radio runs on a timer, and every
@@ -296,15 +294,15 @@ function makeCrowd() {
     barred: () => (wt.active ? [] : Y.blockedKinds(st)), restricted: (sim, it) => (wt.active ? null : Y.saleBlock(st, sim, it)),
     seller: sim => (hasEdge(world, 'haggle') ? softenSeller(sim) : sim),
     // Phase 30 (continuous mode): traffic follows the shop's open hours and the time of day.
-    hoursScale: () => (CONTINUOUS && world.shopSession ? TR.hoursScale(world.shopSession.to - world.shopSession.opened, CONFIG.shopHours.maxMinutes) : 1),
+    hoursScale: () => (world.shopSession ? TR.hoursScale(world.shopSession.to - world.shopSession.opened, CONFIG.shopHours.maxMinutes) : 1),
     // ...and friends drop by when they're free: not asleep, and not while their own place is open.
     visitAt: (name, next) => {
-      if (!CONTINUOUS || !world.shopSession) return undefined;
+      if (!world.shopSession) return undefined;
       const s = world.shopSession, npc = CUSTOM_NPCS.find(n => n.name === name);
       const jobOpen = (placeId, minute) => !!SCHEDULES[placeId] && statusAt(placeId, st.day, minute, st.seed).open;
       return VS.visitProgress(npc, s.opened, s.to, { jobOpen }, { next });
     },
-    arrivals: (n, next) => (CONTINUOUS && world.shopSession ? TR.arrivalProgress(n, world.shopSession.opened, world.shopSession.to, { next }) : null),
+    arrivals: (n, next) => (world.shopSession ? TR.arrivalProgress(n, world.shopSession.opened, world.shopSession.to, { next }) : null),
     dress: (sim, others) => dress(sim.name ?? `customer-${sim.id}`, new Set([playerKey(), ...others.map(o => o.lookKey).filter(Boolean)]), { faction: sim.faction, offDuty: !!sim.friend }),
   }, rng);
   c.events.pay = (cust, paid, it) => {
@@ -316,7 +314,7 @@ function makeCrowd() {
   };
   // Phase 30: after a skipped night, now and then a sale is rung up a little short.
   c.fumble = amount => {
-    if (!CONTINUOUS || !clock.cycle.penalties.shopMistakes) return amount;
+    if (!clock.cycle.penalties.shopMistakes) return amount;
     const r = EX.fumbleAmount(amount, rng);
     if (r.slipped) ui.toast(`Tired fingers: you rang it up ${money(r.slipped)} short.`, 2400);
     return r.amount;
@@ -340,14 +338,14 @@ function makeCrowd() {
 
 const map = () => (world.room === 'zone' ? zone.map : maps[world.room]);
 const g = {
-  continuous: CONTINUOUS,
+  continuous: true,
   ui, clock, cityHourMs: CONFIG.city.hourMs, settings,
   get st() { return st; }, get crowd() { return crowd; }, get world() { return world; },
   changed: () => changed(),
-  goHome: () => { if (CONTINUOUS && nightCity()) endNightWalk('home'); goHome(); },
+  goHome: () => { if (nightCity()) endNightWalk('home'); goHome(); },
   // Phase 30: an appraisal job taken in the continuous day gets a due day, 1-7 days out.
   afterTakeJob: c => {
-    if (!CONTINUOUS || !c.item?.job) return;
+    if (!c.item?.job) return;
     const range = S.DATA.appraisal.fee[c.faction === 'civilian' ? 'civilian' : 'faction'];
     const closed = d => hoursObj().week[CAL.weekdayOf(d)] === null;
     c.item.job.due = AP.dueDate(st.day, AP.dueDays(c.fee, range, rng), closed);
@@ -452,13 +450,13 @@ function startNightCity() {
   night = null; nightState();
   clock.setSpan(NIGHT_SPAN);
   clock.load({ ...clock.save(), state: 'stopped', elapsedMs: 0, day: st.day });
-  if (CONTINUOUS) { clock.beginTimed(nightRunMinutes()); world.nightRunWindow = clock.cycle.window; }
+  clock.beginTimed(nightRunMinutes()); world.nightRunWindow = clock.cycle.window;
   pedestrians = null;
   const L = cityLayout.locs.apartment;
   goThrough({ room: 'city', tx: L.stand.tx, ty: L.stand.ty, facing: 'down' });
   clock.start();
   const mo = moonTonight();
-  ui.toast(`${mo.name}. The streets until ${CONTINUOUS ? clockText(NW.dawnMinute(CAL.seasonOf(st.day))) : 'four'}. Keep to the lamps.`, 3200);
+  ui.toast(`${mo.name}. The streets until ${clockText(NW.dawnMinute(CAL.seasonOf(st.day)))}. Keep to the lamps.`, 3200);
   // Kristen's breathing drill works out here too (v2.5).
   const guard = kristenGuard(T.personOf(world, 'Kristen').rel);
   world.nerve = guard ? { day: st.day, left: guard, max: guard } : null;
@@ -581,7 +579,7 @@ function noticed(lvl) {
 
 // Four in the morning: home, a half hour's grace, then someone sees you home.
 function nightCityClock() {
-  if (CONTINUOUS) return endNightWalk('dawn');
+  return endNightWalk('dawn');
   const S0 = nightState();
   if (world.room === 'apartment') { clock.stop(); world.night = 'done'; ui.toast('Four in the morning. The bed’s in the bedroom.', 2600); return; }
   if (!S0.grace) {
@@ -1013,20 +1011,6 @@ function nightBust(rec) {
   world.night = 'done';
   changed();
 }
-function endNightShop() {
-  for (const c0 of [...crowd.list]) crowd.dismiss(c0);
-  world.night = 'done';
-  const T0 = world.nightTake ?? { sold: 0, total: 0, heat: 0 };
-  ui.open({
-    id: 'nightShopEnd', eyebrow: `${CAL.formatDate(st.day)} · 4:00 AM`, title: 'Lights off',
-    body: [el('p', {}, T0.sold ? `${T0.sold} sale${T0.sold === 1 ? '' : 's'} after dark, ${money(T0.total)} in cash. Nobody gave a name.` : 'Nobody bought anything. A few came in, looked at you, and left.'),
-      T0.heat ? el('p', { class: 'note warnline' }, `Heat +${T0.heat}. Cursed things sold at night since the last inspection: ${st.nightShop?.cursedSince ?? 0}${(st.nightShop?.cursedSince ?? 0) >= NS.NIGHT_SHOP.row.per ? ' (the inspectors will notice)' : ''}.`) : null,
-      el('p', { class: 'note' }, `${NS.opensLeft(st)} night opening${NS.opensLeft(st) === 1 ? '' : 's'} left this week.`)],
-    actions: [{ id: 'nightshop-home', label: 'Lock up and go home', kind: 'primary', onClick: () => { ui.close(); goHome(); } }],
-  });
-  changed();
-}
-
 // ---------- v2.3: fishing ----------
 // Face open water from the beach (the pier, the surf, the rocks) or in town (the river mouth,
 // the quay, the riverbank) and fish. The rules are in game/fishing.js; the screens in
@@ -1242,7 +1226,7 @@ function openHomeDoor() {
   if (wt.active) return ui.toast('Not now. Mina wants a word.');
   const L = cityLayout.locs.apartment;
   const toStreet = () => { ui.close(); goThrough({ room: 'city', tx: L.stand.tx, ty: L.stand.ty, facing: 'down' }); };
-  if (CONTINUOUS && !wt.active) {
+  if (!wt.active) {
     const nightOk = !world.shopSession && nightRunOk();
     return ui.open({
       id: 'door', eyebrow: `${CAL.formatDate(st.day)} · ${clock.label}`, title: 'Your front door',
@@ -1314,7 +1298,7 @@ function openHomeDoor() {
 
 function useBed() {
   if (wt.active) return wt.allows('cot') ? wt.event('cot') : ui.toast('Not now. Mina’s still talking.');
-  if (CONTINUOUS) return continuousBed();
+  return continuousBed();
   if (isNight()) return confirmSleep();
   if (world.dayMode === 'city' && clock.state === 'running') return ui.open({
     id: 'bed', eyebrow: `${CAL.formatDate(st.day)} · ${clock.label}`, title: 'Call it a day?',
@@ -1891,7 +1875,7 @@ function applyState(d) {
   simRules(st);
   snapCamera();
   if (wt.active) wt.resume();
-  if (CONTINUOUS) midnightRoll();
+  midnightRoll();
 }
 
 function placeAt(roomId, tx, ty, facing) {
@@ -2069,17 +2053,15 @@ function goThrough(go) {
   }, 140);
 }
 
-clock.onDayEnd = reason => (CONTINUOUS ? (world.room === 'zone' && st?.run ? endRun(N.clockOut(st)) : world.night === 'city' ? nightCityClock() : ui.toast('Your bed is at home. Turn in there.', 2400)) : world.room === 'zone' && st?.run ? endRun(N.clockOut(st)) : world.night === 'city' ? nightCityClock() : world.night === 'shop' ? endNightShop() : endDay(reason));
+clock.onDayEnd = () => (world.room === 'zone' && st?.run ? endRun(N.clockOut(st)) : world.night === 'city' ? nightCityClock() : ui.toast('Your bed is at home. Turn in there.', 2400));
 
-if (CONTINUOUS) {
-  // closer friends drop by the shop more often (game/visits.js)
-  setVisitBoost(name => VS.visitBoost(REL.heartsOf(T.personOf(world, name).rel)));
-  clock.onEvent = e => {
-    if (e.type === 'skipped') ui.toast(e.count === 1 ? 'You didn’t sleep. You can feel it: you’re slower, and your hands aren’t steady.' : 'Two nights without sleep. The edges of things aren’t right.', 4200);
-    else if (e.type === 'collapse') collapseScene(e);
-    else if (e.type === 'midnight') midnightRoll();
-  };
-}
+// closer friends drop by the shop more often (game/visits.js)
+setVisitBoost(name => VS.visitBoost(REL.heartsOf(T.personOf(world, name).rel)));
+clock.onEvent = e => {
+  if (e.type === 'skipped') ui.toast(e.count === 1 ? 'You didn’t sleep. You can feel it: you’re slower, and your hands aren’t steady.' : 'Two nights without sleep. The edges of things aren’t right.', 4200);
+  else if (e.type === 'collapse') collapseScene(e);
+  else if (e.type === 'midnight') midnightRoll();
+};
 
 const shopOpen = () => world.dayMode === 'shop' && st?.phase === 'day' && clock.state === 'running';
 const clerkOnDuty = () => shopOpen() && onStaff(world, 'clerk');
@@ -2109,7 +2091,7 @@ function update(dt) {
     player.speedMul = world.room === 'city' ? CR.walkSpeed(st, riding()) * streetPace(todayWeather(), riding(), vehicleOf(st)?.kind)
       : world.room === 'zone' && st.run ? N.sprintStep(st, dt, input.sprintHeld, move.mag > 0.1) : 1;
     if (world.room === 'beach' && nightCity() && nightArea().inTide) player.speedMul *= 0.6;   // v2.5: wading
-    if (CONTINUOUS && clock.cycle.penalties.slow) player.speedMul *= EX.SLOW;                     // Phase 30: tired
+    if (clock.cycle.penalties.slow) player.speedMul *= EX.SLOW;                     // Phase 30: tired
     if (fishing) { if (!outdoors()) fishing = null; else stepFishing(dt, move, action, input.actionHeld); }
     else player.update(dt, move, world.room === 'city' ? cityMoveMap() : m);
     // v2.1: walked off the edge of an area onto the next one (game/edges.js).
@@ -2131,13 +2113,13 @@ function update(dt) {
     // Lunchtime came or went while you're inside somewhere: Ryan comes or goes (Phase 29).
     if (inPlace() && ryanAtLunch() !== lunchWas && !talkingWith && !ui.isOpen) syncPlaceCrowd();
     // Phase 30: a new part of the day: who's in the place you're in (or the park, the beach) changes too.
-    if (CONTINUOUS && dayPart() !== crowdPart && !talkingWith && !ui.isOpen) { crowdPart = dayPart(); if (inPlace() || inArea()) syncPlaceCrowd(); }
+    if (dayPart() !== crowdPart && !talkingWith && !ui.isOpen) { crowdPart = dayPart(); if (inPlace() || inArea()) syncPlaceCrowd(); }
     if (world.room === 'city' && !isNight()) { tickCityEvents(dt); syncMagician(dt); }
     tickNightCity(dt);
     tickNightAreas(dt);
     tickWeather(dt);
     world.playTimeMs += dt * 1000;
-    crowd.update(dt, { open: shopOpen() || (nightShop() && clock.state === 'running'), progress: CONTINUOUS ? shopProgress() : clock.progress, playerAtTill: playerAtTill() || clerkOnDuty() });
+    crowd.update(dt, { open: shopOpen() || (nightShop() && clock.state === 'running'), progress: shopProgress(), playerAtTill: playerAtTill() || clerkOnDuty() });
     for (const e of staffFloor.update(dt, { st, world, map: maps.shop, open: shopOpen() })) {
       if (e.stocked && world.room === 'shop') ui.toast(`${e.by.split(' ')[0]} put the ${S.Items.name(e.stocked)} out.`, 1600, { minor: true });
     }
@@ -2193,7 +2175,7 @@ function update(dt) {
   ui.tickToasts(dt * 1000);
   syncBanner();
   clock.tick(dt * 1000, pause.paused || (god.unlocked && !!god.freeze));
-  if (CONTINUOUS && world.shopSession && clock.cycle.t >= world.shopSession.to) endShopSession('timeout');
+  if (world.shopSession && clock.cycle.t >= world.shopSession.to) endShopSession('timeout');
   if (sleepFx) sleepFx.update(dt, !!st && clock.cycle.penalties.screenEffects, { reduced: settings.reducedMotion });
   const c = arranger.on ? { x: arranger.cursor.tx * 16 + 8, y: arranger.cursor.ty * 16 + 8 } : player.center;
   camera.follow(c.x, c.y, m.pxW, m.pxH, dt, CONFIG.camera.followLerp, settings.reducedMotion);
@@ -2224,13 +2206,13 @@ function render() {
   const ctx = renderer.ctx, m = map();
   tickBudget(5);   // new figure frames painted this frame, at most (engine/figure-hd.js)
   const mood = sceneFor(st, world, ui.current?.id);
-  audio.update(mood.scene, mood.tension, st ? { type: todayWeather(), place: weatherPlace(), birds: outdoors() && clock.progress < 0.5 && !isNight(), dt: renderDt(), wind: CONTINUOUS && !weatherOverride() ? climateNow().wind : null } : null);
+  audio.update(mood.scene, mood.tension, st ? { type: todayWeather(), place: weatherPlace(), birds: outdoors() && clock.progress < 0.5 && !isNight(), dt: renderDt(), wind: !weatherOverride() ? climateNow().wind : null } : null);
   renderer.begin(TC.void);
   if (layer.classList.contains('no-game') !== !st) layer.classList.toggle('no-game', !st);
   if (!st) { drawTitleBackdrop(ctx); return; }
   const cx = camera.ix, cy = camera.iy;
   m.draw(ctx, cx, cy, renderer.w, renderer.h);
-  if (CONTINUOUS && outdoors() && !weatherOverride()) drawGroundWeather(ctx, m, cx, cy, renderer.w, renderer.h, groundNow(), { time, reduced: settings.reducedMotion });
+  if (outdoors() && !weatherOverride()) drawGroundWeather(ctx, m, cx, cy, renderer.w, renderer.h, groundNow(), { time, reduced: settings.reducedMotion });
   if (world.room === 'zone' && st.run) zone.drawObjects(ctx, st, cx, cy, time);
   if (world.room === 'city') {
     drawStorefront(ctx, HOME_DOOR, cx, cy, drawState(world).front, time);
@@ -2329,7 +2311,7 @@ function render() {
     ui.setClock({ day: st.day, label: clock.label, state: pause.paused ? 'paused' : N.lightLevel(st) === 'lit' ? 'zone' : N.lightLevel(st) === 'low' ? 'light low' : 'dark', progress: clock.progress });
   } else if (nightCity() || nightShop()) {
     ui.setClock({ day: st.day, label: clock.label, state: pause.paused ? 'paused' : nightShop() ? 'open late' : MOON.moonOn(st.day).name.toLowerCase(), progress: clock.progress });
-  } else if (CONTINUOUS && !nightCity() && !nightShop()) {
+  } else if (!nightCity() && !nightShop()) {
     const ses = world.shopSession;
     ui.setClock({ day: st.day, label: clock.label, state: pause.paused ? 'paused' : ses ? `open until ${clockText(ses.to)}` : clock.cycle.canSleep ? 'can sleep' : '', progress: ses ? shopProgress() : clock.progress });
   } else if (isNight() || world.night) {
@@ -2344,7 +2326,7 @@ function render() {
   ui.setHeat(st.heat);
   ui.setFps(settings.showFps, loop.fps.value);
   godBadge.hidden = !anyOn(god);
-  syncWeatherHud(todayWeather(), CONTINUOUS && st ? FC.fmtTemp(climateNow().temp, settings.tempUnit) : null);
+  syncWeatherHud(todayWeather(), st ? FC.fmtTemp(climateNow().temp, settings.tempUnit) : null);
   const showMap = world.room === 'city' && !wt.active && clock.state !== 'ended';
   minimap.show(showMap);
   const marks = eventEnt && !eventEnt.done && eventEnt.kind !== 'thief' && !isNight() ? [{ tx: Math.round(eventEnt.x / 16), ty: Math.round(eventEnt.y / 16) }] : [];
@@ -2894,7 +2876,7 @@ function climateNow() {
   if (key !== climateKey) { climateKey = key; climateSample = CLIM.sample(st.seed ?? 0, t, { month: monthOf(Math.floor(t / 1440)) }); climateSample.type = CLIM.typeOf(climateSample); }
   return climateSample;
 }
-if (CONTINUOUS) setClimateProvider((seed, day) => CLIM.dayType(seed, day - 1, { month: monthOf(day - 1) }));
+setClimateProvider((seed, day) => CLIM.dayType(seed, day - 1, { month: monthOf(day - 1) }));
 // ...and it leaves its mark on the ground: wet streets, puddles, snow (game/ground.js, ui/ground-fx.js).
 let ground = null;
 function groundNow() {
@@ -2903,7 +2885,7 @@ function groundNow() {
   ground.setRaining(climateNow().precip > 0.1 && climateNow().temp > 0.8);
   return ground;
 }
-const todayWeather = () => (st ? (CONTINUOUS && !weatherOverride() ? climateNow().type : weatherOn(st.seed ?? 0, st.day)) : 'overcast');
+const todayWeather = () => (st ? (!weatherOverride() ? climateNow().type : weatherOn(st.seed ?? 0, st.day)) : 'overcast');
 const weatherFx = new WeatherFX();
 // Night zones with windows (lightning shows, the rain's on the glass); the rest are underground.
 const WINDOWED_ZONES = new Set(['laundromat', 'hospital']);
@@ -2918,7 +2900,7 @@ const renderDt = () => { const now = performance.now() / 1000, d = Math.min(0.1,
 function tickWeather(dt) {
   if (!st || (wt.active && world.room !== 'zone')) return;
   const type = todayWeather(), place = weatherPlace();
-  const fx = weatherFx.update(dt, type, { mode: weatherMode(), windows: place !== 'under', reducedMotion: !!settings.reducedMotion, w: renderer.w, h: renderer.h, world: CONTINUOUS && !weatherOverride() });
+  const fx = weatherFx.update(dt, type, { mode: weatherMode(), windows: place !== 'under', reducedMotion: !!settings.reducedMotion, w: renderer.w, h: renderer.h, world: !weatherOverride() });
   if (fx.bolt) {
     audio.thunder(fx.bolt.near, place);
     // A flash through the windows lights up the place you're in for a moment (and it stays seen).
@@ -2947,7 +2929,7 @@ function syncWeatherHud(type, temp = null) {
   wxEl.title = label; wxEl.setAttribute('aria-label', `Weather: ${label}`);
 }
 // Phase 30 (continuous mode): tap the weather icon for the conditions and the outlook.
-if (CONTINUOUS && wxEl) {
+if (wxEl) {
   wxEl.style.pointerEvents = 'auto'; wxEl.style.cursor = 'pointer';
   wxEl.setAttribute('role', 'button'); wxEl.setAttribute('tabindex', '0');
   const open = () => { if (st && !ui.isOpen && !wt.active) openWeatherPanel(); };
@@ -3066,13 +3048,13 @@ function interact(t) {
     case 'guide': return wt.talk();
     case 'frontdoor':
       if (wt.allows('frontdoor')) return wt.event('frontdoor');
-      if (CONTINUOUS && !wt.active) return shopSignCard();
+      if (!wt.active) return shopSignCard();
       if (!wt.active && (isNight() || clock.state === 'ended')) { goHome(); return ui.toast('Across the street and up the stairs. Home.', 2000); }
       if (!wt.active && st.phase === 'morning' && !world.dayMode) { goHome(); return; }
       return ui.toast(wt.active ? 'Not yet. Mina’s still showing you around.' : 'The shop’s open. Your apartment is right across the street when the day’s done.');
     case 'stairsDown':
       if (world.night === 'lab' || wt.allows('lab')) return goThrough(t.go);
-      if (CONTINUOUS && !wt.active) return world.shopSession ? ui.toast('The shop’s open. The back room stays shut until you close.', 2400) : goThrough(t.go);
+      if (!wt.active) return world.shopSession ? ui.toast('The shop’s open. The back room stays shut until you close.', 2400) : goThrough(t.go);
       if (wt.active) return ui.toast('Not yet. Mina’s still showing you the shop.');
       return ui.toast(isNight() ? 'You chose to rest tonight. The basement can wait.' : 'The basement workshop is night work. Choose it when the day ends.');
     case 'cot':
@@ -3153,7 +3135,7 @@ function interact(t) {
 function openMorning(first = false, extra = null) {
   if (st) REL.driftAll(world, st.day);
   autosave();
-  if (CONTINUOUS) return first ? beginContinuousDay(true) : runMorning(g, extra, () => beginContinuousDay(false));
+  return first ? beginContinuousDay(true) : runMorning(g, extra, () => beginContinuousDay(false));
   if (first) return morningChoice(true);
   runMorning(g, extra, () => morningChoice(false));
 }
@@ -3319,7 +3301,7 @@ function enterZone(zoneId) {
   snapCamera();
   clock.setSpan(NIGHT_SPAN);
   clock.load({ ...clock.save(), state: 'stopped', elapsedMs: 0, day: st.day });
-  if (CONTINUOUS) { clock.beginTimed(nightRunMinutes()); world.nightRunWindow = clock.cycle.window; }
+  clock.beginTimed(nightRunMinutes()); world.nightRunWindow = clock.cycle.window;
   changed();
   ui.close();
   clock.start();
@@ -3379,7 +3361,7 @@ function endRun(result) {
     ui.close();
     clock.setSpan(shopDaySpan());
     clock.load({ ...clock.save(), state: 'stopped', elapsedMs: 0, day: st.day });
-    if (CONTINUOUS) backToFreeTime();
+    backToFreeTime();
     if (world.lastZone === 'undercroft') { placeAt('lab', 5, 2, 'down'); ui.toast('You close the other door behind you. Home is across the street.'); }
     else if (wt.active) { placeAt('apartment', 11, 9, 'up'); wt.event('runEnd', result.how); }
     else { const d = APARTMENT.door; placeAt('apartment', d.tx, d.ty, 'up'); ui.toast('Home. The bed’s in the bedroom.'); }
@@ -3400,13 +3382,10 @@ function confirmSleep() {
 
 let lastSleep = null;
 function sleep() {
-  let res;
-  if (CONTINUOUS) {
-    // The dates the sleep crossed roll over now (rent and all), then it's morning.
-    const note = syncSimDate();
-    res = A.wake(st);
-    res.rentNote = note;
-  } else res = A.sleep(st);
+  // The dates the sleep crossed roll over now (rent and all), then it's morning.
+  const note = syncSimDate();
+  const res = A.wake(st);
+  res.rentNote = note;
   lastSleep = res;
   changed();
   if (st.gameOver) { openGameOver(); return; }
