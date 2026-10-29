@@ -71,7 +71,8 @@ import { openLocation, openCityMap, hoursText } from './ui/city-panels.js';
 import { Minimap } from './ui/minimap.js';
 import { vehicleOf, hasVehicle, keepsOff, BUS_STOPS, BUS_MINUTES, busToday, busCost, passRides } from './game/rides.js';
 import { drawRideBack, drawRideFront, SEAT_RISE } from './ui/ride-art.js';
-import { weatherOn, TYPES as WEATHER, ORDER as WEATHER_ORDER, streetPace, forecastLine, seasonOf, setWeatherOverride, weatherOverride } from './game/weather.js';
+import { weatherOn, TYPES as WEATHER, ORDER as WEATHER_ORDER, streetPace, forecastLine, seasonOf, setWeatherOverride, weatherOverride, setClimateProvider } from './game/weather.js';
+import * as CLIM from './game/climate.js';
 import { WeatherFX, weatherIconSvg } from './ui/weather-fx.js';
 import { EVENTS, EVENT_CONVOS, rollHour, startEvent, endEvent, eventsState, pickpocketTakes, PICKPOCKET_GRACE } from './game/city-events.js';
 import { ZoneRunner, ZONE_CELL } from './game/zone-runner.js';
@@ -2329,7 +2330,7 @@ function render() {
   ui.setHeat(st.heat);
   ui.setFps(settings.showFps, loop.fps.value);
   godBadge.hidden = !anyOn(god);
-  syncWeatherHud(todayWeather());
+  syncWeatherHud(todayWeather(), CONTINUOUS && st ? Math.round(climateNow().temp) : null);
   const showMap = world.room === 'city' && !wt.active && clock.state !== 'ended';
   minimap.show(showMap);
   const marks = eventEnt && !eventEnt.done && eventEnt.kind !== 'thief' && !isNight() ? [{ tx: Math.round(eventEnt.x / 16), ty: Math.round(eventEnt.y / 16) }] : [];
@@ -2870,7 +2871,17 @@ function drawEventThing(ctx, e, x, y) {
 
 // ---------- the weather (Phase 23) ----------
 // Today's weather (game/weather.js): the same all day and night, chosen from the seed.
-const todayWeather = () => (st ? weatherOn(st.seed ?? 0, st.day) : 'overcast');
+// Phase 30 (continuous mode): the weather is the climate at this moment, changing through the day.
+const monthOf = date => { const d = CAL.dateOf(date + 1); return d.m + (d.d - 1) / 31; };
+let climateKey = '', climateSample = null;
+function climateNow() {
+  const t = Math.floor(clock.cycle.t / 10) * 10;                  // a new reading every ten game minutes
+  const key = `${st.seed ?? 0}:${t}`;
+  if (key !== climateKey) { climateKey = key; climateSample = CLIM.sample(st.seed ?? 0, t, { month: monthOf(Math.floor(t / 1440)) }); climateSample.type = CLIM.typeOf(climateSample); }
+  return climateSample;
+}
+if (CONTINUOUS) setClimateProvider((seed, day) => CLIM.dayType(seed, day - 1, { month: monthOf(day - 1) }));
+const todayWeather = () => (st ? (CONTINUOUS && !weatherOverride() ? climateNow().type : weatherOn(st.seed ?? 0, st.day)) : 'overcast');
 const weatherFx = new WeatherFX();
 // Night zones with windows (lightning shows, the rain's on the glass); the rest are underground.
 const WINDOWED_ZONES = new Set(['laundromat', 'hospital']);
@@ -2904,13 +2915,14 @@ function drawWeather(ctx, cx, cy) {
 // The weather in the HUD: its icon beside the day.
 const wxEl = document.getElementById('clock-wx');
 let wxShown = '';
-function syncWeatherHud(type) {
-  if (!wxEl || wxShown === type) return;
-  wxShown = type;
-  const w = WEATHER[type];
+function syncWeatherHud(type, temp = null) {
+  const shown = `${type}|${temp}`;
+  if (!wxEl || wxShown === shown) return;
+  wxShown = shown;
+  const w = WEATHER[type], label = temp == null ? w.name : `${w.name}, ${temp}°C`;
   wxEl.replaceChildren(weatherIconSvg(w.icon));
   wxEl.dataset.tone = w.tone;
-  wxEl.title = w.name; wxEl.setAttribute('aria-label', `Weather: ${w.name}`);
+  wxEl.title = label; wxEl.setAttribute('aria-label', `Weather: ${label}`);
 }
 // The morning's forecast: what it is, what it means for today and tonight.
 function forecastCard() {
@@ -3932,7 +3944,7 @@ globalThis.__tma = {
   audio, talkTo, cityLayout, T, enterPlace: id => enterPlace(extraPlace(id) ?? WALK_INS[id]), leavePlace, spawnEvent: id => spawnEvent(id), setWeather: t => setWeatherOverride(t), get weather() { return todayWeather(); }, weatherFx, get eventEnt() { return eventEnt; }, toggleRide, get placeCrowd() { return placeCrowd; },
   get st() { return st; }, get crowd() { return crowd; }, get world() { return world; }, refreshSeason, parkToday, CAL, get fishing() { return fishing; }, beachToday,
   G, BN, yard: () => nightArea(), tollBell, get target() { return target; }, openGrave, NC, NS, MOON, startNightCity, startNightShop, nightState: () => nightState(), placeSight, nightSpots: () => nightSpots(), nightTarget: () => nightTarget(), nightInteract: e => nightInteract(e), inTheDark: () => inTheDark(), tackleHooks: () => tackleHooks(),
-  get loop() { return loop; }, placeAt, sleep, continuousBed, shopSignCard, endShopSession, openShopHoursPanel, collapseScene, syncSimDate, afterTakeJob: c => g.afterTakeJob(c), openDisplay: slot => openDisplay(g, slot), sleepFx, rng: () => rng, openNight, cityLayout, CR, N, zone, enterZone, endRun, morningChoice,
+  get loop() { return loop; }, placeAt, sleep, continuousBed, shopSignCard, endShopSession, openShopHoursPanel, collapseScene, syncSimDate, afterTakeJob: c => g.afterTakeJob(c), openDisplay: slot => openDisplay(g, slot), climateNow: () => climateNow(), weatherOn: d => weatherOn(st.seed ?? 0, d), sleepFx, rng: () => rng, openNight, cityLayout, CR, N, zone, enterZone, endRun, morningChoice,
   guide, speech, wt, finishPrologue, syncShop, shopMap, staffFloor, autosave, quitToTitle,
   interact: t => interact(t), openStanding: () => openStanding(g, () => ui.close()), openBag: () => openBag(g, () => ui.close()),
   board: tab => openRenovation(g, { tab }), chooseDay: w => chooseDay(w), openHomeDoor: () => openHomeDoor(), goHome: () => goHome(), syncHome: () => syncHome(), arranger, openMagic: w => openMagicAct(w ?? 'Outside the Brass Lantern'), get magician() { return magician; }, arrange: () => startArranging(), stopArranging: () => stopArranging(), arrangeAct: () => arrangeAct(), arrangeTo: (tx, ty) => { arranger.point(tx, ty); }, tileToScreen: (tx, ty) => ({ x: (tx * 16 + 8 - camera.ix) * renderer.scale / renderer.dpr, y: (ty * 16 + 8 - camera.iy) * renderer.scale / renderer.dpr }), get layout() { return world.shop?.layout; }, shopRoom: () => shopRoom(), syncLook, god, openGodMenu: () => openGodMenu(() => ui.close()), offerUpdate, whatsNewOnce,
