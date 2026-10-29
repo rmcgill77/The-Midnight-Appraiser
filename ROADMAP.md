@@ -258,7 +258,9 @@ phase when we plan it.
      aerials and (in the Narrows) water tanks; fronts get shutters (Westside, Eastgate), flower
      boxes, fire escapes and air conditioners (Narrows, Harbour), posters, drainpipes, a dark
      foot and a shadow on the pavement, and a stoop at every house door. More per-district
-     character (columns for Kessler Heights, roll-up doors for the Harbour) is still open.
+     character is built too: Kessler Heights halls have pilasters, dentil cornices and arches;
+     Harbour warehouses have roll-up doors, stencilled numbers and loading docks; shop fronts
+     have blade signs; Eastgate has striped awnings; the Narrows have washing lines.
      Next: props and clutter, then seasonal looks,
      each as its own slice, with the finished puddles, wet streets and snow drawn on the new tiles.
 - **Status: Phase 32 is in progress (32a built).**

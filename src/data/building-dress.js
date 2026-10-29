@@ -83,9 +83,49 @@ function dressFront(g, map, tx, ty, ch, h, season, d, { isRoof, isFace }) {
   if (district === 'n' && lowerRow === 2 && h % 11 === 0) { const c = ['#c0503a', '#d8b040', '#7a6ad0', '#4e9a52'][(h >>> 4) % 4]; R(g, x + 1, y + 3, 2, 7, shadeHex(c, 0.9)); R(g, x + 1, y + 3, 2, 2, c); }
   // a drainpipe where one building ends and the next begins
   if (!isFace(map.at(tx - 1, ty)) && (row !== 0)) { R(g, x + 3, y, 1, 16, IRON_L); }
+  // ---- the character of each district ----
+  // Kessler Heights: stone halls with pilasters, dentilled cornices and arched windows
+  if (district === 'k') {
+    const stone = '#5c6278', stoneD = '#3e4358';
+    if (row === 0) { for (let i = 0; i < 16; i += 2) R(g, x + i, y + 4, 1, 2, stoneD); R(g, x, y + 3, 16, 1, stone); }
+    if ((tx & 3) === 0) { R(g, x, y, 3, 16, stone); R(g, x + 2, y, 1, 16, stoneD); if (row === 0) R(g, x - 1, y + 6, 5, 2, stone); if (lowerRow === 2) R(g, x - 1, y + 13, 5, 3, stone); }
+    if (row === 1) { R(g, x + 4, y, 8, 1, stone); R(g, x + 5, y - 1, 6, 1, stone); }                       // an arch over the upper window
+    if (lowerRow === 2) R(g, x + 4, y, 8, 1, stone);
+  }
+  // Harbour Row: warehouses with roll-up doors, stencilled numbers and a loading dock
+  if (district === 'h') {
+    if (lowerRow === 2 && (gh >>> 3) % 3 === 0 && (tx & 3) >= 1 && (tx & 3) <= 2) {
+      R(g, x, y + 1, 16, 14, '#3a3f48'); for (let i = 2; i < 14; i += 2) R(g, x, y + i, 16, 1, '#2a2e36'); R(g, x, y + 12, 16, 3, '#c8a23a'); for (let i = 0; i < 16; i += 4) R(g, x + i, y + 12, 2, 3, IRON);
+      R(g, x, y + 15, 16, 1, '#5a5f6e');
+    }
+    if (row === 1 && (tx & 3) >= 1 && (tx & 3) <= 2) {
+      const num = 1 + (gh >>> 6) % 49, dig = (tx & 3) === 1 ? Math.floor(num / 10) : num % 10;
+      if (num >= 10 || (tx & 3) === 2) drawDigit(g, x + 6, y + 3, dig, '#b8b4a8');
+    }
+    if (lowerRow === 2 && (gh >>> 10) % 4 === 0) { R(g, x, y + 10, 16, 5, '#5a5f6e'); R(g, x, y + 10, 16, 1, '#7a8090'); }
+  }
+  // shop fronts on Old Market, Eastgate and in the Narrows: a blade sign hung over the pavement, and Eastgate's striped awnings
+  if ((district === 'a' || district === 'e' || district === 'n') && row === 1 && (tx & 3) === 3 && (gh >>> 8) % 2 === 0) {
+    const c = ['#a63a34', '#3d63b5', '#c8a23a', '#4e9a52', '#7a3a5e'][(gh >>> 11) % 5];
+    R(g, x + 9, y + 3, 7, 1, IRON); R(g, x + 11, y + 4, 1, 2, IRON); R(g, x + 14, y + 4, 1, 2, IRON); R(g, x + 10, y + 6, 6, 7, IRON_L); R(g, x + 11, y + 7, 4, 5, c); R(g, x + 12, y + 8, 2, 2, shadeHex(c, 1.5));
+  }
+  if (district === 'e' && lowerRow === 2 && (gh >>> 2) % 2 === 0) {
+    const c1 = ['#8a3a34', '#34588a', '#5a7a3a'][(gh >>> 14) % 3];
+    for (let i = 0; i < 16; i += 4) { R(g, x + i, y, 2, 4, c1); R(g, x + i + 2, y, 2, 4, '#d8d0bc'); }
+    R(g, x, y + 4, 16, 1, 'rgba(0,0,0,0.35)');
+  }
+  // washing lines strung across the Narrows
+  if (district === 'n' && row === 1 && (gh >>> 7) % 4 === 0) {
+    R(g, x, y + 2, 16, 1, '#8a867c');
+    for (let i = 0; i < 3; i++) { const c = ['#d8d0bc', '#a63a34', '#3d63b5', '#c8a23a'][(h >>> (i * 3)) % 4]; R(g, x + 2 + i * 5, y + 3, 3, 4, c); R(g, x + 2 + i * 5, y + 3, 3, 1, shadeHex(c, 1.3)); }
+  }
   // the building's foot: a dark line, and a shadow thrown onto the pavement
   if (lowerRow === 2) {
     R(g, x, y + 15, 16, 1, 'rgba(0,0,0,0.4)');
     if (map.at(tx, ty + 1) === ',') R(g, x, y + 16, 16, 3, 'rgba(0,0,0,0.2)');
   }
 }
+
+// A digit, 3 x 5 pixels, for the numbers stencilled on warehouses.
+const DIGITS = ['111101101101111', '010110010010111', '111001111100111', '111001111001111', '101101111001001', '111100111001111', '111100111101111', '111001001001001', '111101111101111', '111101111001111'];
+function drawDigit(g, x, y, d, c) { const m = DIGITS[d] ?? DIGITS[0]; for (let i = 0; i < 15; i++) if (m[i] === '1') R(g, x + (i % 3) * 2, y + Math.floor(i / 3) * 2, 2, 2, c); }
