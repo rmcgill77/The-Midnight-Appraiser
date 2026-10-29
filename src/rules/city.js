@@ -20,7 +20,9 @@ export function startErrandDay(st, clock) {
 
 function sync(st, clock, locId) {
   st.city.at = locId;
-  st.ap.left = clock.hoursLeft;
+  // The normal game: the day clock is the errand budget. The continuous day keeps the original's budget of
+  // errand hours (st.ap), spent by actions and refilled at waking, so free time doesn't make errands unlimited.
+  if (!clock.continuous) st.ap.left = clock.hoursLeft;
 }
 
 export function blocker(st, clock, locId, actId) {

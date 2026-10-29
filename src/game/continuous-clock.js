@@ -27,7 +27,10 @@ export class ContinuousClock {
     this.onDayEnd = null;          // endDay(): "I'm done for the day": the game decides what that means
     this.onEvent = null;           // skipped nights and collapses, from the cycle
     this.timed = null;             // { start, end } in absolute game minutes: a night run's time limit
+    this.errandHours = null;       // () => hours of errands left today; set by the game (the day's errand budget)
   }
+
+  get continuous() { return true; }
 
   // ---- reading the time ----
   get day() { return this.cycle.date + 1; }

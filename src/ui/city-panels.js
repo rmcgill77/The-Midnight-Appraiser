@@ -155,7 +155,7 @@ function section(title, aside, kids) {
 }
 
 export function hoursText(clock) {
-  const h = clock.hoursLeft;
+  const h = clock.errandHours ? clock.errandHours() : clock.hoursLeft;
   const whole = Math.floor(h), mins = Math.round((h - whole) * 60 / 10) * 10;
   return mins === 60 ? `${whole + 1}h` : whole ? (mins ? `${whole}h ${mins}m` : `${whole}h`) : `${mins}m`;
 }
