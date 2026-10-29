@@ -207,7 +207,7 @@ phase when we plan it.
   `paintPortrait(look, { mood })`; a speech line can carry `mood`). 31c step 1 (body, height, face
   details; tattoos cut): 4 new builds, height (Average/Tall/Short/Very tall), skin details,
   eye shapes, brows, marks, beards, eye details, makeup, piercings. 31c step 2 (10 hairstyles, 10 hats, 6 hair colors, hair dye
-  details). 31c step 3 (10 tops, 7 bottoms, shoes, 5 patterns). 31c step 4 (14 accessories, second accessory slot). 31c is done. 31d (first pass): portraits are shown at 96x96, smoothed up from the 48x48 drawing with Scale2x; a true redraw at 96 is optional later. Next: 31d 96x96 portraits.
+  details). 31c step 3 (10 tops, 7 bottoms, shoes, 5 patterns). 31c step 4 (14 accessories, second accessory slot). 31c is done. 31d (first pass): portraits are shown at 96x96, smoothed up from the 48x48 drawing with Scale2x; a true redraw at 96 is optional later. Phase 31 content is otherwise done.
 - Likely files: `src/ui/creator.js`, `src/ui/portraits.js`, `src/engine/figure.js`,
   `src/engine/figure-hd.js`, `src/game/people.js`.
 
