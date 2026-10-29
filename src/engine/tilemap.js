@@ -104,7 +104,9 @@ export class TileMap {
       og.globalCompositeOperation = 'lighter';
       if ('filter' in og) {
         og.filter = 'blur(2px)'; og.globalAlpha = 0.55; og.drawImage(mask, 0, 0);
-        og.filter = 'blur(6px)'; og.globalAlpha = 0.45; og.drawImage(mask, 0, 0);
+        og.filter = 'blur(6px)'; og.globalAlpha = 0.55; og.drawImage(mask, 0, 0);
+        og.filter = 'blur(11px)'; og.globalAlpha = 0.4; og.drawImage(mask, 0, 0);
+        og.filter = 'blur(7px)'; og.globalAlpha = 0.3; og.drawImage(mask, 0, 7);      // light spilling down onto the pavement
         og.filter = 'none';
       } else { og.globalAlpha = 0.25; for (const [dx, dy] of [[-1, 0], [1, 0], [0, -1], [0, 1], [-2, 0], [2, 0]]) og.drawImage(mask, dx, dy); }
     } catch { /* a tainted or missing canvas: no glow */ }

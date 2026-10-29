@@ -6,12 +6,12 @@
 const TILE = 16;
 
 // Length in pixels of a building's shadow, capped so the evening ones stay inside the street.
-export const shadowLength = (sun, height = 22) => Math.min(76, Math.round(height * sun.len));
+export const shadowLength = (sun, height = 22) => Math.min(58, Math.round(height * sun.len));
 
 export function drawSunShadows(ctx, m, camX, camY, w, h, sun, { cloud = 0, wetness = 0 } = {}) {
   const ts = m.ts;
   if (!ts?.mass || !sun || sun.strength < 0.05) return;
-  const a = Math.min(0.28, 0.26 * sun.strength * (1 - cloud * 0.85) * (1 - wetness * 0.6));
+  const a = Math.min(0.2, 0.18 * sun.strength * (1 - cloud * 0.85) * (1 - wetness * 0.6));
   if (a < 0.02) return;
   const side = sun.dir < 0 ? -1 : 1;                       // the way shadows fall along the street
   const L = shadowLength(sun), north = Math.round(L * (1 - Math.abs(sun.dir)) * 0.7);
@@ -20,7 +20,7 @@ export function drawSunShadows(ctx, m, camX, camY, w, h, sun, { cloud = 0, wetne
   const open = (tx, ty) => { const c = m.at(tx, ty); return !ts.mass.has(c) && c !== '#'; };
   const fade = (x0, y0, x1, y1, horizontal, towardsEnd) => {
     const g = horizontal ? ctx.createLinearGradient(towardsEnd ? x0 : x1, 0, towardsEnd ? x1 : x0, 0) : ctx.createLinearGradient(0, y1, 0, y0);
-    g.addColorStop(0, `rgba(6,10,24,${a.toFixed(3)})`); g.addColorStop(1, 'rgba(6,10,24,0)');
+    g.addColorStop(0, `rgba(6,10,24,${a.toFixed(3)})`); g.addColorStop(0.45, `rgba(6,10,24,${(a * 0.5).toFixed(3)})`); g.addColorStop(1, 'rgba(6,10,24,0)');
     ctx.fillStyle = g; ctx.fillRect(x0, y0, x1 - x0, y1 - y0);
   };
   for (let ty = ty0; ty <= ty1; ty++) {
