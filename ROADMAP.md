@@ -284,25 +284,106 @@ phase when we plan it.
 - **Roads (done):** lane lines already follow every bend (each street is one smooth curve, and they break only at junctions); the roundabout and turning circles now have a pavement band that follows the circle instead of tile-shaped apron squares; zebra crossings across every arm of every junction.
 - **Look (done):** warehouse bay numbers sit on painted plates on about one warehouse in three; night window glow has a wider halo and light spilling onto the pavement; evening sun shadows are softer (lower strength, shorter, fading earlier).
 
-### Phase 33: The woods
-- **Woods on hold (owner's call):** building the woods waits. First refine what is built (Phases 30-32), then come back here to settle the story, creatures and shops.
-- **Woods expansion to the north.** Decided scope: a big expansion (its own story,
-  creatures, shops and night events), not just a small walkable area.
-- Already in the code: a roped-off trail with a sign at the top of the last street west of
-  the park gate, past Kessler Heights (`woods` in `src/data/city.js`), and "out too late"
-  ranger dialogue for the woods (`src/game/night-city.js`). The town can open onto new
-  areas off the map edge (`src/data/areas.js`, `src/game/edges.js`).
-- Decided content: a story arc (characters and a payoff), new creatures (woodland
-  cryptids and animals for night runs and the bestiary), shops and people (such as a
-  ranger station, a cabin, a camp store or a hermit who trades), and night events and
-  fishing (woods mysteries and a lake or stream).
-- Decided layout: several connected areas (a trailhead, a forest, a lake, ruins and a cabin,
-  joined by paths). The woods open through a story event that takes down the rope across the
-  trail.
-- Why after the city look: the new area should match it.
-- Deferred on purpose: the story itself, the creature list, and who runs the shops. They
-  will be designed closer to Phase 33, not now. Phases 30 to 32 don't depend on them.
-- **Status: Phase 33 is specified except for the deferred content above.**
+### Phase 33: The woods (design settled with the owner; nothing built yet)
+**Decisions (owner):** tone is a blend of folk horror (the forest), a ceremonial lodge (the dungeon) and a
+hedge-witch (the ally in the cabin); the woods unlock through a mix of an investigation chain and friendships,
+with the friendships focused on a **new Town Hall and its staff, including a new Mayor**; the threat is a
+**surviving order**; and for now this is **design only**: nothing here is built until the owner says so.
+
+Why after the city look: the woods should match it. Already in the code: the roped-off trail with a sign
+(`woods` in `src/data/city.js`, rope tiles `%` and `&`), a woods ranger line in `src/game/night-city.js`, and a way
+to open areas off the map edge (`src/data/areas.js`, `src/game/edges.js`).
+
+#### The story in one page
+- Long ago the **Society of the Still Hour** held the woods north of town. They tried to *appraise the unseen*:
+  to measure, price and bind what lives in the dark. Their instrument was **the Eye**, a loupe cut so that the
+  holder sees what hides. It is the player's own loupe (the one on the cord, and the eye on the app icon).
+- Something went wrong at the **Standing Ring** one midwinter. The town sealed the trail "by order of the council"
+  and told a smaller story. The Society went underground, and a few of its members hold seats in town to this day.
+- **The player's parents** were members, left, and took the Eye with them. The shop, the pickups and the inspection
+  were all ways of staying hidden and keeping it out of the Society's hands.
+- The Society wants the Eye back because it is the key to the **inner door of the Lodge**. The woods open
+  because the town (the Mayor above all) has decided, for its own reasons, that it is time.
+- **Payoff, three endings the player steers towards:** *seal* the Ring (the Mayor's way: the order is contained,
+  nothing is told), *break* the Society (expose it to the Office and the town, at a cost to the people who lied for
+  years), or *take the seat* (become the Warden, with the power and the weight). Which one is open depends on
+  whom the player trusted.
+
+#### The Town Hall (a new building, in the town before the woods open)
+A civic building in Old Market, facing the square, open weekdays. It is useful on its own (permits, records, the
+council's weekly notices) and it is where the woods story is played out with people.
+- **The Mayor, Constance Hargrove** (woman): warm, tired, hospitable. Publicly the face of the town; secretly the
+  Society's current **Warden**, who wants it contained. Ally or antagonist depending on the player.
+- **The Archivist, Theo Maddox** (man): nervous, precise, keeps the council minutes and the old maps. Finds the
+  parents' file. Frightened of what he has read.
+- **Councillor Ines Valdez** (woman): a sharp-tongued lawyer who chairs planning. Wants the woods developed and
+  the "superstition" ended; a sceptic whose mind can be changed, and the source of the **permit and the hearing**.
+- **Bram, the caretaker** (man): old, keeps the building's keys and the town's folklore; knows the trail's
+  *rules* (never go in at dusk, salt the threshold, don't answer the third call). Gives the **gate key**.
+All four use the existing relationship system (hearts, gifts, likes and dislikes, birthdays, schedules,
+collapse reactions) and get looks from the creator, with pronouns used for the player as elsewhere.
+
+#### The lead-up (the woods open in chapters, so it feels like a whole new set of places)
+0. **Seeds (from the start of Phase 33):** the rope sign's notice changes each week; odd items arrive carved with
+   the same sigil; a customer pays in pressed leaves; the Town Hall opens its doors.
+1. **The Marks.** Six *marks* are hidden around town, each shown only under the UV lamp: an item at the shop, a
+   headstone in Mike's yard, a bottle washed up on Kip's beach, the carved bar top at the Lantern, a page in Ms.
+   Achterberg's special collection, and one on a night-run sight. Each fills in a page of a **Pattern** in a
+   journal. Finding marks is investigation; understanding them needs the people below.
+2. **The Vouching (the friendship gates, all at the Town Hall).**
+   - Theo, 3 hearts and at least 3 marks found: the minutes of the closing, the old maps, the parents' file.
+   - Bram, 4 hearts: the gate key, and the rules of the trail.
+   - Ines, 3 hearts and the file in hand: she calls a **public hearing** on reopening the trail (a scheduled evening).
+   - Constance, 5 hearts and the other three: her blessing, and, if the player's choices say so, her confession.
+3. **The Hearing.** An evening event at the Town Hall. Who spoke for the player, and what the marks showed, decides
+   how the vote goes and what the Mayor reveals.
+4. **The Opening Night.** On the next dark moon (game's moon calendar) the rope comes down at the trailhead, with
+   a short scene. Only the first area opens.
+5. **Opening in layers.** Each further area needs something from the one before (a key, a charm, a name).
+
+#### The areas (several connected places joined by paths)
+- **The Trailhead and the Watch Post:** the ranger station, abandoned; the ranger's logbooks; the way in. The
+  first shop is here.
+- **The Thornwood:** forest of hanging charms and bone chimes, where the paths slowly rearrange; salt lines and
+  warding stones keep it safe if you carry or place them.
+- **The Standing Ring:** a stone circle, the heart of the old rite; where the midwinter went wrong.
+- **The Mirror Lake:** a still lake that reflects things that are not there. Fishing with odd catches (and some that
+  are not fish).
+- **The Lodge:** the Society's ruined house. The dungeon: the library, the vestry, the cellar, and the inner door
+  that only the Eye opens.
+- **The Cabin:** a hedge-witch's home deep in the trees, a safe place with a hearth and a trading table.
+
+#### People and shops in the woods
+- **Ranger Dale Whitlock** (man): the Watch Post's last ranger, a decent man haunted by one night.
+- **Hester Fenn** (woman), the hedge-witch of the Cabin: herbs, salt, candles, hex bags and charms; trades for what
+  the forest gives back. The woods' **shop** and the ally who teaches wards.
+- **The Brethren** (hooded, in the Lodge): former members who never left. Some can be reasoned with.
+- Members of the Society in town, revealed through the story and not as a list: the Mayor, and the player gets to
+  decide whether to trust the Professor, Mr. Pryce and the library.
+
+#### New things for the player (rules and creatures)
+- **Wards:** salt, charms and candles protect a night run in the woods (a ward meter that falls with each strange
+  thing and refills at the Cabin). New ritual-component items for the shop's bench and the appraisal system; the UV
+  lamp already reveals sigils.
+- **Moon rites:** some events and creatures depend on the moon's phase (the game already has a moon calendar).
+- **Creatures (for the night runs and the bestiary):** *Corpse-candles* (wisps that lead you the wrong way),
+  *Black Dogs* (the Hollow's hounds), *Effigy Men* (straw and wicker walkers), *The Salt Wives* (figures in white who
+  stand at the threshold lines), *The Horned Judge* (a stag-headed presence at the Ring; appears at the finale),
+  *Moths of the Still Hour* (a swarm that dims lamps), *The Drowned* (what the Mirror Lake gives back), and the
+  Brethren themselves.
+- **The Eye:** the player's loupe gains a use in the woods: it shows what is hidden, and at the inner door of the
+  Lodge it is the key.
+
+#### Suggested build order (when the owner decides to build)
+33a Town Hall: the building, the four NPCs, hours and the relationship track. 33b The Marks, the UV reveals and the
+journal's Pattern page. 33c The Vouching, the Hearing and the Opening Night. 33d the Trailhead, the Watch Post and the
+Thornwood, with the first creatures and Hester's table. 33e the creature set and the ward rules. 33f the Ring, the
+Lake, the Lodge and the Cabin. 33g the three endings. Each slice can be its own pull request, as in Phases 30-32.
+
+#### Still open (to decide before building)
+Whether the Town Hall NPCs' schedules follow the long day and whether the council meets on a fixed weekday; how hard
+the Hearing should be to fail; what exactly the endings change in the town afterwards; the final names and looks of
+the Brethren and the Horned Judge; whether Mr. Pryce, Professor Okoye or Ms. Achterberg is a member of the Society.
 
 ## Consistency check (done)
 
