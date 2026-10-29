@@ -33,8 +33,6 @@ import { openHoursPanel } from './ui/hours-panel.js';
 import * as NW from './game/nightwindow.js';
 import { skylight } from './game/skylight.js';
 import { drawSunShadows, drawFigureShadow } from './ui/sun-shadows.js';
-import { Vehicles, density as trafficDensity, KINDS as VEHICLE_KINDS } from './game/vehicles.js';
-import { vehicleSprite } from './ui/vehicle-art.js';
 import { buildStreetNet } from './game/street-net.js';
 import * as EX from './game/exhaustion.js';
 import * as AP from './game/appraisals.js';
@@ -275,9 +273,8 @@ let world = freshWorld();
 let rng = new RNG(1), target = null, time = 0;
 let crowd = null;
 let pedestrians = null, lastDistrict = null;
-let vehicles = null;
 let streetNetCache = null;
-const streetNet = () => (streetNetCache ??= buildStreetNet(cityLayout.streets));   // Phase 32: cars, scooters and bikes on the roads (game/vehicles.js), made when you first reach the street
+const streetNet = () => (streetNetCache ??= buildStreetNet(cityLayout.streets));   // Phase 32: the smooth street curves (the snow keeps off the middle of the road)
 let light = makeCanvas(1, 1), lg = light.getContext('2d');
 
 function freshWorld() {
@@ -2111,13 +2108,6 @@ function update(dt) {
     if (world.room === 'city') {
       syncKeepers(dt);
       pedestrians?.update(dt);
-      vehicles ??= new Vehicles(maps.city, new RNG(`traffic:${st?.seed ?? 0}`), { snap: streetNet().lanePoint });
-      if (st) vehicles.update(dt, {
-        player: { x: player.center.x, y: player.center.y },
-        density: trafficDensity(clock.minuteOfDay) * (nightCity() ? 0.5 : 1),
-        wet: (groundNow().wet ?? 0) > 0.3,
-        others: (pedestrians?.list ?? []).filter(p => Math.abs(p.x - player.x) < 400 && Math.abs(p.y - player.y) < 300).map(p => ({ x: p.x + 8, y: p.y + 12 })),
-      });
       const c = player.center, d = cityLayout.districtAt(Math.floor(c.x / 16), Math.floor(c.y / 16));
       if (d && d.id !== lastDistrict) { if (lastDistrict) ui.toast(d.name, 1400, { minor: true }); lastDistrict = d.id; }
       // v2.2: Old Market Square, by name, as you walk into it.
@@ -2264,9 +2254,6 @@ function render() {
   }
   if (placeCrowd) for (const p of placeCrowd.people) ents.push({ kind: 'walker', y: p.y, e: p });
   for (const o of m.oversIn?.(cx, cy, renderer.w, renderer.h) ?? []) ents.push({ kind: 'over', y: o.sortY, e: o });
-  if (world.room === 'city' && vehicles) for (const v of vehicles.list) {
-    if (v.x > cx - 32 && v.x < cx + renderer.w + 32 && v.y > cy - 32 && v.y < cy + renderer.h + 32) ents.push({ kind: 'vehicle', y: v.y + VEHICLE_KINDS[v.kind].h / 2 - 4, e: v });
-  }
   if (world.room === 'city' && magician) ents.push({ kind: 'walker', y: magician.y, e: magician });
   if (world.room === 'city' && eventEnt) ents.push({ kind: eventEnt.sprites ? 'walker' : 'eventThing', y: eventEnt.y, e: eventEnt });
   if (world.room === 'zone' && st.run) ents.push(...zone.cryptidEntities(st, 1 / 60));
@@ -2275,11 +2262,6 @@ function render() {
   for (const { kind, e } of ents) {
     if (kind === 'cryptid') { zone.drawCryptid(ctx, e, cx, cy, time); continue; }
     if (kind === 'over') { ctx.drawImage(e.img, e.x - cx, e.y - cy); continue; }
-    if (kind === 'vehicle') {
-      const img = vehicleSprite(e.kind, e.color, e.dir), vx = Math.round(e.x - cx - img.width / 2), vy = Math.round(e.y - cy - img.height / 2);
-      ctx.fillStyle = 'rgba(0,0,0,0.32)'; ctx.fillRect(vx + 1, vy + img.height - 1, img.width - 2, 2);
-      ctx.drawImage(img, vx, vy); continue;
-    }
     if (kind === 'eventThing') { drawEventThing(ctx, e, Math.round(e.x) - cx, Math.round(e.y) - cy); continue; }
     if (kind === 'nightThing') { drawNightThing(ctx, e, cx, cy); continue; }
     const px = Math.round(e.x) - cx, py = Math.round(e.y) - cy;
@@ -2495,7 +2477,7 @@ function drawLighting(ctx, cx, cy, m, opts = {}) {
     lg.fillStyle = gr; lg.fillRect(x - r, y - r, r * 2, r * 2);
   };
   const boost = nightCity() && NC.nightCityOf(world).mysteries.lamplighter >= 4 ? 1.2 : 1;   // the lamplighter's lamps
-  const seen = [...m.lights.map(l => (boost > 1 ? { ...l, r: l.r * boost } : l)), ...(opts.noPlayer ? [] : nightLights()), ...(room === 'city' && vehicles && sky.night > 0.3 ? vehicles.lights() : [])].filter(l => l.x > cx - 64 && l.x < cx + w + 64 && l.y > cy - 64 && l.y < cy + h + 64);
+  const seen = [...m.lights.map(l => (boost > 1 ? { ...l, r: l.r * boost } : l)), ...(opts.noPlayer ? [] : nightLights())].filter(l => l.x > cx - 64 && l.x < cx + w + 64 && l.y > cy - 64 && l.y < cy + h + 64);
   seen.forEach((l, i) => hole(l.x - cx, l.y - cy, l.r * flick(i, l)));
   if (!opts.noPlayer) { const pc = player.center; hole(Math.round(pc.x) - cx, Math.round(pc.y) - cy - 2, room === 'city' ? (isNight() ? (inYard() && nightArea().oil ? 46 : 30) : 40) : 54); }
   ctx.drawImage(light, 0, 0);
@@ -4015,7 +3997,7 @@ globalThis.__tma = {
   audio, talkTo, cityLayout, T, enterPlace: id => enterPlace(extraPlace(id) ?? WALK_INS[id]), leavePlace, spawnEvent: id => spawnEvent(id), setWeather: t => setWeatherOverride(t), get weather() { return todayWeather(); }, weatherFx, get eventEnt() { return eventEnt; }, toggleRide, get placeCrowd() { return placeCrowd; },
   get st() { return st; }, get crowd() { return crowd; }, get world() { return world; }, refreshSeason, parkToday, CAL, get fishing() { return fishing; }, beachToday,
   G, BN, yard: () => nightArea(), tollBell, get target() { return target; }, openGrave, NC, NS, MOON, startNightCity, startNightShop, nightState: () => nightState(), placeSight, nightSpots: () => nightSpots(), nightTarget: () => nightTarget(), nightInteract: e => nightInteract(e), inTheDark: () => inTheDark(), tackleHooks: () => tackleHooks(),
-  get loop() { return loop; }, groundNow: () => groundNow(), get cityLayout() { return cityLayout; }, get vehicles() { return vehicles; }, placeAt, sleep, continuousBed, shopSignCard, endShopSession, openShopHoursPanel, collapseScene, syncSimDate, afterTakeJob: c => g.afterTakeJob(c), openDisplay: slot => openDisplay(g, slot), climateNow: () => climateNow(), groundNow: () => groundNow(), openWeatherPanel: () => openWeatherPanel(), openSettings: sec => openSettings(sec), weatherOn: d => weatherOn(st.seed ?? 0, d), sleepFx, rng: () => rng, openNight, cityLayout, CR, N, zone, enterZone, endRun, morningChoice,
+  get loop() { return loop; }, groundNow: () => groundNow(), get cityLayout() { return cityLayout; }, placeAt, sleep, continuousBed, shopSignCard, endShopSession, openShopHoursPanel, collapseScene, syncSimDate, afterTakeJob: c => g.afterTakeJob(c), openDisplay: slot => openDisplay(g, slot), climateNow: () => climateNow(), groundNow: () => groundNow(), openWeatherPanel: () => openWeatherPanel(), openSettings: sec => openSettings(sec), weatherOn: d => weatherOn(st.seed ?? 0, d), sleepFx, rng: () => rng, openNight, cityLayout, CR, N, zone, enterZone, endRun, morningChoice,
   guide, speech, wt, finishPrologue, syncShop, shopMap, staffFloor, autosave, quitToTitle,
   interact: t => interact(t), openStanding: () => openStanding(g, () => ui.close()), openBag: () => openBag(g, () => ui.close()),
   board: tab => openRenovation(g, { tab }), chooseDay: w => chooseDay(w), openHomeDoor: () => openHomeDoor(), goHome: () => goHome(), syncHome: () => syncHome(), arranger, openMagic: w => openMagicAct(w ?? 'Outside the Brass Lantern'), get magician() { return magician; }, arrange: () => startArranging(), stopArranging: () => stopArranging(), arrangeAct: () => arrangeAct(), arrangeTo: (tx, ty) => { arranger.point(tx, ty); }, tileToScreen: (tx, ty) => ({ x: (tx * 16 + 8 - camera.ix) * renderer.scale / renderer.dpr, y: (ty * 16 + 8 - camera.iy) * renderer.scale / renderer.dpr }), get layout() { return world.shop?.layout; }, shopRoom: () => shopRoom(), syncLook, god, openGodMenu: () => openGodMenu(() => ui.close()), offerUpdate, whatsNewOnce,

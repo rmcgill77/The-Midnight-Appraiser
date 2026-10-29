@@ -1,6 +1,5 @@
 // The street network as smooth curves (Phase 32): the centre line of every street, in tile coordinates, indexed
-// for quick queries. Used to paint the roads as true curves (data/city-tiles.js) and to put traffic in the right
-// lane of them (game/vehicles.js). Pure.
+// for quick queries. Used to paint the roads as true curves (data/city-tiles.js) and the snow on them. Pure.
 
 const SOFT = 5;           // how softly two streets blend (px): the rounding at a junction
 
@@ -47,22 +46,6 @@ export function buildStreetNet(streets, tile = 16) {
     }
     return { f: -SOFT * Math.log(sum), d: bd[nk], s: bsArc[nk], w: bw[nk], close };
   }
-  // Where a vehicle at (x, y) heading (hx, hy) should be to keep in the right-hand lane of the street it is on: the
-  // street's centre line moved over to the right by half its half-width. Streets that run across its heading are ignored.
-  function lanePoint(x, y, hx, hy) {
-    const ids = cells.get(Math.floor(x / CELL) * 100003 + Math.floor(y / CELL));
-    if (!ids) return null;
-    let pick = null;
-    for (const id of ids) {
-      const g = segs[id], dx = g.bx - g.ax, dy = g.by - g.ay;
-      if (Math.abs((dx * hx + dy * hy) / g.len) < 0.55) continue;
-      let t = ((x - g.ax) * dx + (y - g.ay) * dy) / (g.len * g.len); t = t < 0 ? 0 : t > 1 ? 1 : t;
-      const px = g.ax + dx * t, py = g.ay + dy * t, d = Math.hypot(x - px, y - py);
-      if (d < g.hw + 6 && (!pick || d < pick.d)) pick = { d, px, py, hw: g.hw };
-    }
-    if (!pick) return null;
-    return { x: pick.px - hy * pick.hw * 0.5, y: pick.py + hx * pick.hw * 0.5 };
-  }
-  return { field, segs, lanePoint };
+  return { field, segs };
 }
 
