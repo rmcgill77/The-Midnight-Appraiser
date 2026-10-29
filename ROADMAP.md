@@ -275,6 +275,15 @@ phase when we plan it.
 - **Status: Phase 32 is built (32a-32f); polish after play remains.**
 - Likely files: `src/data/city.js`, `src/data/city-tiles.js`, `src/data/tiles.js`.
 
+### Refinement pass (after Phase 32, owner's order: characters, roads, look)
+- **Characters (done):** the walking figure now has real drawings for the ten newer hairstyles and ten
+  newer hats (no more borrowing a near neighbour); the Cowboy hat (creased crown, curled brim) and
+  the Headscarf (tied, knot and tails) were redrawn on portraits; portraits at 96x96 now get a
+  light across the face, catchlights and fine hair strands on top of the smoothed 48x48 drawing.
+  Still smoothed, not redrawn: a full 96x96 redraw of every part.
+- **Roads (next):** lane lines through bends, the roundabout apron.
+- **Look (after):** warehouse numbers, night window glow, evening shadows.
+
 ### Phase 33: The woods
 - **Woods on hold (owner's call):** building the woods waits. First refine what is built (Phases 30-32), then come back here to settle the story, creatures and shops.
 - **Woods expansion to the north.** Decided scope: a big expansion (its own story,
