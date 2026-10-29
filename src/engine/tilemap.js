@@ -24,7 +24,7 @@ export class TileMap {
       if (def?.light) this.lights.push({ x: tx * tile + 8, y: ty * tile + 4 + (def.lightDy ?? 0), r: def.light, flicker: !!def.flicker });
       if (def?.over) {
         const imgs = [].concat(def.over.img), h = mix((tx * 73856093) ^ (ty * 19349663));
-        this.overs.push({ x: tx * tile + (def.over.dx ?? 0), y: ty * tile + (def.over.dy ?? 0), img: imgs[h % imgs.length], sortY: ty * tile - 2 });
+        this.overs.push({ x: tx * tile + (def.over.dx ?? 0), y: ty * tile + (def.over.dy ?? 0), img: imgs[h % imgs.length], sortY: ty * tile - 2, tx, ty });
       }
     });
   }
@@ -64,6 +64,52 @@ export class TileMap {
         ctx.drawImage(this.#chunk(cx, cy), cx * P - camX, cy * P - camY);
       }
     }
+  }
+
+  // Phase 32: the lit windows glow at night. A tileset with `glowRgb` (the colour of its lit windows) gets,
+  // for each baked chunk, a second picture holding only those pixels, softened: laid over the street
+  // with the lights it looks like light spilling out. Built on first use, then kept.
+  drawGlow(ctx, camX, camY, viewW, viewH, alpha) {
+    const rgb = this.ts?.glowRgb;
+    if (!rgb || alpha <= 0.01) return;
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';
+    ctx.globalAlpha = Math.min(1, alpha);
+    if (this.baked) ctx.drawImage(this.#glowOf('all', this.baked, rgb), -camX, -camY);
+    else if (this.chunks) {
+      const P = this.chunkPx;
+      for (let cy = Math.max(0, Math.floor(camY / P)); cy * P < Math.min(this.pxH, camY + viewH); cy++) {
+        for (let cx = Math.max(0, Math.floor(camX / P)); cx * P < Math.min(this.pxW, camX + viewW); cx++) {
+          ctx.drawImage(this.#glowOf(cy * 1000 + cx, this.#chunk(cx, cy), rgb), cx * P - camX, cy * P - camY);
+        }
+      }
+    }
+    ctx.restore();
+  }
+
+  #glowOf(key, src, rgb) {
+    this.glows ??= new Map();
+    let g = this.glows.get(key);
+    if (g) return g;
+    const w = src.width, h = src.height, sg = src.getContext('2d');
+    const out = makeCanvas(w, h), og = out.getContext('2d');
+    try {
+      const px = sg.getImageData(0, 0, w, h).data, mask = makeCanvas(w, h), mg = mask.getContext('2d');
+      const img = mg.createImageData(w, h), d = img.data;
+      for (let i = 0; i < px.length; i += 4) {
+        if (Math.abs(px[i] - rgb[0]) < 6 && Math.abs(px[i + 1] - rgb[1]) < 6 && Math.abs(px[i + 2] - rgb[2]) < 6 && px[i + 3] > 200) { d[i] = rgb[0]; d[i + 1] = rgb[1]; d[i + 2] = rgb[2]; d[i + 3] = 255; }
+      }
+      mg.putImageData(img, 0, 0);
+      // A tight halo and a wide one, drawn additively.
+      og.globalCompositeOperation = 'lighter';
+      if ('filter' in og) {
+        og.filter = 'blur(2px)'; og.globalAlpha = 0.55; og.drawImage(mask, 0, 0);
+        og.filter = 'blur(6px)'; og.globalAlpha = 0.45; og.drawImage(mask, 0, 0);
+        og.filter = 'none';
+      } else { og.globalAlpha = 0.25; for (const [dx, dy] of [[-1, 0], [1, 0], [0, -1], [0, 1], [-2, 0], [2, 0]]) og.drawImage(mask, dx, dy); }
+    } catch { /* a tainted or missing canvas: no glow */ }
+    this.glows.set(key, out);
+    return out;
   }
 
   #chunk(cx, cy) {

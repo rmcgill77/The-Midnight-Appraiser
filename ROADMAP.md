@@ -233,7 +233,15 @@ phase when we plan it.
   generator rules.
 - Also in Phase 32: the finished ground weather effects (puddles, wet streets, snow cover
   that builds and melts) drawn on the new tiles. Phase 30 only ships placeholders.
-- **Status: Phase 32 is specified.**
+- **Decided (scope pass with the owner):** build lighting first; keep 16x16 tiles with richer
+  shading (layout, collision and sprites unchanged); everything drawn in code from rules. Order:
+  1. **Lighting (32a, built):** the sky follows the real clock and the season (`game/skylight.js`:
+     rose dawn, golden afternoon, violet dusk, dark), lit windows glow at night, buildings, trees,
+     lamps and people throw sun shadows (long at the ends of the day, short at noon, none in the
+     dark or under cloud), wet streets reflect lamps and the dusk sky.
+  2. Streets and sidewalks, then buildings and facades, then props and clutter, then seasonal looks,
+     each as its own slice, with the finished puddles, wet streets and snow drawn on the new tiles.
+- **Status: Phase 32 is in progress (32a built).**
 - Likely files: `src/data/city.js`, `src/data/city-tiles.js`, `src/data/tiles.js`.
 
 ### Phase 33: The woods

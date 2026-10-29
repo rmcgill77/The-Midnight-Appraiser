@@ -31,6 +31,8 @@ import { ContinuousClock } from './game/continuous-clock.js';
 import { ShopHours } from './game/shophours.js';
 import { openHoursPanel } from './ui/hours-panel.js';
 import * as NW from './game/nightwindow.js';
+import { skylight } from './game/skylight.js';
+import { drawSunShadows, drawFigureShadow } from './ui/sun-shadows.js';
 import * as EX from './game/exhaustion.js';
 import * as AP from './game/appraisals.js';
 import * as TR from './game/traffic.js';
@@ -2212,7 +2214,8 @@ function render() {
   if (!st) { drawTitleBackdrop(ctx); return; }
   const cx = camera.ix, cy = camera.iy;
   m.draw(ctx, cx, cy, renderer.w, renderer.h);
-  if (outdoors() && !weatherOverride()) drawGroundWeather(ctx, m, cx, cy, renderer.w, renderer.h, groundNow(), { time, reduced: settings.reducedMotion });
+  if (outdoors() && !weatherOverride()) drawGroundWeather(ctx, m, cx, cy, renderer.w, renderer.h, groundNow(), { time, reduced: settings.reducedMotion, lights: m.lights, night: skyNow().night, sky: skyNow() });
+  if (outdoors()) { const gw = groundNow(), cl = climateNow(); drawSunShadows(ctx, m, cx, cy, renderer.w, renderer.h, skyNow().sun, { cloud: Math.min(1, cl.cloud ?? 0), wetness: gw.wet ?? 0 }); }
   if (world.room === 'zone' && st.run) zone.drawObjects(ctx, st, cx, cy, time);
   if (world.room === 'city') {
     drawStorefront(ctx, HOME_DOOR, cx, cy, drawState(world).front, time);
@@ -2263,8 +2266,7 @@ function render() {
     const set = e.sprites ?? spritesFor(lookFor(`anon:${e.look ?? 0}`));
     if (!set) continue;
     const [pose, f, fr] = frameOf(e, time);
-    ctx.fillStyle = 'rgba(0,0,0,0.4)';
-    ctx.fillRect(px + 2, py + 14, 12, 2); ctx.fillRect(px + 1, py + 15, 14, 1);
+    drawFigureShadow(ctx, px + 8, py + 14, outdoors() ? skyNow().sun : null);
     const img = set.get(pose, f, fr);
     if (e.alpha != null && e.alpha < 1) ctx.globalAlpha = e.alpha;   // v2.4: something not quite there
     if (img) ctx.drawImage(img, px + HD_OFFSET.x, py + HD_OFFSET.y);
@@ -2437,6 +2439,14 @@ function drawParkParty(ctx, cx, cy) {
 function applyBrightness() { const cv = document.getElementById('view'); if (cv) cv.style.filter = Math.abs(settings.brightness - 1) < 0.01 ? '' : `brightness(${settings.brightness})`; }
 applyBrightness();
 const darkK = () => Math.max(0.45, 1 - (settings.brightness - 1) * 0.7);
+// The sky now: colour wash, how dark, where the sun is (cached for a game minute).
+let skyKey = '', skyCache = null;
+function skyNow() {
+  const day = st?.day ?? 1, minute = clock.minuteOfDay;
+  const key = `${day}:${Math.floor(minute / 2)}`;
+  if (key !== skyKey || !skyCache) { skyKey = key; skyCache = skylight(CAL.seasonOf(day), minute, { nightDark: st ? MOON.moonEffects(MOON.moonOn(day)).dark : 0.6 }); }
+  return skyCache;
+}
 function drawLighting(ctx, cx, cy, m, opts = {}) {
   const w = renderer.w, h = renderer.h, room = isArea(opts.room ?? world.room) ? 'city' : (opts.room ?? world.room);   // v2.1: areas are lit like the street
   if (light.width !== w || light.height !== h) { light = makeCanvas(w, h); lg = light.getContext('2d'); }
@@ -2444,10 +2454,13 @@ function drawLighting(ctx, cx, cy, m, opts = {}) {
   lg.clearRect(0, 0, w, h);
   // The street brightens in the morning and goes to dusk as the errand hours run out.
   // v2.4: at night the street is dark between the lamps, darker with no moon.
-  const dusk = room === 'city' ? (isNight() && st ? MOON.moonEffects(MOON.moonOn(st.day)).dark : 0.1 + 0.5 * clock.progress ** 1.6) : 0;
+  // Phase 32: the light follows the real clock and the season (game/skylight.js): rose at dawn, gold in the
+  // afternoon, violet at dusk, then dark.
+  const sky = skyNow();
+  const dusk = room === 'city' ? sky.alpha : 0;
   const shopDark = opts.dark ?? (wt.active ? 0.62 : isNight() ? 0.66 : stageOf(world).dark);
   const dk = darkK();
-  lg.fillStyle = room === 'city' ? `rgba(6,8,16,${(dusk * dk).toFixed(3)})` : room === 'shop' ? `rgba(4,5,9,${(shopDark * dk).toFixed(3)})` : room === 'lab' ? `rgba(6,4,12,${(0.62 * dk).toFixed(3)})` : PLACE_ROOMS[room] ? `rgba(8,5,6,${((PLACE_ROOMS[room].dark ?? 0.4) * dk).toFixed(3)})` : `rgba(4,5,9,${(0.66 * dk).toFixed(3)})`;
+  lg.fillStyle = room === 'city' ? `rgba(${sky.rgb.join(',')},${(dusk * dk).toFixed(3)})` : room === 'shop' ? `rgba(4,5,9,${(shopDark * dk).toFixed(3)})` : room === 'lab' ? `rgba(6,4,12,${(0.62 * dk).toFixed(3)})` : PLACE_ROOMS[room] ? `rgba(8,5,6,${((PLACE_ROOMS[room].dark ?? 0.4) * dk).toFixed(3)})` : `rgba(4,5,9,${(0.66 * dk).toFixed(3)})`;
   lg.fillRect(0, 0, w, h);
   lg.globalCompositeOperation = 'destination-out';
   // Lamps breathe a little; the bare bulb in a run-down shop stutters.
@@ -2466,7 +2479,8 @@ function drawLighting(ctx, cx, cy, m, opts = {}) {
   ctx.drawImage(light, 0, 0);
   ctx.globalCompositeOperation = 'lighter';
   const warm = room === 'lab' ? '169,139,224' : '224,166,74';
-  const glow = room === 'city' ? Math.min(1, dusk * 2.2) : 1;
+  const glow = room === 'city' ? Math.min(1, sky.night * 1.6) : 1;
+  if (room === 'city' && glow > 0.05) m.drawGlow?.(ctx, cx, cy, w, h, glow * (settings.reducedMotion ? 0.7 : 0.85));
   seen.forEach((l, i) => {
     if (glow < 0.05) return;
     const x = l.x - cx, y = l.y - cy, r = l.r * 0.8 * flick(i, l);
