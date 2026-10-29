@@ -136,6 +136,32 @@ export function openLedger(g) {
 
 // ---- Display cases: tagged stock only ----
 
+// Phase 30: change the price right on the shop floor. A lower price sells easily; a higher one gets
+// haggled down, or sends buyers away.
+export function priceRead(price, suggested) {
+  if (!suggested) return { word: 'No suggestion', tone: '' };
+  const r = price / suggested;
+  if (r < 0.85) return { word: 'Cheap: it will go quickly', tone: 'pos' };
+  if (r <= 1.15) return { word: 'Fair', tone: '' };
+  if (r <= 1.5) return { word: 'Steep: buyers will haggle', tone: '' };
+  return { word: 'Too dear: most buyers will walk', tone: 'neg' };
+}
+function priceRow(g, it, again) {
+  const { st } = g, sug = A.shelfSuggest(st, it);
+  if (sug == null || it.price == null) return null;
+  const read = priceRead(it.price, sug);
+  const nudge = dir => { A.nudgeShelfPrice(st, it, dir); g.changed(); again(); };
+  return el('div', { class: 'field', id: 'shelf-price' },
+    el('dl', { class: 'readout' },
+      el('dt', {}, 'Price'), el('dd', { id: 'shelf-price-now' }, money(it.price)),
+      el('dt', {}, 'Suggested'), el('dd', {}, money(sug)),
+      el('dt', {}, 'Buyers'), el('dd', { class: read.tone, id: 'shelf-price-read' }, read.word)),
+    el('div', { class: 'seg', style: 'grid-template-columns: repeat(3, 1fr)', role: 'group', 'aria-label': 'Price' },
+      el('button', { type: 'button', id: 'price-down', onclick: () => nudge(-1) }, 'Lower 10%'),
+      el('button', { type: 'button', id: 'price-reset', onclick: () => { A.resetShelfPrice(st, it); g.changed(); again(); } }, 'Suggested'),
+      el('button', { type: 'button', id: 'price-up', onclick: () => nudge(1) }, 'Raise 10%')));
+}
+
 export function openDisplay(g, slot) {
   const { ui, crowd, world } = g, st = g.st;
   const uid = world.displays[slot];
@@ -148,6 +174,7 @@ export function openDisplay(g, slot) {
       id: 'display', eyebrow: 'Display case', title: reserved ? 'A buyer has it' : 'On display',
       body: [
         itemCard(it, [tagLine(it)]),
+        g.continuous && !reserved ? priceRow(g, it, () => openDisplay(g, slot)) : null,
         reserved ? el('p', { class: 'note' }, 'The buyer is waiting at the till.') :
           el('p', { class: 'note' }, 'Customers only see the tag. Walk-ins won’t touch anything tagged cursed; factions want a named anomaly with the trait they’re after.'),
       ],

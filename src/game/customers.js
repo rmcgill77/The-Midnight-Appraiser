@@ -63,9 +63,14 @@ export class Crowd {
     if (fewer > 0) planned = planned.slice(0, Math.max(1, planned.length - fewer));
     const barred = this.world.barred?.() ?? [];
     if (barred.length) planned = planned.filter(k => !barred.includes(k));
+    // Phase 30: a shorter shift, or a late opening, brings fewer people.
+    const scale = this.world.hoursScale?.() ?? 1;
+    if (scale < 1) planned = planned.slice(0, Math.max(1, Math.round(planned.length * scale)));
     const kinds = this.world.tier == null ? planned.map(kind => ({ kind })) : capPlan(planned, this.world.tier, this.world.extras?.() ?? []);
     const n = kinds.length;
-    this.plan = kinds.map(({ kind, faction, friend, with: w }, i) => ({ kind, faction, friend, with: w, at: Math.min(0.97, ((i + 0.35 + this.rng.next() * 0.3) / Math.max(1, n)) * this.t.spreadOver) }));
+    // Phase 30: when the shop is open on its own hours, the people come when real people would.
+    const times = this.world.arrivals?.(n, () => this.rng.next());
+    this.plan = kinds.map(({ kind, faction, friend, with: w }, i) => ({ kind, faction, friend, with: w, at: times?.length === n ? times[i] : Math.min(0.97, ((i + 0.35 + this.rng.next() * 0.3) / Math.max(1, n)) * this.t.spreadOver) }));
     // Phase 29: a couple comes in together, a step apart.
     this.plan.forEach((p, i) => { if (p.with && i && this.plan[i - 1].friend === p.with) p.at = Math.min(0.98, this.plan[i - 1].at + 0.004); });
     return this.plan;
