@@ -145,6 +145,14 @@ phase when we plan it.
   (its saves are kept apart from the normal ones), and "Back to the normal game" returns. Flipping it
   on for everyone means making it the default, raising `FIRST_SUPPORTED` in `src/game/save.js` to the
   new save version, adding a changelog entry, bumping the version, and removing the old day loop.
+- **Where Phase 30 stands (playtest stage).** The new day and night is built and on the live site as
+  a preview (title screen, "Try the new day and night"). The owner's first play says it works.
+  Decided: play it more before making it the real game, and fix what feels off first.
+  Left over, none of it needed for the flow itself: wind affecting sound, per-NPC collapse comments
+  (today generic lines by how close the friend is), where NPCs stand across the longer day, the
+  "found and taken home" line that still says four in the morning, and tuning the economy numbers
+  after real play. Then: make it the default, raise the save cutoff, changelog and version, remove
+  the old day loop.
 - **Status: Phase 30 is fully specified. No open questions.** Suggested build order:
   1. New save version and the new clock (15-20 minute day, wake-to-sleep days, sleep).
   2. Shop hours slider, closed weekly day, shop locked while open, floor pricing.
