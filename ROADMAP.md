@@ -248,6 +248,11 @@ phase when we plan it.
      take curves smoothly, go round the roundabout and into the turning circles, stop for you and
      for pedestrians, busy at the rush hours, quiet at night, headlights in the dark). Still to do
      for roads: more curves instead of right angles.
+     Roads are now painted as **true curves** (owner feedback: tile staircases read as 90-degree
+     bends): `game/street-net.js` holds every street's smooth centre line, and `decorateCity`
+     paints asphalt, curbs, gutters, dashed lane lines and junction rounding from each pixel's
+     distance to the nearest street (a soft minimum rounds every junction). Traffic keeps to the
+     right-hand lane of those curves. The layout is the calmer one (no diagonal connectors).
      Next: buildings and facades, then props and clutter, then seasonal looks,
      each as its own slice, with the finished puddles, wet streets and snow drawn on the new tiles.
 - **Status: Phase 32 is in progress (32a built).**

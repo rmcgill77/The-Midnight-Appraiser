@@ -63,8 +63,17 @@ export function lanePath(map, from, to, { limit = 14000 } = {}) {
 
 // A path as a chain of smooth curves (quadratic, between the midpoints of the tile-to-tile steps), so a turn
 // is a curve, not a right angle.
-export function curvesOf(path) {
-  const P = path.map(t => ({ x: t.tx * TILE + TILE / 2, y: t.ty * TILE + TILE / 2 })), n = P.length, mid = (a, b) => ({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 });
+// snap(x, y, hx, hy), if given, moves each point onto the right-hand lane of the smooth street it is on (game/street-net.js).
+export function curvesOf(path, snap = null) {
+  let P = path.map(t => ({ x: t.tx * TILE + TILE / 2, y: t.ty * TILE + TILE / 2 }));
+  if (snap) {
+    const n0 = P.length;
+    P = P.map((p, i) => {
+      const a = P[Math.max(0, i - 1)], b = P[Math.min(n0 - 1, i + 1)], dx = b.x - a.x, dy = b.y - a.y, len = Math.hypot(dx, dy) || 1;
+      return snap(p.x, p.y, dx / len, dy / len) ?? p;
+    });
+  }
+  const n = P.length, mid = (a, b) => ({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 });
   const out = [];
   for (let i = 0; i < n; i++) {
     const A = i === 0 ? P[0] : mid(P[i - 1], P[i]), B = i === n - 1 ? P[n - 1] : mid(P[i], P[i + 1]), C = P[i];
@@ -76,8 +85,8 @@ export function curvesOf(path) {
 const bez = (c, t) => { const u = 1 - t; return { x: u * u * c.A.x + 2 * u * t * c.C.x + t * t * c.B.x, y: u * u * c.A.y + 2 * u * t * c.C.y + t * t * c.B.y, dx: 2 * u * (c.C.x - c.A.x) + 2 * t * (c.B.x - c.C.x), dy: 2 * u * (c.C.y - c.A.y) + 2 * t * (c.B.y - c.C.y) }; };
 
 export class Vehicles {
-  constructor(map, rng, { max = 14 } = {}) {
-    this.map = map; this.rng = rng; this.max = max; this.list = []; this.nextId = 1; this.spawnT = 0; this.roads = null;
+  constructor(map, rng, { max = 14, snap = null } = {}) {
+    this.map = map; this.rng = rng; this.max = max; this.snap = snap; this.list = []; this.nextId = 1; this.spawnT = 0; this.roads = null;
   }
 
   // Every road tile, for picking spots (built once).
@@ -112,7 +121,7 @@ export class Vehicles {
       const to = this.#randomRoad({ x: from.tx * TILE, y: from.ty * TILE }, 12 * TILE, 48 * TILE);
       if (!to) continue;
       const path = lanePath(this.map, from, to);
-      if (path && path.length > 6) { v.curves = curvesOf(path); v.ci = 0; v.t = 0; return true; }
+      if (path && path.length > 6) { v.curves = curvesOf(path, this.snap); v.ci = 0; v.t = 0; return true; }
     }
     return false;
   }
