@@ -189,9 +189,11 @@ const inArea = () => isArea(world?.room);   // v2.1: the outdoor areas joined by
 const outdoors = () => world.room === 'city' || inArea();
 const inTown = () => world.room === 'city' || inPlace() || inArea();
 // Where a shopkeeper is spending today off (a walk-in place, or null: out on the street).
-const offDayPlace = name => dayOffSpot(name, st?.day ?? 1, st?.seed ?? 0, id => (SCHEDULES[id] ? placeStatus(id).open : true));
+// Phase 30: the day is long, so the townsfolk move about it: where they are depends on the part of the day.
+const dayPart = () => { const m = clock.minute; return m < 12 * 60 ? 0 : m < 17 * 60 ? 1 : m < 21 * 60 ? 2 : 3; };
+const offDayPlace = name => dayOffSpot(name, st?.day ?? 1, st?.seed ?? 0, id => (SCHEDULES[id] ? placeStatus(id).open : true), dayPart());
 // Who's in the place you're in (rebuilt each time you walk in, and on loading a save).
-let placeCrowd = null;
+let placeCrowd = null, crowdPart = 0;
 function syncPlaceCrowd() {
   if (AREAS[world.room]?.spots) { placeCrowd = areaCrowd(AREAS[world.room]); return; }
   const room = PLACE_ROOMS[world.room];
@@ -375,9 +377,9 @@ function refreshSeason() {
   wrapCemetery();
   if (pedestrians) pedestrians = makePedestrians();
 }
-const walkersToday = () => (st && !WET.has(todayWeather()) ? streetWalkers(st.day, st.seed ?? 0) : []);
+const walkersToday = () => (st && !WET.has(todayWeather()) ? streetWalkers(st.day, st.seed ?? 0, dayPart()) : []);
 // v2.2: who's in Lantern Park today (fine days only), and whose birthday party it is.
-const parkToday = () => (st && !WET.has(todayWeather()) && !isNight() ? parkPeople(st.day, st.seed ?? 0, n => isBirthdayToday(n, st.day)) : { names: [], party: null, guests: [] });
+const parkToday = () => (st && !WET.has(todayWeather()) && !isNight() ? parkPeople(st.day, st.seed ?? 0, n => isBirthdayToday(n, st.day), dayPart()) : { names: [], party: null, guests: [] });
 // The people in an outdoor area: the townsfolk spending the day there, a birthday party
 // round its table, and strangers enjoying it (more at the weekend, few in the wet).
 function areaCrowd(area) {
@@ -1147,7 +1149,7 @@ const tackleHooks = () => ({
 const tackleBoxHooks = () => ({ conditions: () => (inTown() || outdoors() ? fishConditionsLine() : '') });
 // v2.3: the beach. Townsfolk on their towels, and strangers by the season: crowded on a
 // summer weekend, a handful on a weekday in spring, nearly nobody in winter or the wet.
-const beachToday = () => (st && !WET.has(todayWeather()) && !isNight() ? beachPeople(st.day, st.seed ?? 0, CAL.seasonOf(st.day), parkToday().names) : { names: [] });
+const beachToday = () => (st && !WET.has(todayWeather()) && !isNight() ? beachPeople(st.day, st.seed ?? 0, CAL.seasonOf(st.day), parkToday().names, dayPart()) : { names: [] });
 function beachCrowd(area) {
   const taken = new Set([playerKey(), ...SIGNATURE_KEYS]);
   const named = beachToday().names.slice(0, area.spots.length);
@@ -2126,6 +2128,8 @@ function update(dt) {
     if (placeCrowd) placeCrowd.update(dt, map(), player, speech.visible ? talkingWith : null);
     // Lunchtime came or went while you're inside somewhere: Ryan comes or goes (Phase 29).
     if (inPlace() && ryanAtLunch() !== lunchWas && !talkingWith && !ui.isOpen) syncPlaceCrowd();
+    // Phase 30: a new part of the day: who's in the place you're in (or the park, the beach) changes too.
+    if (CONTINUOUS && dayPart() !== crowdPart && !talkingWith && !ui.isOpen) { crowdPart = dayPart(); if (inPlace() || inArea()) syncPlaceCrowd(); }
     if (world.room === 'city' && !isNight()) { tickCityEvents(dt); syncMagician(dt); }
     tickNightCity(dt);
     tickNightAreas(dt);
@@ -2218,7 +2222,7 @@ function render() {
   const ctx = renderer.ctx, m = map();
   tickBudget(5);   // new figure frames painted this frame, at most (engine/figure-hd.js)
   const mood = sceneFor(st, world, ui.current?.id);
-  audio.update(mood.scene, mood.tension, st ? { type: todayWeather(), place: weatherPlace(), birds: outdoors() && clock.progress < 0.5 && !isNight(), dt: renderDt() } : null);
+  audio.update(mood.scene, mood.tension, st ? { type: todayWeather(), place: weatherPlace(), birds: outdoors() && clock.progress < 0.5 && !isNight(), dt: renderDt(), wind: CONTINUOUS && !weatherOverride() ? climateNow().wind : null } : null);
   renderer.begin(TC.void);
   if (layer.classList.contains('no-game') !== !st) layer.classList.toggle('no-game', !st);
   if (!st) { drawTitleBackdrop(ctx); return; }

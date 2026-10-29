@@ -148,6 +148,9 @@ phase when we plan it.
 - **Where Phase 30 stands (playtest stage).** The new day and night is built and on the live site as
   a preview (title screen, "Try the new day and night"). The owner's first play says it works.
   Decided: play it more before making it the real game, and fix what feels off first.
+  Update: the leftovers below are now built (wind drives the wind sound, each friend has their own
+  collapse comments, townsfolk move between parts of the day, the four-in-the-morning line is
+  fixed). Economy numbers stay as they are until real play says otherwise.
   Left over, none of it needed for the flow itself: wind affecting sound, per-NPC collapse comments
   (today generic lines by how close the friend is), where NPCs stand across the longer day, the
   "found and taken home" line that still says four in the morning, and tuning the economy numbers

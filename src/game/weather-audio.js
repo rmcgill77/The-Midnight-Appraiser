@@ -5,6 +5,7 @@
 // faster, with the weather's own noise underneath.
 
 import { S } from '../rules/index.js';
+import { windBed } from './wind.js';
 
 // How loud each bed is, by weather (out on the street).
 const BEDS = {
@@ -40,6 +41,7 @@ export class WeatherAudio {
     r.connect(rh); rh.connect(rl); rl.connect(this.rain); this.rain.connect(this.muffle); r.start();
     // Wind: low and moving.
     const w = src('brown'), wb = filt('bandpass', 420, 0.9);
+    this.windBand = wb;
     const lfo = c.createOscillator(), lg = c.createGain(); lfo.frequency.value = 0.08; lg.gain.value = 220; lfo.connect(lg); lg.connect(wb.frequency); lfo.start();
     this.wind = c.createGain(); this.wind.gain.value = 0;
     w.connect(wb); wb.connect(this.wind); this.wind.connect(this.muffle); w.start();
@@ -48,12 +50,14 @@ export class WeatherAudio {
   }
 
   // Every frame: the beds follow the weather and where you are.
-  update(dt, type, place, { on = true, birds = false } = {}) {
+  update(dt, type, place, { on = true, birds = false, wind = null } = {}) {
     if (!S.Sound.ready?.() || !this.#build()) return;
     const c = S.Sound.ctx, now = c.currentTime;
     const bed = BEDS[type] ?? BEDS.overcast, P = PLACES[place] ?? PLACES.street, k = on ? P.gain : 0;
     this.rain.gain.setTargetAtTime(bed.rain * k, now, 1.2);
-    this.wind.gain.setTargetAtTime(bed.wind * k, now, 1.5);
+    const wb = wind == null ? null : windBed(wind);
+    this.wind.gain.setTargetAtTime((wb ? Math.max(wb.gain, bed.wind * 0.3) : bed.wind) * k, now, 1.5);
+    if (wb) this.windBand.frequency.setTargetAtTime(wb.freq, now, 2);
     this.muffle.frequency.setTargetAtTime(P.cutoff, now, 0.4);
     if (on && birds && type === 'clear' && place === 'street' && (this.birdT -= dt) <= 0) { this.birdT = 3 + Math.random() * 6; this.chirp(); }
   }
