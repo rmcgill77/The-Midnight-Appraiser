@@ -116,6 +116,20 @@ phase when we plan it.
   opens (the boarded-up shop 5 hours, the restored one 12) and how many customers come
   (`src/data/shop-tiers.js`). Decided: the player has the full 8 hours from the start.
   Upgrades no longer cap the hours; they only affect customers and space.
+- **Decided while building (wiring the clock in):**
+  - The shop opens when the player flips the OPEN sign inside the shop hours. From then until
+    closing time (or closing early) the player is locked in the shop. If they never open, no
+    customers come and the hours are wasted.
+  - At night the front door gives the night options (walk the city, the zones, the night shop),
+    only when the season and the clock allow them. The lab is the basement door.
+  - Rollout: the new flow is built beside the old one behind a switch (`?continuous=1` for
+    testing). The live game stays on the old flow until the new one is finished and tested,
+    then the switch is flipped and the old code removed. The save cutoff (`FIRST_SUPPORTED`)
+    is raised at the same time.
+  - Architecture: a `ContinuousClock` stands in for the old `Clock` (same members, backed by
+    `DayCycle` and `ShopHours`), so most of the old code keeps working unchanged. The calendar
+    date rolling over at midnight and sleeping are separated in the sim (today
+    `Calendar.sleep` does both).
 - **Status: Phase 30 is fully specified. No open questions.** Suggested build order:
   1. New save version and the new clock (15-20 minute day, wake-to-sleep days, sleep).
   2. Shop hours slider, closed weekly day, shop locked while open, floor pricing.
