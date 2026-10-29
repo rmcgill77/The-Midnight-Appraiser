@@ -665,12 +665,33 @@ function dressRoad(g, map, tx, ty, h, season) {
       R(g, x + 5, y + 8, 6, 1, '#2a2c34'); R(g, x + 8, y + 5, 1, 6, '#2a2c34'); R(g, x + 5, y + 5, 6, 1, '#3a3d48');
     }
   }
+  // rounded corners where the pavement turns the road's edge: both neighbours at that corner are not road
+  const nonRoad = c => !isRoadCh(c) && c !== '#' && c !== '~';
+  const corners = [[up, left, 0], [up, right, 1], [down, left, 2], [down, right, 3]];
+  for (const [n1, n2, k] of corners) if (nonRoad(n1) && nonRoad(n2) && (isWalkCh(n1) || isWalkCh(n2))) fillet(g, x, y, k, FILLET, C.pave, true);
   if (here === '+') {
     // a stop line before the crossing on the way in
     const horiz = isRoadCh(left) || isRoadCh(right);
     void horiz;
   }
 }
+
+// Rounded corners (Phase 32b): where a road turns, or steps along a diagonal, its edge should curve, not
+// make a square notch. fillet() rounds one corner of a tile: the pixels outside a quarter circle go to
+// `fill`, and the curb is drawn as an arc around it. corner: 0 NW, 1 NE, 2 SW, 3 SE.
+function fillet(g, x, y, corner, r, fill, roadInside) {
+  const ex = corner % 2 === 1, sy = corner >= 2;
+  for (let b = 0; b < r; b++) for (let a = 0; a < r; a++) {
+    const d = Math.hypot(a + 0.5 - r, b + 0.5 - r);
+    let col = null;
+    if (roadInside) {                                         // a road corner: the road is the circle, curb and pavement beyond it
+      if (d > r) col = d <= r + 1 ? CURB.hi : d <= r + 2 ? CURB.mid : CURB.lo;
+    } else if (d > r) col = fill;                             // a pavement corner: the road fills what is outside the circle
+    else if (d > r - 1) col = CURB.hi; else if (d > r - 2) col = CURB.mid; else if (d > r - 3) col = CURB.lo;
+    if (col != null) R(g, x + (ex ? 15 - a : a), y + (sy ? 15 - b : b), 1, 1, col);
+  }
+}
+const FILLET = 6;
 
 function dressWalk(g, map, tx, ty, h, season) {
   const x = tx * 16, y = ty * 16;
@@ -684,6 +705,9 @@ function dressWalk(g, map, tx, ty, h, season) {
   if (isRoadCh(down)) { R(g, x, y + 13, 16, 1, CURB.lo); R(g, x, y + 14, 16, 1, CURB.mid); R(g, x, y + 15, 16, 1, CURB.hi); }
   if (isRoadCh(left)) curb(x, y, 0, 16, false);
   if (isRoadCh(right)) { R(g, x + 13, y, 1, 16, CURB.lo); R(g, x + 14, y, 1, 16, CURB.mid); R(g, x + 15, y, 1, 16, CURB.hi); }
+  // the pavement's corner, where it bulges into a road on two sides: round it
+  const corners = [[up, left, 0], [up, right, 1], [down, left, 2], [down, right, 3]];
+  for (const [n1, n2, k] of corners) if (isRoadCh(n1) && isRoadCh(n2)) fillet(g, x, y, k, FILLET, C.asphalt, false);
   // a dropped kerb where a crossing meets the pavement (a ramp, with its bumpy yellow strip)
   if (map.at(tx, ty - 1) === '+' || map.at(tx, ty + 1) === '+') {
     const yy = map.at(tx, ty - 1) === '+' ? y : y + 13;
