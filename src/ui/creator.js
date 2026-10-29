@@ -14,7 +14,7 @@ const TABS = [
   ['hair', 'Hair', [['hair', 'Style'], ['hairColor', 'Color', 'color'], ['hairFx', 'Dye']]],
   ['hat', 'Hat', [['hat', 'Hat'], ['hatColor', 'Hat color', 'color']]],
   ['clothes', 'Outfit', [['top', 'Top'], ['topColor', 'Top color', 'color'], ['pattern', 'Pattern'], ['neck', 'Neck'], ['neckColor', 'Neck color', 'color'], ['bottom', 'Bottoms'], ['bottomColor', 'Bottoms color', 'color'], ['shoes', 'Shoes']]],
-  ['extras', 'Extras', [['extra', 'Accessory'], ['extraColor', 'Color', 'color']]],
+  ['extras', 'Extras', [['extra', 'Accessory'], ['extraColor', 'Color', 'color'], ['extra2', 'Second accessory'], ['extra2Color', 'Second color', 'color']]],
 ];
 const FACINGS = ['down', 'left', 'up', 'right'];
 const POSES = [['walk', 'Walk'], ['idle', 'Stand'], ['appraise', 'Appraise'], ['carry', 'Haul']];
@@ -100,7 +100,7 @@ export function openCreator(ui, { look: start, onDone, onBack, eyebrow = 'New ga
     ],
     actions: [
       { id: 'look-ok', label: okLabel, kind: 'primary', onClick: () => { stop(); onDone({ ...look }); } },
-      { id: 'look-random', label: 'Surprise me', onClick: () => { for (const k of [...EXTRA_KEYS, 'height']) look[k] = 0; Object.assign(look, randomLook(Math.random, { full: true }), randomExtras()); sync(); } },
+      { id: 'look-random', label: 'Surprise me', onClick: () => { for (const k of [...EXTRA_KEYS, 'height']) look[k] = 0; delete look.extra2Color; Object.assign(look, randomLook(Math.random, { full: true }), randomExtras()); sync(); } },
       { label: 'Back', kind: 'quiet', onClick: () => { stop(); onBack?.({ ...look }); } },
     ],
   });

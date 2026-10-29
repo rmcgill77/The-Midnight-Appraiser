@@ -10,7 +10,7 @@ import { SIGNATURE, nameOfLook } from '../game/people.js';
 const cache = new Map();
 let player = null;   // { name, look }
 
-const keyOf = (look, sig, mood) => [...ALL_KEYS, ...EXTRA_KEYS].map(k => look[k] ?? '').join('.') + (sig ? '*' : '') + (mood && mood !== 'neutral' ? `:${mood}` : '');
+const keyOf = (look, sig, mood) => [...ALL_KEYS, ...EXTRA_KEYS, 'extra2Color'].map(k => look[k] ?? '').join('.') + (sig ? '*' : '') + (mood && mood !== 'neutral' ? `:${mood}` : '');
 
 function grid(look, sig, mood) {
   const k = keyOf(look, sig, mood);
