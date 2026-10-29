@@ -73,6 +73,8 @@ import { vehicleOf, hasVehicle, keepsOff, BUS_STOPS, BUS_MINUTES, busToday, busC
 import { drawRideBack, drawRideFront, SEAT_RISE } from './ui/ride-art.js';
 import { weatherOn, TYPES as WEATHER, ORDER as WEATHER_ORDER, streetPace, forecastLine, seasonOf, setWeatherOverride, weatherOverride, setClimateProvider } from './game/weather.js';
 import * as CLIM from './game/climate.js';
+import { Ground } from './game/ground.js';
+import { drawGroundWeather } from './ui/ground-fx.js';
 import { WeatherFX, weatherIconSvg } from './ui/weather-fx.js';
 import { EVENTS, EVENT_CONVOS, rollHour, startEvent, endEvent, eventsState, pickpocketTakes, PICKPOCKET_GRACE } from './game/city-events.js';
 import { ZoneRunner, ZONE_CELL } from './game/zone-runner.js';
@@ -2217,6 +2219,7 @@ function render() {
   if (!st) { drawTitleBackdrop(ctx); return; }
   const cx = camera.ix, cy = camera.iy;
   m.draw(ctx, cx, cy, renderer.w, renderer.h);
+  if (CONTINUOUS && outdoors() && !weatherOverride()) drawGroundWeather(ctx, m, cx, cy, renderer.w, renderer.h, groundNow(), { time, reduced: settings.reducedMotion });
   if (world.room === 'zone' && st.run) zone.drawObjects(ctx, st, cx, cy, time);
   if (world.room === 'city') {
     drawStorefront(ctx, HOME_DOOR, cx, cy, drawState(world).front, time);
@@ -2881,6 +2884,14 @@ function climateNow() {
   return climateSample;
 }
 if (CONTINUOUS) setClimateProvider((seed, day) => CLIM.dayType(seed, day - 1, { month: monthOf(day - 1) }));
+// ...and it leaves its mark on the ground: wet streets, puddles, snow (game/ground.js, ui/ground-fx.js).
+let ground = null;
+function groundNow() {
+  if (!ground || ground.seed !== (st.seed ?? 0)) ground = new Ground(st.seed ?? 0, monthOf);
+  ground.advanceTo(clock.cycle.t);
+  ground.setRaining(climateNow().precip > 0.1 && climateNow().temp > 0.8);
+  return ground;
+}
 const todayWeather = () => (st ? (CONTINUOUS && !weatherOverride() ? climateNow().type : weatherOn(st.seed ?? 0, st.day)) : 'overcast');
 const weatherFx = new WeatherFX();
 // Night zones with windows (lightning shows, the rain's on the glass); the rest are underground.
@@ -2896,7 +2907,7 @@ const renderDt = () => { const now = performance.now() / 1000, d = Math.min(0.1,
 function tickWeather(dt) {
   if (!st || (wt.active && world.room !== 'zone')) return;
   const type = todayWeather(), place = weatherPlace();
-  const fx = weatherFx.update(dt, type, { mode: weatherMode(), windows: place !== 'under', reducedMotion: !!settings.reducedMotion, w: renderer.w, h: renderer.h });
+  const fx = weatherFx.update(dt, type, { mode: weatherMode(), windows: place !== 'under', reducedMotion: !!settings.reducedMotion, w: renderer.w, h: renderer.h, world: CONTINUOUS && !weatherOverride() });
   if (fx.bolt) {
     audio.thunder(fx.bolt.near, place);
     // A flash through the windows lights up the place you're in for a moment (and it stays seen).
@@ -3944,7 +3955,7 @@ globalThis.__tma = {
   audio, talkTo, cityLayout, T, enterPlace: id => enterPlace(extraPlace(id) ?? WALK_INS[id]), leavePlace, spawnEvent: id => spawnEvent(id), setWeather: t => setWeatherOverride(t), get weather() { return todayWeather(); }, weatherFx, get eventEnt() { return eventEnt; }, toggleRide, get placeCrowd() { return placeCrowd; },
   get st() { return st; }, get crowd() { return crowd; }, get world() { return world; }, refreshSeason, parkToday, CAL, get fishing() { return fishing; }, beachToday,
   G, BN, yard: () => nightArea(), tollBell, get target() { return target; }, openGrave, NC, NS, MOON, startNightCity, startNightShop, nightState: () => nightState(), placeSight, nightSpots: () => nightSpots(), nightTarget: () => nightTarget(), nightInteract: e => nightInteract(e), inTheDark: () => inTheDark(), tackleHooks: () => tackleHooks(),
-  get loop() { return loop; }, placeAt, sleep, continuousBed, shopSignCard, endShopSession, openShopHoursPanel, collapseScene, syncSimDate, afterTakeJob: c => g.afterTakeJob(c), openDisplay: slot => openDisplay(g, slot), climateNow: () => climateNow(), weatherOn: d => weatherOn(st.seed ?? 0, d), sleepFx, rng: () => rng, openNight, cityLayout, CR, N, zone, enterZone, endRun, morningChoice,
+  get loop() { return loop; }, placeAt, sleep, continuousBed, shopSignCard, endShopSession, openShopHoursPanel, collapseScene, syncSimDate, afterTakeJob: c => g.afterTakeJob(c), openDisplay: slot => openDisplay(g, slot), climateNow: () => climateNow(), groundNow: () => groundNow(), weatherOn: d => weatherOn(st.seed ?? 0, d), sleepFx, rng: () => rng, openNight, cityLayout, CR, N, zone, enterZone, endRun, morningChoice,
   guide, speech, wt, finishPrologue, syncShop, shopMap, staffFloor, autosave, quitToTitle,
   interact: t => interact(t), openStanding: () => openStanding(g, () => ui.close()), openBag: () => openBag(g, () => ui.close()),
   board: tab => openRenovation(g, { tab }), chooseDay: w => chooseDay(w), openHomeDoor: () => openHomeDoor(), goHome: () => goHome(), syncHome: () => syncHome(), arranger, openMagic: w => openMagicAct(w ?? 'Outside the Brass Lantern'), get magician() { return magician; }, arrange: () => startArranging(), stopArranging: () => stopArranging(), arrangeAct: () => arrangeAct(), arrangeTo: (tx, ty) => { arranger.point(tx, ty); }, tileToScreen: (tx, ty) => ({ x: (tx * 16 + 8 - camera.ix) * renderer.scale / renderer.dpr, y: (ty * 16 + 8 - camera.iy) * renderer.scale / renderer.dpr }), get layout() { return world.shop?.layout; }, shopRoom: () => shopRoom(), syncLook, god, openGodMenu: () => openGodMenu(() => ui.close()), offerUpdate, whatsNewOnce,

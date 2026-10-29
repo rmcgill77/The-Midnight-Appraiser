@@ -16,7 +16,10 @@ export class WeatherFX {
   }
 
   // mode: 'street' | 'indoor' | 'zone'. windows: lightning shows (indoors, some zones).
-  update(dt, type, { mode = 'street', windows = true, reducedMotion = false, w = 400, h = 300 } = {}) {
+  // world: the ground shows the rain and snow (puddles, wet streets, drifts), so the screen only carries
+  // the falling streaks, kept light, and fog banks are fixed to the map.
+  update(dt, type, { mode = 'street', windows = true, reducedMotion = false, w = 400, h = 300, world = false } = {}) {
+    this.world = world;
     this.t += dt;
     const out = {};
     this.flash = Math.max(0, this.flash - dt * 3.2);
@@ -37,13 +40,13 @@ export class WeatherFX {
     const heavy = type === 'storm';
     // Rain: streaks that end in a splash somewhere down the screen.
     if (type === 'rain' || type === 'storm') {
-      const want = reducedMotion ? 50 : heavy ? 240 : 130, wind = heavy ? 120 : 35;
+      const want = Math.round((reducedMotion ? 50 : heavy ? 240 : 130) * (world ? 0.7 : 1)), wind = heavy ? 120 : 35;
       while (this.drops.length < want) this.drops.push({ x: rnd(-40, w + 40), y: rnd(-h, 0), v: rnd(380, 520) * (heavy ? 1.2 : 1), end: rnd(h * 0.1, h * 1.05), len: heavy ? rnd(7, 11) : rnd(5, 8) });
       if (this.drops.length > want) this.drops.length = want;
       for (const d of this.drops) {
         d.y += d.v * dt; d.x += wind * dt;
         if (d.y >= d.end) {
-          if (this.splashes.length < 80) this.splashes.push({ x: d.x, y: d.end, life: 0.22 });
+          if (!world && this.splashes.length < 80) this.splashes.push({ x: d.x, y: d.end, life: 0.22 });
           d.x = rnd(-60, w + 20); d.y = rnd(-40, -5); d.end = rnd(h * 0.1, h * 1.05);
         }
       }
@@ -52,7 +55,7 @@ export class WeatherFX {
     this.splashes = this.splashes.filter(s => s.life > 0);
     // Snow: flakes that sway as they fall.
     if (type === 'snow') {
-      const want = reducedMotion ? 50 : 150;
+      const want = Math.round((reducedMotion ? 50 : 150) * (world ? 0.7 : 1));
       while (this.flakes.length < want) this.flakes.push({ x: rnd(0, w), y: rnd(-h, h), v: rnd(16, 42), r: Math.random() < 0.25 ? 2 : 1, ph: rnd(0, 6.28) });
       for (const f of this.flakes) {
         f.y += f.v * dt; f.x += Math.sin(this.t * 1.3 + f.ph) * 10 * dt + 6 * dt;
@@ -148,7 +151,8 @@ export class WeatherFX {
     const T = this.t;
     for (let i = 0; i < 7; i++) {
       const span = 1200, R = 120 + (i * 37) % 110;
-      const x = ((i * 313 + T * (6 + i)) % span) - (camX * 0.9) % span, y = ((i * 191 + Math.sin(T * 0.1 + i) * 30) % 600) - (camY * 0.9) % 600;
+      const par = this.world ? 1 : 0.9;     // in the world: fixed to the map, not floating with the view
+      const x = ((i * 313 + T * (6 + i)) % span) - (camX * par) % span, y = ((i * 191 + Math.sin(T * 0.1 + i) * 30) % 600) - (camY * par) % 600;
       for (const ox of [-span, 0, span]) for (const oy of [-600, 0, 600]) {
         const X = x + ox, Y = y + oy;
         if (X < -R || X > w + R || Y < -R || Y > h + R) continue;
