@@ -244,8 +244,10 @@ phase when we plan it.
      Then (32b, owner's request after play): **roads that never just end** - every east-west
      street crosses the river on a bridge, a road runs down both sides and along the top of town,
      a roundabout (Garden Street x the street at y 50) and three turning circles (true pixel
-     circles), rounded road corners. Still to do for roads: more curves instead of right angles,
-     and traffic (cars, scooters, bikes) that follows the roads.
+     circles), rounded road corners. Traffic is built (`game/vehicles.js`: cars, scooters and bikes keep to the right-hand lane,
+     take curves smoothly, go round the roundabout and into the turning circles, stop for you and
+     for pedestrians, busy at the rush hours, quiet at night, headlights in the dark). Still to do
+     for roads: more curves instead of right angles.
      Next: buildings and facades, then props and clutter, then seasonal looks,
      each as its own slice, with the finished puddles, wet streets and snow drawn on the new tiles.
 - **Status: Phase 32 is in progress (32a built).**
