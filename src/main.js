@@ -30,6 +30,7 @@ import { shopTierRoom, shopSpan, hoursText as shopHours } from './data/shop-tier
 import { Clock } from './game/clock.js';
 import { ContinuousClock } from './game/continuous-clock.js';
 import { ShopHours } from './game/shophours.js';
+import { openHoursPanel } from './ui/hours-panel.js';
 import { Player } from './game/player.js';
 import { Crowd } from './game/customers.js';
 import { createStorage } from './game/storage.js';
@@ -1306,6 +1307,7 @@ function shopSignCard() {
       body: [el('p', {}, `Hours today: ${clockText(win.from)} to ${clockText(win.to)}. Once it’s open you’re in the shop until closing time.`)],
       actions: [
         { id: 'open-shop', label: `Open the shop until ${clockText(win.to)}`, kind: 'primary', onClick: () => openShopSession(win) },
+        { id: 'sign-hours', label: 'Set the weekly hours', onClick: () => openShopHoursPanel() },
         { id: 'sign-home', label: 'Head home', onClick: () => { ui.close(); goHome(); } },
         { label: 'Not yet', kind: 'quiet', onClick: () => ui.close() },
       ],
@@ -1315,7 +1317,16 @@ function shopSignCard() {
   return ui.open({
     id: 'shop-sign', eyebrow, title: 'Closed',
     body: [el('p', {}, why), el('p', { class: 'note' }, 'The back room is open while the shop’s shut.')],
-    actions: [{ id: 'sign-home', label: 'Head home', kind: 'primary', onClick: () => { ui.close(); goHome(); } }, { label: 'Stay', kind: 'quiet', onClick: () => ui.close() }],
+    actions: [{ id: 'sign-home', label: 'Head home', kind: 'primary', onClick: () => { ui.close(); goHome(); } }, { id: 'sign-hours', label: 'Set the weekly hours', onClick: () => openShopHoursPanel() }, { label: 'Stay', kind: 'quiet', onClick: () => ui.close() }],
+  });
+}
+
+function openShopHoursPanel() {
+  if (world.shopSession) return ui.toast('The hours can’t change while the shop’s open.', 2400);
+  openHoursPanel(g, {
+    cfg: CONFIG.shopHours, saved: world.shopHours ?? hoursObj().save(),
+    onSave: saved => { world.shopHours = saved; changed(); ui.toast('Hours saved.', 1800); shopSignCard(); },
+    onBack: () => shopSignCard(),
   });
 }
 
@@ -3775,7 +3786,7 @@ globalThis.__tma = {
   audio, talkTo, cityLayout, T, enterPlace: id => enterPlace(extraPlace(id) ?? WALK_INS[id]), leavePlace, spawnEvent: id => spawnEvent(id), setWeather: t => setWeatherOverride(t), get weather() { return todayWeather(); }, weatherFx, get eventEnt() { return eventEnt; }, toggleRide, get placeCrowd() { return placeCrowd; },
   get st() { return st; }, get crowd() { return crowd; }, get world() { return world; }, refreshSeason, parkToday, CAL, get fishing() { return fishing; }, beachToday,
   G, BN, yard: () => nightArea(), tollBell, get target() { return target; }, openGrave, NC, NS, MOON, startNightCity, startNightShop, nightState: () => nightState(), placeSight, nightSpots: () => nightSpots(), nightTarget: () => nightTarget(), nightInteract: e => nightInteract(e), inTheDark: () => inTheDark(), tackleHooks: () => tackleHooks(),
-  get loop() { return loop; }, placeAt, sleep, continuousBed, shopSignCard, endShopSession, openNight, cityLayout, CR, N, zone, enterZone, endRun, morningChoice,
+  get loop() { return loop; }, placeAt, sleep, continuousBed, shopSignCard, endShopSession, openShopHoursPanel, openNight, cityLayout, CR, N, zone, enterZone, endRun, morningChoice,
   guide, speech, wt, finishPrologue, syncShop, shopMap, staffFloor, autosave, quitToTitle,
   interact: t => interact(t), openStanding: () => openStanding(g, () => ui.close()), openBag: () => openBag(g, () => ui.close()),
   board: tab => openRenovation(g, { tab }), chooseDay: w => chooseDay(w), openHomeDoor: () => openHomeDoor(), goHome: () => goHome(), syncHome: () => syncHome(), arranger, openMagic: w => openMagicAct(w ?? 'Outside the Brass Lantern'), get magician() { return magician; }, arrange: () => startArranging(), stopArranging: () => stopArranging(), arrangeAct: () => arrangeAct(), arrangeTo: (tx, ty) => { arranger.point(tx, ty); }, tileToScreen: (tx, ty) => ({ x: (tx * 16 + 8 - camera.ix) * renderer.scale / renderer.dpr, y: (ty * 16 + 8 - camera.iy) * renderer.scale / renderer.dpr }), get layout() { return world.shop?.layout; }, shopRoom: () => shopRoom(), syncLook, god, openGodMenu: () => openGodMenu(() => ui.close()), offerUpdate, whatsNewOnce,
