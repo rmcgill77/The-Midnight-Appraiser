@@ -29,6 +29,7 @@ export const EYE_COLORS = ['#3a2a1e', '#1c1a18', '#4a6a3a', '#3a5a7a', '#6a6a6e'
 
 // Options are only ever added at the end of a list, so a stored index keeps its meaning.
 export const PARTS = {
+  pronouns: ['They/them', 'She/her', 'He/him'],
   build: ['Slim', 'Regular', 'Broad'],
   hair: ['Bald', 'Crop', 'Side part', 'Long', 'Bun', 'Curls', 'Mohawk', 'Bob', 'Slick back', 'Ponytail', 'Afro', 'Undercut', 'Braid', 'Streaked long', 'Shaggy', 'Waves'],
   face: ['Plain', 'Freckles', 'Tired eyes', 'Rosy'],
@@ -77,6 +78,8 @@ export function cleanLook(look) {
     out[k] = Math.max(0, Math.min(LIST_OF[k].length - 1, n));
   }
   if (look?.height) out.height = 1;
+  // Phase 31a: pronouns NPCs use for the player (0 they, 1 she, 2 he). Outside ALL_KEYS so painters ignore it.
+  if (Number.isInteger(look?.pronouns) && look.pronouns > 0 && look.pronouns < PARTS.pronouns.length) out.pronouns = look.pronouns;
   // v2.4: a few touches for one-off characters (Mike, the Gravekeeper): a balding crown, a
   // round belly, a shorter frame, a cigarette, and a tool in hand. Outside the rolled keys.
   for (const k of ['balding', 'plump', 'short', 'smoke']) if (look?.[k]) out[k] = 1;

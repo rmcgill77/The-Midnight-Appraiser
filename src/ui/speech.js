@@ -17,6 +17,7 @@
 // press its number, or move with the arrows / d-pad and press E, Enter or A). What you
 // picked goes into the log in your own voice, then onChoose decides what's said next.
 
+import { fillPronouns } from '../game/pronouns.js';
 import { el } from './ui.js';
 
 // How long a radio line stays up once it has finished typing, and how long a talk line
@@ -69,7 +70,8 @@ export class Speech {
 
   // Replace what's being said (or add to it) with these lines.
   say(lines, { who = 'Mina', kind = 'talk', replace = true } = {}) {
-    const add = [].concat(lines).filter(Boolean).map(l => (typeof l === 'string' ? { text: l, who, kind } : { who, kind, ...l }));
+    const add = [].concat(lines).filter(Boolean).map(l => (typeof l === 'string' ? { text: l, who, kind } : { who, kind, ...l }))
+      .map(l => (this.pronounsOf && typeof l.text === 'string' && l.text.includes('{') ? { ...l, text: fillPronouns(l.text, this.pronounsOf()) } : l));
     if (!add.length) return;
     if (replace) { this.queue = add; this.cur = null; } else this.queue.push(...add);
     if (!this.cur) this.next();

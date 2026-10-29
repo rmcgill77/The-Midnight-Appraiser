@@ -242,6 +242,7 @@ speech.portraitFor = who => portraitFor(who);
 speech.settings = settings;
 speech.titleOf = who => [titleOf(who), REL.hasRelationship(who) ? heartsText(T.personOf(world, who).rel) : null].filter(Boolean).join(' · ') || null;
 speech.nameOf = who => (who === 'you' ? (st?.player?.name && st.player.name !== 'Owner' ? st.player.name : 'You') : who);
+speech.pronounsOf = () => world?.look?.pronouns ?? 0;
 speech.keyLabel = () => (input.lastSource === 'pad' ? 'A' : input.lastSource === 'keys' ? 'E' : 'tap');
 speech.onArrive = (kind, who, swap) => audio.dialog(kind, who, swap);
 speech.dayOf = () => (st ? (wt?.active ? 0 : st.day) : null);
