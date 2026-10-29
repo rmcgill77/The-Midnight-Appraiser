@@ -3,7 +3,7 @@
 // once per look and copied into a fresh <canvas> wherever one's needed.
 
 import { artImage, drawPortraitArt } from '../engine/art.js';
-import { paintPortrait, PORTRAIT_SIZE } from '../engine/figure-hd.js';
+import { paintPortraitHD, PORTRAIT_SIZE } from '../engine/figure-hd.js';
 import { ALL_KEYS, EXTRA_KEYS } from '../engine/figure.js';
 import { SIGNATURE, nameOfLook } from '../game/people.js';
 
@@ -15,7 +15,7 @@ const keyOf = (look, sig, mood) => [...ALL_KEYS, ...EXTRA_KEYS, 'extra2Color'].m
 function grid(look, sig, mood) {
   const k = keyOf(look, sig, mood);
   let g = cache.get(k);
-  if (!g) { g = paintPortrait(look, { signature: sig, mood }); cache.set(k, g); if (cache.size > 64) cache.delete(cache.keys().next().value); }
+  if (!g) { g = paintPortraitHD(look, { signature: sig, mood }); cache.set(k, g); if (cache.size > 64) cache.delete(cache.keys().next().value); }
   return g;
 }
 
