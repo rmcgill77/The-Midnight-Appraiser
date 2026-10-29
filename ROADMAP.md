@@ -253,7 +253,15 @@ phase when we plan it.
      paints asphalt, curbs, gutters, dashed lane lines and junction rounding from each pixel's
      distance to the nearest street (a soft minimum rounds every junction). Traffic keeps to the
      right-hand lane of those curves. The layout is the calmer one (no diagonal connectors).
-     Next: buildings and facades, then props and clutter, then seasonal looks,
+  3. **Buildings and facades (32c, first pass built, `data/building-dress.js`):** roofs get two
+     slopes with a ridge, staggered shingles, shaded edges, chimneys, vents, air conditioners,
+     aerials and (in the Narrows) water tanks; fronts get shutters (Westside, Eastgate), flower
+     boxes, fire escapes and air conditioners (Narrows, Harbour), posters, drainpipes, a dark
+     foot and a shadow on the pavement, and a stoop at every house door. More per-district
+     character is built too: Kessler Heights halls have pilasters, dentil cornices and arches;
+     Harbour warehouses have roll-up doors, stencilled numbers and loading docks; shop fronts
+     have blade signs; Eastgate has striped awnings; the Narrows have washing lines.
+     Next: props and clutter, then seasonal looks,
      each as its own slice, with the finished puddles, wet streets and snow drawn on the new tiles.
 - **Status: Phase 32 is in progress (32a built).**
 - Likely files: `src/data/city.js`, `src/data/city-tiles.js`, `src/data/tiles.js`.

@@ -13,6 +13,7 @@ import { RNG } from '../engine/rng.js';
 import { iconRects } from '../rules/index.js';
 import { frontOf, mapIcon } from './places.js';
 import { buildStreetNet } from '../game/street-net.js';
+import { dressBuildingTile } from './building-dress.js';
 
 const C = {
   asphalt: '#1b1d24', asphaltLight: '#23262f', asphaltDark: '#14161b', lane: '#6b6550',
@@ -789,6 +790,10 @@ export function decorateCity(layout, DATA, tiles, extra = []) {
         if (map.at(tx, ty - 1) === '~') { R(g, x, y, 16, 2, '#2a1e16'); R(g, x, y, 16, 1, '#6a5038'); for (let k = 1; k < 16; k += 5) R(g, x + k, y + 2, 1, 2, '#2a1e16'); }
         if (map.at(tx, ty + 1) === '~') { R(g, x, y + 14, 16, 2, '#2a1e16'); R(g, x, y + 14, 16, 1, '#6a5038'); }
       }
+    }
+    for (let ty = ty0; ty <= ty1; ty++) for (let tx = tx0; tx <= tx1; tx++) {
+      const ch = map.at(tx, ty);
+      if (isRoof(ch) || isFace(ch) || isHouseDoor(ch)) dressBuildingTile(g, map, tx, ty, ch, mixHash(tx, ty), tiles.season ?? 'summer', { districtOf, isRoof, isFace, isHouseDoor });
     }
     for (const c of layout.circles ?? []) paintCircle(g, map, c, r);
     if (layout.plaza) {
