@@ -2,6 +2,16 @@
 // Written for players: what they'll notice, not how it was built.
 
 export const CHANGELOG = [
+  { version: '3.0.0', title: 'Day and night, flowing', items: [
+    'The day is one long, continuous day now, about fifteen to twenty minutes from waking to bed, with the night after it. No more menus to pick the day and the night.',
+    'Open the shop when you like, for up to eight hours, set from the sign at the front. Pick a closed day each week. While it is open you stay in the shop; the rest of the time the city, your friends and the water are yours.',
+    'Sleep fast-forwards, from 8 PM to 10 AM, at least six hours in every day. Cut it short and you walk slower until you sleep properly. Skip nights and it gets worse: mistakes in the shop, then your screen playing tricks, then you collapse and lose a whole day.',
+    'Night runs happen on dark nights, one a night, and your friends notice when you pass out, each in their own way.',
+    'Weather comes from a real climate model: fronts roll in, it can fog, thunder, snow and freeze, the ground gets wet, and the wind is something you can hear. A forecast panel and a temperature in Celsius or Fahrenheit.',
+    'Appraisals can take up to a week to finish, and friends drop by the open shop. You can change prices on the shop floor.',
+    'People: pick pronouns in the creator (the town uses them for you), twelve portrait moods, and a lot more to wear and look like: new builds and heights, makeup, piercings, scars, hairstyles, hats, tops, bottoms, shoes and accessories, with two accessory slots. Portraits are sharper.',
+    'Saves from before this version cannot be loaded (they can still be exported from Manage saves). Saves from the preview were copied in.',
+  ] },
   { version: '2.5.2', title: 'A simpler reel', items: [
     'Fishing has a new reel. When something bites, a bar appears beside you: hold the button (or push the stick up) to lift your box, let go to drop it, and keep the catch inside. Keep it there and the reel winds it in.',
     'Better rods give you a bigger box and a quicker reel.',

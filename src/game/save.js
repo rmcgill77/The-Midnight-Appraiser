@@ -1,11 +1,11 @@
 // Save slots. Every save carries a version so later phases can migrate old
 // saves forward instead of throwing them away.
 
-export const SAVE_VERSION = 5;
+export const SAVE_VERSION = 6;
 // Saves older than this can't be loaded: they aren't migrated, but they stay in storage and can
-// be exported or deleted. Phase 30 changes the clock, the day and the shop so much that it
-// raises this to its own save version when it ships; until then every older save still loads.
-export const FIRST_SUPPORTED = 0;
+// be exported or deleted. Phase 30 changed the clock, the day and the shop so much that its save
+// version (6) is the first one the game can load.
+export const FIRST_SUPPORTED = 6;
 
 const RENAMED = { Brit: 'Morgan', Styg: 'Stuart', Jae: 'Jade', Rando: 'Jackson', Paco: 'Pablo' };
 
@@ -22,6 +22,9 @@ export const MIGRATIONS = {
   3: d => ({ ...d, version: 4, world: { ...(d.world || {}), shop: d.world?.shop ?? { tier: 4, booked: null }, tutorial: d.world?.tutorial ?? { done: true, step: null }, notes: d.world?.notes ?? {} } }),
   // Five townsfolk and the bar were renamed. Saves key people by name, so rename exact
   // matches ("Brit" the key or value, never part of a longer string) throughout the save.
+  // 5 -> 6 changes nothing in the data: saves made in the day-and-night preview were already in the new
+  // format, and only they are carried over (adoptPreviewSaves); older ones can't be loaded.
+  5: d => ({ ...d, version: 6 }),
   4: d => ({ ...JSON.parse(Object.entries(RENAMED).reduce((j, [from, to]) => j.split(`"${from}"`).join(`"${to}"`), JSON.stringify(d))), version: 5 }),
 };
 
@@ -43,6 +46,26 @@ export class SaveSlots {
     this.key = slot => `${prefix}.save.${slot}`;
     this.lastKey = `${prefix}.lastSlot`;
   }
+  // One time, when the day-and-night preview becomes the game: the saves made in the preview (kept apart
+  // under 'tma-cont') are copied into free slots here. The originals stay where they are. Returns how many.
+  adoptPreviewSaves(prefix = 'tma-cont') {
+    const flag = `${this.lastKey}.adopted`;
+    if (this.storage.get(flag)) return 0;
+    this.storage.set(flag, '1');
+    let n = 0;
+    for (let i = 1; i <= this.count; i++) {
+      const raw = this.storage.get(`${prefix}.save.${i}`);
+      if (!raw) continue;
+      let d; try { d = JSON.parse(raw); } catch { continue; }
+      if (!d?.sim || (Number.isInteger(d.version) ? d.version : 0) < 5) continue;
+      const free = this.list().find(s => !s.data && !s.corrupt && !s.legacy && !this.storage.get(this.key(s.slot)));
+      if (!free) break;
+      this.storage.set(this.key(free.slot), JSON.stringify({ ...migrate(d), slot: free.slot }));
+      n++;
+    }
+    return n;
+  }
+
   setLast(slot) { this.storage.set(this.lastKey, String(slot)); }
 
   write(slot, state) {

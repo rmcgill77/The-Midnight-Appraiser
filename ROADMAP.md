@@ -148,6 +148,10 @@ phase when we plan it.
 - **Where Phase 30 stands (playtest stage).** The new day and night is built and on the live site as
   a preview (title screen, "Try the new day and night"). The owner's first play says it works.
   Decided: play it more before making it the real game, and fix what feels off first.
+  **Shipped as version 3.0.0:** the new day and night is the game. Save version 6 is the first
+  supported; preview saves were copied into free slots; the preview switch and the classic-flow
+  tests are gone. Still to do: delete the old day-loop branches left behind `CONTINUOUS` in
+  `src/main.js` (the constant is now `true`), and the old `Clock`.
   Update: the leftovers below are now built (wind drives the wind sound, each friend has their own
   collapse comments, townsfolk move between parts of the day, the four-in-the-morning line is
   fixed). Economy numbers stay as they are until real play says otherwise.
