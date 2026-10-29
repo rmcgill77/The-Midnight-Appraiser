@@ -41,21 +41,19 @@ const DISTRICT_ROOF = { oldmarket: 'a', westside: 'w', kessler: 'k', eastgate: '
 // The streets, as lines through a few points (smoothly curved between them). North-south
 // ones run the height of town (x: about where; a: how far they wander), east-west ones its
 // width (y; Main Street runs straight, three wide). `full`: never broken; `skip`: stretches
-// (between east-west streets) left out, for the shop's block. An old road cuts across on
-// the slant: Old Post Road up through the Westside.
-// Phase 32c: the streets sweep further and more often (a longer wander, a point every 16-18 tiles), so they
-// curve instead of running dead straight; the gate street stays straight.
+// (between east-west streets) left out, for the shop's block. Two old roads cut across on
+// the slant: Old Post Road up through the Westside, Hill Road up to Kessler Heights.
 const NS = [
-  { x: 17, a: 6, full: true }, { x: 37, a: 6 }, { x: 73, a: 4 }, { x: 90, a: 5, full: true },
-  { x: 108, a: 5, skip: [4] }, { x: 127, a: 0, full: true }, { x: 147, a: 3 }, { x: 167, a: 5, w: 3, full: true }, { x: 186, a: 6 },
+  { x: 17, a: 4, full: true }, { x: 37, a: 4 }, { x: 73, a: 2 }, { x: 90, a: 3, full: true },
+  { x: 108, a: 3, skip: [4] }, { x: 127, a: 0, full: true }, { x: 147, a: 5 }, { x: 167, a: 4, w: 3, full: true }, { x: 186, a: 5 },
 ];
 // Phase 32c: every east-west street crosses the river on a bridge, so none of them stops at the water.
 const EW = [
-  { y: 13, a: 5, bridge: true }, { y: 26, a: 4, bridge: true }, { y: 39, a: 3, bridge: true }, { y: 50, a: 2, bridge: true }, { y: 65, w: 3, main: true, bridge: true }, { y: 80, a: 5, bridge: true }, { y: 93, a: 4, bridge: true }, { y: 106, a: 5, bridge: true },
+  { y: 13, a: 4, bridge: true }, { y: 26, a: 3, bridge: true }, { y: 39, a: 4, bridge: true }, { y: 50, a: 1, bridge: true }, { y: 65, w: 3, main: true, bridge: true }, { y: 80, a: 4, bridge: true }, { y: 93, a: 3, bridge: true }, { y: 106, a: 4, bridge: true },
 ];
 const SLANTS = [
   { pts: [[1, 76], [14, 70], [30, 58], [50, 47]] },            // Old Post Road
-  // (Hill Road, up to Kessler Heights, used to cut across here; the curving streets now do that job and it only tangled with them.)
+  { pts: [[129, 51], [150, 44], [170, 33], [200, 27]] },      // Hill Road
 ];
 
 // Smooth curve through points [[t, v], ...] (t increasing): the value at t, rounded.
@@ -99,9 +97,9 @@ export function buildCityLayout(DATA, extra = [], { stops = [] } = {}) {
   // ---------- streets ----------
   const road = new Int16Array(W * H), lane = new Uint8Array(W * H), cross = new Uint8Array(W * H);
   const mark = (x, y, id, ns) => { if (!inside(x, y)) return; const i = y * W + x; if (road[i] && ns !== (road[i] > 0)) cross[i] = 1; if (!road[i] || ns) road[i] = ns ? 1 : -(id + 1); };
-  const ns = NS.map(s => ({ ...s, w: s.w ?? 2, pts: wander(rng, s.x, s.a, H, 17) }));
+  const ns = NS.map(s => ({ ...s, w: s.w ?? 2, pts: wander(rng, s.x, s.a, H, 26) }));
   const nsX = (s, y) => along(s.pts, y);
-  const ew = EW.map(s => ({ ...s, w: s.w ?? 2, pts: wander(rng, s.y, s.main ? 0 : s.a, W, 19), kind: [] }));
+  const ew = EW.map(s => ({ ...s, w: s.w ?? 2, pts: wander(rng, s.y, s.main ? 0 : s.a, W, 28), kind: [] }));
   const ewY = (s, x) => along(s.pts, x);
   // East-west streets, in stretches between the north-south ones: mostly road, now and then
   // a footpath instead (never Main Street, never over the river).
@@ -124,28 +122,6 @@ export function buildCityLayout(DATA, extra = [], { stops = [] } = {}) {
   });
   // The old roads on the slant.
   SLANTS.forEach((r, j) => { for (let x = r.pts[0][0]; x <= r.pts[r.pts.length - 1][0]; x++) { const y = along(r.pts, x); mark(x, y, 50 + j, false); mark(x, y + 1, 50 + j, false); } });
-  // Phase 32c: a few curving roads that cut across the grid from one crossing to the next, so the streets are not
-  // all right angles. Each is an S of two-wide road, found from where the streets actually run.
-  const crossing = (si, ej) => { const x = nsX(ns[si], ew[ej].y), y = ewY(ew[ej], x); return { x, y }; };
-  for (const [j, [si0, ej0, si1, ej1]] of [[2, 1, 3, 2], [4, 5, 5, 6], [0, 3, 1, 4]].entries()) {
-    const A = crossing(si0, ej0), B = crossing(si1, ej1), id = 60 + j;
-    // (where the curve is steep, fill the steps between so the road never comes apart)
-    if (Math.abs(B.x - A.x) >= Math.abs(B.y - A.y)) {
-      let last = A.y;
-      for (let x = Math.min(A.x, B.x); x <= Math.max(A.x, B.x); x++) {
-        const t = (x - A.x) / (B.x - A.x), y = Math.round(A.y + (B.y - A.y) * (1 - Math.cos(Math.PI * t)) / 2);
-        for (let yy = Math.min(last, y); yy <= Math.max(last, y) + 1; yy++) mark(x, yy, id, false);
-        last = y;
-      }
-    } else {
-      let last = A.x;
-      for (let y = Math.min(A.y, B.y); y <= Math.max(A.y, B.y); y++) {
-        const t = (y - A.y) / (B.y - A.y), x = Math.round(A.x + (B.x - A.x) * (1 - Math.cos(Math.PI * t)) / 2);
-        for (let xx = Math.min(last, x); xx <= Math.max(last, x) + 1; xx++) mark(xx, y, id, false);
-        last = x;
-      }
-    }
-  }
   // The waterfront road along the harbor.
   for (let x = 1; x < W - 1; x++) for (let k = 0; k < 3; k++) mark(x, coastAt(x) + k, 99, false);
   // North-south streets, stretch by stretch (between east-west streets): a road, a
@@ -200,8 +176,8 @@ export function buildCityLayout(DATA, extra = [], { stops = [] } = {}) {
     const blocked = (x, y) => !inside(x, y) || road[y * W + x] !== 0 || lane[y * W + x] !== 0 || Math.abs(x - RIVER.midAt(y)) <= Math.floor(RIVER.width / 2) + 5 || y > coastAt(x) - 3 || y < 3 || x < 6 || x > W - 7;
     for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) sat[(y + 1) * (W + 1) + x + 1] = sat[y * (W + 1) + x + 1] + sat[(y + 1) * (W + 1) + x] - sat[y * (W + 1) + x] + (blocked(x, y) ? 1 : 0);
     const clear = (x0, y0, x1, y1) => x0 >= 0 && y0 >= 0 && x1 < W && y1 < H && sat[(y1 + 1) * (W + 1) + x1 + 1] - sat[y0 * (W + 1) + x1 + 1] - sat[(y1 + 1) * (W + 1) + x0] + sat[y0 * (W + 1) + x0] === 0;
-    const LEN = 5, R_OUT = 4.4, R_IN = 1.5, ROOM = 14;      // a spur's length, its circle, and the room it needs
-    const want = [[3, 1], [5, -1], [6, 1], [1, 1], [7, -1], [2, 1], [4, -1], [0, 1], [5, 1], [6, -1], [3, -1], [1, -1], [2, -1], [4, 1], [7, 1], [0, -1]];   // (east-west street, side: -1 north of it, 1 south); the first three that fit
+    const LEN = 5, R_OUT = 4.4, R_IN = 1.5, ROOM = 15;      // a spur's length, its circle, and the room it needs
+    const want = [[3, 1], [5, -1], [6, 1], [1, 1], [7, -1], [2, 1], [4, -1]];   // (east-west street, side: -1 north of it, 1 south); the first three that fit
     for (const [j, side] of want) {
       if (spurs.length >= 3) break;
       const e = ew[j];
@@ -209,7 +185,7 @@ export function buildCityLayout(DATA, extra = [], { stops = [] } = {}) {
       for (let x = 20; x < W - 20; x++) {
         const yr = ewY(e, x), edge = side < 0 ? yr - 1 : yr + e.w;       // the first tile off the street
         const y0 = side < 0 ? edge - ROOM + 1 : edge, y1 = side < 0 ? edge : edge + ROOM - 1;
-        if (!clear(x - 6, y0, x + 7, y1)) continue;
+        if (!clear(x - 7, y0, x + 8, y1)) continue;
         if (!road[(side < 0 ? yr : yr + e.w - 1) * W + x] || !road[(side < 0 ? yr : yr + e.w - 1) * W + x + 1]) continue;
         const dist = spurs.reduce((m, s) => Math.min(m, Math.abs(s.x - x) + Math.abs(s.y - edge)), 999);
         if (dist < 40) continue;

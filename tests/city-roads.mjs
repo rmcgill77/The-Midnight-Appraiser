@@ -14,7 +14,7 @@ const ROAD = new Set(['=', '+']);
 
 // 1. No road runs into the river (a bridge carries it across), and none ends at the edge of the map below the top street.
 let intoWater = 0;
-for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) if (ROAD.has(at(x, y)) && [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => at(x + dx, y + dy) === '~') && ![[1, 0], [-1, 0], [0, 1], [0, -1], [2, 0], [-2, 0], [0, 2], [0, -2]].some(([dx, dy]) => at(x + dx, y + dy) === 'u')) intoWater++;   // (a bridge's landing may touch the bank beside it)
+for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) if (ROAD.has(at(x, y)) && [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => at(x + dx, y + dy) === '~')) intoWater++;
 assert.equal(intoWater, 0, 'a road runs into the water');
 assert.ok(L.bridges >= 8, 'every east-west street has a bridge');
 for (let y = 15; y < 118; y++) {
