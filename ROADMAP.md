@@ -207,7 +207,7 @@ phase when we plan it.
   `paintPortrait(look, { mood })`; a speech line can carry `mood`). 31c step 1 (body, height, face
   details; tattoos cut): 4 new builds, height (Average/Tall/Short/Very tall), skin details,
   eye shapes, brows, marks, beards, eye details, makeup, piercings. 31c step 2 (10 hairstyles, 10 hats, 6 hair colors, hair dye
-  details). Next: 31c step 3 outfit and shoes, step 4 accessories; then 31d 96x96 portraits.
+  details). 31c step 3 (10 tops, 7 bottoms, shoes, 5 patterns). Next: 31c step 4 accessories (two slots); then 31d 96x96 portraits.
 - Likely files: `src/ui/creator.js`, `src/ui/portraits.js`, `src/engine/figure.js`,
   `src/engine/figure-hd.js`, `src/game/people.js`.
 

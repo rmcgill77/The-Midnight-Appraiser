@@ -121,6 +121,9 @@ export function compose(L, ramps, { band = 1, rim = true, outline = true } = {})
 
 // ---------- the look, as colors ----------
 
+// Phase 31c: the shoe colors, by style (Default, Boots, Sneakers, Heels, Sandals, Wellingtons, Barefoot).
+const SHOE_OF = (style, skin) => [SHOE, '#4a3020', '#e8e8ee', '#a8283a', shade(skin, 0.88), '#3a7a4a', shade(skin, 0.94)][style ?? 0] ?? SHOE;
+
 function palette(L, opts = {}) {
   const skin = SKINS[L.skin], hair = HAIR_COLORS[L.hairColor], hat = CLOTH[L.hatColor], top = CLOTH[L.topColor];
   const bot = CLOTH[L.bottomColor], ex = CLOTH[L.extraColor], neck = CLOTH[L.neckColor];
@@ -130,10 +133,10 @@ function palette(L, opts = {}) {
     skin: ramp(skin), ear: ramp(shade(skin, 0.94)), neckSkin: ramp(skin), arm: ramp(skin),
     hand: ramp(gloves ? shade(ex, 0.8) : skin),
     hair: ramp(hair), hat: ramp(hat), band: ramp(shade(hat, 0.55)), brim: ramp(hat),
-    top: ramp(top), sleeve: ramp(topName === 'Vest' ? SHIRT : top), sleeveF: ramp(shade(topName === 'Vest' ? SHIRT : top, 0.8)), hood: ramp(shade(top, 0.9)),
+    top: ramp(top), sleeve: ramp(topName === 'Vest' || topName === 'Waistcoat' ? SHIRT : top), sleeveF: ramp(shade(topName === 'Vest' || topName === 'Waistcoat' ? SHIRT : top, 0.8)), hood: ramp(shade(top, 0.9)),
     shirt: ramp(topName === 'Shirtsleeves' ? top : SHIRT), cuff: ramp(shade(topName === 'Shirtsleeves' ? top : SHIRT, 1.08)),
     legN: ramp(bot), legF: ramp(shade(bot, 0.8)), skirt: ramp(bot), stocking: ramp(shade(skin, 0.72)),
-    shoe: ramp(SHOE), shoeF: ramp(shade(SHOE, 0.8)),
+    shoe: ramp(SHOE_OF(L.shoes, skin)), shoeF: ramp(shade(SHOE_OF(L.shoes, skin), 0.8)),
     neckw: ramp(neck), ex: ramp(ex), strap: ramp(STRAP), sack: ramp(SACK), gold: ramp(GOLD),
     wood: ramp('#8a6a3a'), steel: ramp('#8e939e'), cig: ramp('#ece6da'),
     fallback: ramp('#808080'),
@@ -191,6 +194,8 @@ function paintKO(look, opts) {
 
 const HD_NEAREST = {
   hair: { Pixie: 'Crop', 'Space buns': 'Bun', Pigtails: 'Bob', Dreadlocks: 'Shaggy', 'Top knot': 'Bun', 'Side shave': 'Undercut', 'Bowl cut': 'Bob', Pompadour: 'Slick back', Cornrows: 'Crop', Mullet: 'Shaggy' },
+  top: { Dress: 'Sweater', Poncho: 'Sweater', 'Kimono robe': 'Overcoat', Cardigan: 'Jacket', Apron: 'Shirtsleeves', 'Lab coat': 'Overcoat', Cloak: 'Overcoat', Waistcoat: 'Vest', 'Leather jacket': 'Jacket', Raincoat: 'Trench coat' },
+  bottom: { Shorts: 'Trousers', Jeans: 'Trousers', 'Pleated skirt': 'Skirt', 'Wide-leg trousers': 'Trousers', 'Cargo pants': 'Work pants', Overalls: 'Work pants', Leggings: 'Trousers' },
   hat: { Newsboy: 'Flat cap', Deerstalker: 'Flat cap', 'Cowboy hat': 'Wide brim', 'Bucket hat': 'Bowler', Headscarf: 'Beret', 'Hood up': 'Beanie', Veil: 'Trilby', Pillbox: 'Beret', 'Gas mask': 'None', Bandana: 'Beanie' },
   eyes: { Almond: 'Round', Downturned: 'Hooded' },
   brows: { Bushy: 'Heavy', Unibrow: 'Heavy', Shaved: 'Thin' },
@@ -208,7 +213,7 @@ function paintBody(L, look, C, view, frame, pose, opts) {
   const { P, R, S, O } = L;
   const near = (k, n) => HD_NEAREST[k]?.[n] ?? n;   // the small figure draws the newer options as their nearest older one
   const names = {
-    hair: near('hair', PARTS.hair[look.hair]), hat: near('hat', PARTS.hat[look.hat]), top: PARTS.top[look.top], bottom: PARTS.bottom[look.bottom],
+    hair: near('hair', PARTS.hair[look.hair]), hat: near('hat', PARTS.hat[look.hat]), top: near('top', PARTS.top[look.top]), bottom: near('bottom', PARTS.bottom[look.bottom]),
     extra: PARTS.extra[look.extra], facial: PARTS.facial[look.facial], face: PARTS.face[look.face],
     eyes: near('eyes', PARTS.eyes[look.eyes]), brows: near('brows', PARTS.brows[look.brows]), mouth: PARTS.mouth[look.mouth], mark: near('mark', PARTS.mark[look.mark]),
     pattern: PARTS.pattern[look.pattern], neck: PARTS.neck[look.neck],
@@ -235,6 +240,7 @@ function paintBody(L, look, C, view, frame, pose, opts) {
 
   // --- legs and shoes ---
   const legTop = 24 - bob;
+  const rawBottom = PARTS.bottom[look.bottom];
   const legs = [[8, 1], [13, -1]];   // left leg x 8-10 forward on stride +1, right leg x 13-15 on -1
   for (const [lx, side] of legs) {
     const lifted = stride !== 0 && stride !== side;  // the back leg lifts its heel
@@ -243,6 +249,11 @@ function paintBody(L, look, C, view, frame, pose, opts) {
     else R(lx, legTop, 3, bottom - legTop + 1, 'legN');
     const sy = bottom + 1, toe = lx === 8 ? lx - 1 : lx;
     R(lx, sy, 3, 1, 'shoe'); R(toe, sy + 1, 4, 1, 'shoe');
+    if (look.shoes === 1 || look.shoes === 5) R(lx, bottom - (look.shoes === 5 ? 2 : 1), 3, look.shoes === 5 ? 3 : 2, 'shoe');
+    if (rawBottom === 'Shorts') R(lx, 27, 3, bottom - 26, 'arm');
+    if (rawBottom === 'Wide-leg trousers') { R(lx + (side > 0 ? -1 : 1), 26, 3, bottom - 25, 'legN'); }
+    if (rawBottom === 'Jeans') { for (let y = legTop; y <= bottom; y += 2) O(lx + (side > 0 ? 2 : 0), y, c => c && mix(c, '#d8a860', 0.5)); R(lx, bottom, 3, 1, 'legN', 1); }
+    if (rawBottom === 'Cargo pants') O(lx + 1, 25, c => c && shade(c, 0.7));
     if (names.bottom === 'Work pants') { O(lx + 1, 26, c => c && shade(c, 0.8)); R(lx, bottom, 3, 1, 'legN', 1); }
   }
   if (names.bottom === 'Skirt') { S({ 24: [x0, x1], 25: [x0, x1], 26: [x0 - 1, x1 + 1] }, 'skirt', null, 0, -bob); }
@@ -257,6 +268,7 @@ function paintBody(L, look, C, view, frame, pose, opts) {
 
   // --- torso ---
   paintTopFront(L, ctx);
+  if (front) paintOutfitFront(L, ctx);
   // v2.4: a round belly over the belt.
   if (look.plump || b === BELLY) for (let y = 19; y <= 23; y++) { const w = y === 19 || y === 23 ? 0 : 1; if (w) { P(x0 - 1, U(y), 'top'); P(x1 + 1, U(y), 'top'); } }
   if ((look.plump || b === BELLY) && front) for (let x = x0 + 1; x < x1; x++) L.O(x, U(23), c => c && shade(c, 0.72));
@@ -412,6 +424,21 @@ function paintTopFront(L, ctx) {
   if (front) paintNeckFront(L, ctx, opening);
 }
 
+// Phase 31c: touches on the newer tops and bottoms (the small figure otherwise draws them as
+// their nearest older one).
+function paintOutfitFront(L, ctx) {
+  const { x0, x1, U, C, look } = ctx;
+  const rawTop = PARTS.top[look.top], rawBottom = PARTS.bottom[look.bottom], O = L.O;
+  const cloth = CLOTH[look.bottomColor];
+  if (rawTop === 'Dress') { L.S({ 24: [x0, x1], 25: [x0, x1], 26: [x0 - 1, x1 + 1] }, 'top', null, 0, -ctx.bob); for (let x = x0 - 1; x <= x1 + 1; x++) O(x, U(26), c => c && shade(c, x % 2 ? 0.85 : 1.1)); }
+  if (rawTop === 'Poncho') { for (const y of [18, 19, 20]) { L.P(x0 - 1, U(y), 'top'); L.P(x1 + 1, U(y), 'top'); } for (let x = x0 - 1; x <= x1 + 1; x++) O(x, U(23), c => c && shade(c, x % 2 ? 0.7 : 1.2)); }
+  if (rawTop === 'Apron') { const col = mix(C.top, '#e6dccb', 0.75); for (let y = 19; y <= 23; y++) for (let x = x0 + 2; x <= x1 - 2; x++) O(x, U(y), (y === 23 || (y === 21 && x > x1 - 4)) ? shade(col, 0.82) : col); O(x0 + 2, U(17), col); O(x1 - 2, U(17), col); O(12, U(18), col); O(11, U(18), col); }
+  if (rawTop === 'Cloak') for (const x of [x0 + 1, x1 - 1]) O(x, U(17), GOLD);
+  if (rawTop === 'Leather jacket') for (const [x, y] of [[x0 + 1, 18], [x0 + 2, 18], [x1 - 2, 18]]) O(x, U(y), c => c && shade(c, 1.5));
+  if (rawBottom === 'Overalls') { for (let y = 19; y <= 23; y++) for (let x = 10; x <= 13; x++) O(x, U(y), (x + y) % 5 ? cloth : shade(cloth, 0.8)); O(10, U(17), cloth); O(10, U(18), cloth); O(13, U(17), cloth); O(13, U(18), cloth); O(10, U(19), GOLD); O(13, U(19), GOLD); }
+  if (rawBottom === 'Pleated skirt') for (let x = x0; x <= x1; x += 2) for (const y of [24, 25, 26]) O(x, U(y), c => c && shade(c, 0.72));
+}
+
 // Pinstripe, check or patches, over the top and sleeves, after shading.
 function paintPattern(L, ctx) {
   const name = ctx.names.pattern;
@@ -422,7 +449,12 @@ function paintPattern(L, ctx) {
     if (L.ov[y][x]) continue;
     if (name === 'Pinstripe' && x % 3 === 0 && y % 2 === 0) L.O(x, y, c => c && shade(c, 1.35));
     if (name === 'Check' && (x % 4 === 0 || y % 4 === 0)) L.O(x, y, c => c && shade(c, (x % 4 === 0 && y % 4 === 0) ? 0.62 : 0.8));
+    if (name === 'Stripes' && y % 3 === 0) L.O(x, y, c => c && shade(c, 1.3));
+    if (name === 'Polka dots' && x % 4 === 1 && y % 4 === 1) L.O(x, y, c => c && shade(c, 1.45));
+    if (name === 'Plaid' && (x % 5 === 0 || y % 5 === 0)) L.O(x, y, c => c && mix(c, '#b8483e', x % 5 === 0 && y % 5 === 0 ? 0.6 : 0.35));
+    if (name === 'Floral' && (x * 5 + y * 3) % 11 === 0) L.O(x, y, (x + y) % 2 ? '#e8a0b8' : '#e8d070');
   }
+  if (name === 'Embroidered trim') { const { x0, x1, U } = ctx; for (let x = x0; x <= x1; x++) if (L.mat[U(23)][x]?.m === 'top') L.O(x, U(23), x % 2 ? '#d8b86a' : '#a8884a'); }
   if (name === 'Patched') {
     const { view, x0, x1, U } = ctx;
     const px = view === 'right' ? 10 : x1 - 3, py = U(20);
@@ -1091,9 +1123,9 @@ export function paintPortrait(lookIn, opts = {}) {
   // --- shoulders and clothes ---
   const rx = BODY_RX[look.build];
   fill((x, y) => inEll(x, y, cx, 53, rx, 16) && y >= 36, 'top');
-  const opening = ['Trench coat', 'Jacket', 'Vest', 'Suit jacket', 'Overcoat'].includes(top);
+  const opening = ['Trench coat', 'Jacket', 'Vest', 'Suit jacket', 'Overcoat', 'Cardigan', 'Leather jacket', 'Waistcoat', 'Lab coat', 'Raincoat'].includes(top);
   if (opening || top === 'Shirtsleeves') {
-    const wide = top === 'Suit jacket' ? 5 : top === 'Vest' ? 4 : 3.5;
+    const wide = top === 'Suit jacket' ? 5 : top === 'Vest' || top === 'Waistcoat' ? 4 : 3.5;
     fill((x, y) => y >= 37 && Math.abs(x - cx) <= (top === 'Shirtsleeves' ? 30 : wide - (y - 37) * (top === 'Jacket' ? 0.15 : 0.45)) && inEll(x, y, cx, 53, rx, 16), 'shirt');
     if (top !== 'Shirtsleeves') each((x, y) => {
       const edge = wide - (y - 37) * (top === 'Jacket' ? 0.15 : 0.45);
@@ -1107,6 +1139,17 @@ export function paintPortrait(lookIn, opts = {}) {
   if (top === 'Tank top' && neck === 'Turtleneck') each((x, y) => { if (L.at(x, y) === 'top' && Math.abs(x - cx) >= 8 + (y - 38) * 0.8) P(x, y, 'neckSkin'); });
   if (top === 'Tank top') each((x, y) => { const d = Math.abs(x - cx); if (L.at(x, y) === 'top' && (y < 41 - Math.max(0, 7 - d) * 0.6) && !(d >= 6.5 && d <= 8.5)) P(x, y, 'neckSkin'); });
   if (top === 'Hoodie') { fill((x, y) => y >= 34 && y <= 40 && Math.abs(x - cx) <= 11 && !(Math.abs(x - cx) <= 6 && y >= 36), 'hood'); for (const x of [20, 27]) for (let y = 40; y <= 44; y++) O(x, y, WHITE); }
+  if (top === 'Lab coat' || top === 'Raincoat') fill((x, y) => y >= 35 && y <= 39 && Math.abs(x - cx) <= 11 && Math.abs(x - cx) >= 5, 'top', 1);
+  if (top === 'Raincoat') { fill((x, y) => y >= 34 && y <= 40 && Math.abs(x - cx) <= 11 && !(Math.abs(x - cx) <= 6 && y >= 36), 'hood'); for (const x of [20, 27]) for (let y = 40; y <= 44; y++) O(x, y, SILVER); }
+  if (top === 'Lab coat') { for (let y = 44; y <= 47; y++) for (const x of [16, 17, 30, 31]) O(x, y, c => c && shade(c, 0.78)); for (const y of [41, 44, 47]) O(24, y, c => c && shade(c, 0.6)); }
+  if (top === 'Cardigan') for (const y of [41, 44, 47]) O(cx - 0.5, y, c => c && shade(c, 0.6));
+  if (top === 'Leather jacket') { each((x, y) => { if (L.at(x, y) === 'top' && y >= 37 && y <= 40 && (x + y) % 3 === 0) O(x, y, c => c && shade(c, 1.5)); }); for (let y = 41; y <= 47; y++) O(24, y, SILVER); }
+  if (top === 'Waistcoat') for (const y of [42, 45]) O(24, y, GOLD);
+  if (top === 'Dress') { each((x, y) => { const d = Math.abs(x - cx); if (L.at(x, y) === 'top' && inEll(x, y, cx, 36, 7.2, 5.2) && y >= 36) P(x, y, 'neckSkin'); else if (L.at(x, y) === 'top' && d >= 8 && y <= 40) P(x, y, 'neckSkin'); }); for (let x = 12; x <= 35; x++) if (L.at(x, 46) === 'top') O(x, 46, c => c && shade(c, 0.78)); }
+  if (top === 'Poncho') { fill((x, y) => inEll(x, y, cx, 50, rx + 4, 15) && y >= 40, 'top'); fill((x, y) => y >= 36 && y <= 41 && Math.abs(x - cx) <= 5.5 - (y - 36) * 0.5, 'neckSkin'); for (let x = 8; x <= 40; x++) if (L.at(x, 47) === 'top') O(x, 47, x % 2 ? shade(C.top, 1.3) : shade(C.top, 0.7)); }
+  if (top === 'Kimono robe') { for (let i = 0; i < 11; i++) { O(cx - 7 + i, 37 + i, WHITE); O(cx - 6 + i, 37 + i, shade(WHITE, 0.8)); } each((x, y) => { if (y >= 45 && y <= 47 && L.at(x, y) === 'top') O(x, y, y === 46 ? '#d8b86a' : shade(C.top, 0.55)); }); for (let y = 36; y <= 40; y++) for (const sx of [cx - 9, cx + 9]) O(Math.round(sx), y, c => c && shade(c, 0.78)); }
+  if (top === 'Apron') { const col = mix(C.top, '#e6dccb', 0.75); each((x, y) => { if (y >= 38 && y <= 47 && Math.abs(x - cx) <= 6 - (y < 41 ? 1.5 : 0)) O(x, y, y === 47 || (y === 43 && x > 25) ? shade(col, 0.82) : col); }); for (let i = 0; i < 3; i++) { O(17 + i, 36 + i, col); O(30 - i, 36 + i, col); } }
+  if (top === 'Cloak') { fill((x, y) => inEll(x, y, cx, 52, rx + 2, 17) && y >= 36, 'top'); fill((x, y) => y >= 35 && y <= 39 && Math.abs(x - cx) <= 12, 'top', 1); for (const x of [20, 27]) O(x, 38, GOLD); for (let x = 21; x <= 26; x++) O(x, 39, shade(GOLD, 0.7)); }
   if (top === 'Overcoat' || top === 'Trench coat') fill((x, y) => y >= 35 && y <= 39 && Math.abs(x - cx) <= 12 && Math.abs(x - cx) >= 5, 'top', 1);
   if (top === 'Trench coat' || top === 'Overcoat') for (const [x, y] of [[17, 43], [30, 43], [17, 47], [30, 47]]) { O(x, y, c => c && shade(c, 0.55)); }
   if (top === 'Suit jacket') { O(33, 41, WHITE); O(34, 41, WHITE); O(33, 42, WHITE); }
@@ -1140,7 +1183,12 @@ export function paintPortrait(lookIn, opts = {}) {
     const m = L.mat[y][x]?.m; if (m !== 'top' && m !== 'hood') return;
     if (pat === 'Pinstripe' && x % 3 === 0 && y % 2 === 0) O(x, y, c => c && shade(c, 1.35));
     if (pat === 'Check' && (x % 4 === 0 || y % 4 === 0)) O(x, y, c => c && shade(c, x % 4 === 0 && y % 4 === 0 ? 0.62 : 0.82));
+    if (pat === 'Stripes' && y % 3 === 0) O(x, y, c => c && shade(c, 1.3));
+    if (pat === 'Polka dots' && x % 4 === 1 && y % 4 === 1) O(x, y, c => c && shade(c, 1.45));
+    if (pat === 'Plaid' && (x % 5 === 0 || y % 5 === 0)) O(x, y, c => c && mix(c, '#b8483e', x % 5 === 0 && y % 5 === 0 ? 0.6 : 0.35));
+    if (pat === 'Floral' && (x * 5 + y * 3) % 11 === 0) O(x, y, (x + y) % 2 ? '#e8a0b8' : '#e8d070');
   });
+  if (pat === 'Embroidered trim') each((x, y) => { const m = L.mat[y][x]?.m; if ((m === 'top' || m === 'hood') && (y === 47 || (y === 36 && Math.abs(x - cx) <= 9))) O(x, y, x % 2 ? '#d8b86a' : '#a8884a'); });
   if (pat === 'Patched') for (let y = 42; y <= 45; y++) for (let x = 30; x <= 34; x++) O(x, y, (x === 30 || y === 45) ? shade(mix(C.top, '#8a7a5a', 0.6), 0.7) : mix(C.top, '#8a7a5a', 0.6));
 
   // --- neck ---
