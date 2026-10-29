@@ -80,7 +80,7 @@ export class GameAudio {
     setPianoMood(wx?.type);
     S.Sound.setScene(wx?.type ? weatherScene(scene, wx.type) : scene);
     S.Sound.setTension(Math.max(tension, wx?.type === 'storm' && scene !== 'encounter' ? 0.15 : 0));
-    if (wx) this.weather.update(wx.dt ?? 0.016, wx.type, wx.place, { on: !!this.settings.sound, birds: wx.birds });
+    if (wx) this.weather.update(wx.dt ?? 0.016, wx.type, wx.place, { on: !!this.settings.sound, birds: wx.birds, wind: wx.wind ?? null });
   }
   thunder(near, place) { if (this.settings.sound) this.weather.thunder(near, place); }
 }

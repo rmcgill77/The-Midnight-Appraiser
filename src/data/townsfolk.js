@@ -32,18 +32,21 @@ export const CUSTOM_NPCS = [
 // anyone drops into your shop as a customer while it's open (per person, per shop day).
 export const WANDER_CHANCE = 0.12, VISIT_CHANCE = 0.12, MAX_FRIEND_VISITS = 2;
 export const spouseOf = name => CUSTOM_NPCS.find(n => n.name === name)?.spouse ?? CUSTOM_NPCS.find(n => n.spouse === name)?.name ?? null;
-const pick = (name, day, seed, salt) => dayHash(`${name}:${salt}`, day, seed);
+// Phase 30: the day is long now, so people move about it. `part` is the part of the day (0 morning,
+// 1 afternoon, 2 evening, 3 night); part 0 keeps the old once-a-day rolls.
+const atPart = (day, part) => (part ? day * 8 + part : day);
+const pick = (name, day, seed, salt, part = 0) => dayHash(`${name}:${salt}`, atPart(day, part), seed);
 // Out walking the streets today (only people without a job wander: the rest are at work).
-export const outWalking = (npc, day, seed = 0) => !npc.job && pick(npc.name, day, seed, 'walk') < (npc.wander ?? WANDER_CHANCE);
-export const streetWalkers = (day, seed = 0) => CUSTOM_NPCS.filter(n => outWalking(n, day, seed));
+export const outWalking = (npc, day, seed = 0, part = 0) => !npc.job && pick(npc.name, day, seed, 'walk', part) < (npc.wander ?? WANDER_CHANCE);
+export const streetWalkers = (day, seed = 0, part = 0) => CUSTOM_NPCS.filter(n => outWalking(n, day, seed, part));
 // v2.2: Lantern Park on a fine day. Townsfolk without a job sometimes spend it there
 // instead of the Lantern (and never if they're out walking). On someone's birthday, they and a
 // few friends (their spouse among them) have a little party in the park.
 export const PARK_CHANCE = 0.25;
-export function parkPeople(day, seed = 0, birthdayOn = () => false) {
-  const free = CUSTOM_NPCS.filter(n => !n.job && !outWalking(n, day, seed));
+export function parkPeople(day, seed = 0, birthdayOn = () => false, part = 0) {
+  const free = CUSTOM_NPCS.filter(n => !n.job && !outWalking(n, day, seed, part));
   const party = free.find(n => birthdayOn(n.name)) ?? null;
-  const names = new Set(free.filter(n => pick(n.name, day, seed, 'park') < PARK_CHANCE).map(n => n.name));
+  const names = new Set(free.filter(n => pick(n.name, day, seed, 'park', part) < PARK_CHANCE).map(n => n.name));
   const guests = [];
   if (party) {
     guests.push(party.name);
@@ -60,10 +63,10 @@ export function parkPeople(day, seed = 0, birthdayOn = () => false) {
 // v2.3: who spends the day at the beach. Like the park, but never someone already in the
 // park; mostly in summer, a few hardy souls in spring and autumn, nobody in winter.
 export const BEACH_CHANCE = { summer: 0.3, spring: 0.12, autumn: 0.1, winter: 0 };
-export function beachPeople(day, seed = 0, season = 'summer', inPark = []) {
+export function beachPeople(day, seed = 0, season = 'summer', inPark = [], part = 0) {
   const busy = new Set(inPark);
-  const free = CUSTOM_NPCS.filter(n => !n.job && !outWalking(n, day, seed) && !busy.has(n.name));
-  const names = new Set(free.filter(n => pick(n.name, day, seed, 'beach') < (BEACH_CHANCE[season] ?? 0)).map(n => n.name));
+  const free = CUSTOM_NPCS.filter(n => !n.job && !outWalking(n, day, seed, part) && !busy.has(n.name));
+  const names = new Set(free.filter(n => pick(n.name, day, seed, 'beach', part) < (BEACH_CHANCE[season] ?? 0)).map(n => n.name));
   for (const n of [...names]) { const sp = spouseOf(n); if (sp && free.some(f => f.name === sp)) names.add(sp); }
   return { names: [...names] };
 }
@@ -116,10 +119,10 @@ export const HUB_SHARE = 0.55;   // of the days off not spent on the street
 const dayHash = (name, day, seed) => { let h = (seed ^ Math.imul(day, 2654435761)) >>> 0; for (let i = 0; i < name.length; i++) h = Math.imul(h ^ name.charCodeAt(i), 16777619) >>> 0; h ^= h >>> 15; return (Math.imul(h, 0x2c1b3c6d) >>> 0) / 4294967296; };
 // Where a keeper spends today off: a place id, or null for the street. isOpen(placeId) can
 // rule a place out (the library's shut on Sundays). The same all day.
-export function dayOffSpot(name, day, seed = 0, isOpen = () => true) {
+export function dayOffSpot(name, day, seed = 0, isOpen = () => true, part = 0) {
   const prefs = (DAY_OFF[name] ?? []).filter(p => isOpen(p));
   if (!prefs.length) return null;
-  const r = dayHash(name, day, seed);
+  const r = dayHash(name, atPart(day, part), seed);
   if (r < STREET_CHANCE) return null;
   const u = (r - STREET_CHANCE) / (1 - STREET_CHANCE);
   if (prefs[0] === 'bar') {

@@ -64,7 +64,7 @@ export function seenHome(place, friends = [], seed = 0) {
   return { who: 'A patrol car', lines: ['Headlights pull up beside you. A tired officer leans out. “Little late for a walk. Get in, I’ll run you home.”', 'He drops you at your door and waits until the light goes on upstairs.'] };
 }
 const FRIEND_HOME = {
-  Kristen: 'Kristen falls into step beside you. “Four in the morning, shipmate. Come on. I’ve got you.” She walks you to your door and checks your pupils on the stoop.',
+  Kristen: 'Kristen falls into step beside you. “Middle of the night, shipmate. Come on. I’ve got you.” She walks you to your door and checks your pupils on the stoop.',
   Ryan: 'Ryan steps out of a doorway as if he’d been waiting. “Your carriage awaits.” It’s his old car. He drives you home doing card tricks at the red lights.',
   Erin: 'Erin’s car slows beside you. “Ryan said he saw you out. Get in, honey.” She drives you home and makes you promise to sleep.',
   Stuart: 'Stuart is suddenly beside you, as if he’d always been. “The dark’s getting curious about you. Let’s not.” He walks you home without a word.',
