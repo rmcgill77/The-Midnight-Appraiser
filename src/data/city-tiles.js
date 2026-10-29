@@ -12,6 +12,7 @@ import { bakePainter, makeCanvas } from '../engine/sprites.js';
 import { RNG } from '../engine/rng.js';
 import { iconRects } from '../rules/index.js';
 import { frontOf, mapIcon } from './places.js';
+import { buildStreetNet } from '../game/street-net.js';
 
 const C = {
   asphalt: '#1b1d24', asphaltLight: '#23262f', asphaltDark: '#14161b', lane: '#6b6550',
@@ -354,7 +355,7 @@ export function buildCityTiles(season = 'summer') {
   const paves = [paving(31), paving(32), paving(33)], alley = [cobbles(40), cobbles(41), cobbles(42)];
   const defs = {
     '=': { solid: false, art: roads },
-    '+': { solid: false, art: crossing() },
+    '+': { solid: false, art: roads },                      // (junctions are painted as smooth roads: decorateCity)
     ',': { solid: false, art: walks },
     '"': { solid: false, art: lawns },
     'p': { solid: false, art: lots },
@@ -623,104 +624,95 @@ function parkGate(g, x0, x1) {
 // Everything is drawn for a margin around the chunk too, so pieces that cross a chunk
 // edge (a car, a sign, a wide door) come out whole.
 // ---------- Phase 32b: the streets ----------
-// Streets are dressed after the tiles are laid, because what a road tile should look like depends on its
-// neighbours: curbs where it meets the pavement, lane markings down the middle, drains in the gutter, and
-// the odd manhole, crack, patch or oil stain so no two stretches look alike.
+// The roads are painted as true curves over the tile grid. The tiles still say where you can walk, but how a road
+// looks comes from its centre line (layout.streets: smooth curves in tile coordinates): every pixel works out how
+// far it is from the nearest street, and is asphalt, curb, or pavement by that. Where two streets meet the
+// distances are blended (a soft minimum), which rounds the corners of every junction, and a bend in a road is a
+// real bend, not a staircase of tiles. Lane lines run along the curves.
 const ROADISH = new Set(['=', '+', 'G']);
 const isRoadCh = c => ROADISH.has(c);
 const isWalkCh = c => c === ',';
-const span = (map, tx, ty, dx, dy) => { let n = 0; while (isRoadCh(map.at(tx + dx * (n + 1), ty + dy * (n + 1)))) n++; return n; };
-
 const CURB = { hi: '#555b72', mid: '#3d4256', lo: '#23262f', gutter: '#101217' };
-function dressRoad(g, map, tx, ty, h, season) {
-  const x = tx * 16, y = ty * 16, here = map.at(tx, ty);
-  const up = map.at(tx, ty - 1), down = map.at(tx, ty + 1), left = map.at(tx - 1, ty), right = map.at(tx + 1, ty);
-  // the gutter beside a curb, with a drain now and then
-  if (here === '=') {
-    if (isWalkCh(up)) { R(g, x, y, 16, 1, CURB.gutter); if (h % 7 === 0) { R(g, x + 5, y + 1, 5, 2, CURB.gutter); R(g, x + 6, y + 1, 1, 2, '#2a2d38'); R(g, x + 8, y + 1, 1, 2, '#2a2d38'); } }
-    if (isWalkCh(down)) { R(g, x, y + 15, 16, 1, CURB.gutter); if (h % 7 === 3) { R(g, x + 5, y + 13, 5, 2, CURB.gutter); R(g, x + 6, y + 13, 1, 2, '#2a2d38'); R(g, x + 8, y + 13, 1, 2, '#2a2d38'); } }
-    if (isWalkCh(left)) R(g, x, y, 1, 16, CURB.gutter);
-    if (isWalkCh(right)) R(g, x + 15, y, 1, 16, CURB.gutter);
-    if (season === 'autumn' && (isWalkCh(up) || isWalkCh(down)) && h % 3 === 0) { const gy = isWalkCh(up) ? y + 1 : y + 14; for (let i = 0; i < 4; i++) R(g, x + ((h >> (i + 2)) % 13) + 1, gy, 2, 1, i % 2 ? '#8a5a22' : '#6a3a1c'); }
-    if (season === 'winter' && (isWalkCh(up) || isWalkCh(down)) && h % 2 === 0) R(g, x + (h % 5), isWalkCh(up) ? y + 1 : y + 14, 6 + (h % 5), 1, '#6a7078');
-  }
-  // lane markings: a dashed line between the two middle lanes of a road (down its middle if it is two wide)
-  if (here === '=') {
-    const vUp = span(map, tx, ty, 0, -1), vDn = span(map, tx, ty, 0, 1), hL = span(map, tx, ty, -1, 0), hR = span(map, tx, ty, 1, 0);
-    const vN = vUp + vDn + 1, hN = hL + hR + 1;
-    if (hN > vN && vN >= 2 && vN <= 4) {                         // a road running left to right
-      if (isRoadCh(down) && vUp === Math.floor((vN - 1) / 2)) R(g, x + 1 + ((hL % 2) ? 8 : 0), y + 15, 6, 1, C.lane);
-    } else if (vN > hN && hN >= 2 && hN <= 4) {                  // a road running top to bottom
-      if (isRoadCh(right) && hL === Math.floor((hN - 1) / 2)) R(g, x + 15, y + 1 + ((vUp % 2) ? 8 : 0), 1, 6, C.lane);
+const SOFT = 5;           // how softly two streets blend (px): the rounding at a junction
+const CURB_W = 3;         // px of curb stone beside the asphalt
+
+const unit = (a, b, c = 0) => { let n = Math.imul(a, 73856093) ^ Math.imul(b, 19349663) ^ Math.imul(c, 83492791); n = Math.imul(n ^ (n >>> 15), 0x2c1b3c6d); n = Math.imul(n ^ (n >>> 12), 0x297a2d39); return ((n ^ (n >>> 15)) >>> 0) / 4294967296; };
+const slab = (px, py) => { const li = px & 15, lj = py & 15; return lj === 7 || lj === 15 || (li === 7 && lj < 7) || (li === 11 && lj > 7) ? C.paveLine : unit(px, py, 3) < 0.04 ? C.paveLight : C.pave; };
+
+// The streets are painted into a block of raw pixels and put on the map in one go (far quicker than a rectangle per
+// pixel). Only what is painted is drawn: the rest stays transparent, so the tile art shows through.
+const RGB = new Map();
+const rgbOf = hex => { let v = RGB.get(hex); if (!v) { v = [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16)); RGB.set(hex, v); } return v; };
+class PixelBlock {
+  constructor(x0, y0, w, h) { this.x0 = x0; this.y0 = y0; this.w = w; this.h = h; this.data = new Uint8ClampedArray(w * h * 4); }
+  rect(x, y, w, h, hex) {
+    const [r, g, b] = rgbOf(hex);
+    for (let j = Math.max(0, y - this.y0); j < Math.min(this.h, y - this.y0 + h); j++) for (let i = Math.max(0, x - this.x0); i < Math.min(this.w, x - this.x0 + w); i++) {
+      const o = (j * this.w + i) * 4; this.data[o] = r; this.data[o + 1] = g; this.data[o + 2] = b; this.data[o + 3] = 255;
     }
   }
-  // wear: a crack, a patch of newer tar, an oil stain, a manhole
-  if (here === '=') {
-    const k = h % 41;
-    if (k === 0) { const px = x + 3 + (h >> 3) % 8, py = y + 3 + (h >> 6) % 8; R(g, px, py, 1, 3, '#0c0d11'); R(g, px + 1, py + 2, 2, 1, '#0c0d11'); R(g, px + 3, py + 3, 1, 2, '#0c0d11'); }
-    else if (k === 1) { R(g, x + 3, y + 4, 9, 6, '#181a20'); R(g, x + 3, y + 4, 9, 1, '#1f222a'); }
-    else if (k === 2) { R(g, x + 5, y + 6, 6, 4, 'rgba(10,8,18,0.55)'); R(g, x + 6, y + 7, 3, 1, 'rgba(60,46,86,0.45)'); }
-    else if (k === 3 && isRoadCh(up) && isRoadCh(down)) {         // a manhole
-      R(g, x + 4, y + 4, 8, 8, '#2a2c34'); R(g, x + 5, y + 3, 6, 10, '#2a2c34'); R(g, x + 5, y + 5, 6, 6, '#1a1c22');
-      R(g, x + 5, y + 8, 6, 1, '#2a2c34'); R(g, x + 8, y + 5, 1, 6, '#2a2c34'); R(g, x + 5, y + 5, 6, 1, '#3a3d48');
-    }
-  }
-  // rounded corners where the pavement turns the road's edge: both neighbours at that corner are not road
-  const nonRoad = c => !isRoadCh(c) && c !== '#' && c !== '~';
-  const corners = [[up, left, 0], [up, right, 1], [down, left, 2], [down, right, 3]];
-  for (const [n1, n2, k] of corners) if (nonRoad(n1) && nonRoad(n2) && (isWalkCh(n1) || isWalkCh(n2))) fillet(g, x, y, k, FILLET, C.pave, true);
-  if (here === '+') {
-    // a stop line before the crossing on the way in
-    const horiz = isRoadCh(left) || isRoadCh(right);
-    void horiz;
+  flush(g) {
+    const cv = makeCanvas(this.w, this.h), c = cv.getContext('2d');
+    c.putImageData(new ImageData(this.data, this.w, this.h), 0, 0);
+    g.drawImage(cv, this.x0, this.y0);
   }
 }
 
-// Rounded corners (Phase 32b): where a road turns, or steps along a diagonal, its edge should curve, not
-// make a square notch. fillet() rounds one corner of a tile: the pixels outside a quarter circle go to
-// `fill`, and the curb is drawn as an arc around it. corner: 0 NW, 1 NE, 2 SW, 3 SE.
-function fillet(g, x, y, corner, r, fill, roadInside) {
-  const ex = corner % 2 === 1, sy = corner >= 2;
-  for (let b = 0; b < r; b++) for (let a = 0; a < r; a++) {
-    const d = Math.hypot(a + 0.5 - r, b + 0.5 - r);
+// Paint one tile: asphalt, lane lines, curbs and pavement from the street net.
+function paintStreetTile(g, net, tx, ty, ch, h, season) {
+  const x0 = tx * 16, y0 = ty * 16, road = isRoadCh(ch);
+  const mid = net.field(x0 + 8, y0 + 8);
+  if (!mid) { if (road) for (let j = 0; j < 16; j++) for (let i = 0; i < 16; i++) g.rect(x0 + i, y0 + j, 1, 1, slab(x0 + i, y0 + j)); return; }
+  // f changes by at most 1 px per px, so a tile whose centre is far enough in or out is all one thing
+  const inside = mid.f < -13, outside = mid.f > CURB_W + 13;
+  if (outside && !road) return;
+  const off = mid.w === 2 ? 0 : mid.w === 3 ? 8 : -99;
+  const lanes = inside && mid.close < 2 && Math.abs(mid.d - off) < 13;       // might a lane line cross this tile?
+  for (let j = 0; j < 16; j++) {
+   let runCol = null, runX = 0;                               // a row's pixels are drawn in runs of one colour
+   for (let i = 0; i <= 16; i++) {
+    const px = x0 + i, py = y0 + j;
     let col = null;
-    if (roadInside) {                                         // a road corner: the road is the circle, curb and pavement beyond it
-      if (d > r) col = d <= r + 1 ? CURB.hi : d <= r + 2 ? CURB.mid : CURB.lo;
-    } else if (d > r) col = fill;                             // a pavement corner: the road fills what is outside the circle
-    else if (d > r - 1) col = CURB.hi; else if (d > r - 2) col = CURB.mid; else if (d > r - 3) col = CURB.lo;
-    if (col != null) R(g, x + (ex ? 15 - a : a), y + (sy ? 15 - b : b), 1, 1, col);
+    if (i === 16) { if (runCol != null) g.rect(x0 + runX, py, 16 - runX, 1, runCol); break; }
+    if (inside && !lanes) col = unit(px, py, 1) < 0.07 ? C.asphaltLight : unit(px, py, 2) < 0.05 ? C.asphaltDark : C.asphalt;
+    else if (outside) col = slab(px, py);
+    else {
+      const F = net.field(px + 0.5, py + 0.5);
+      if (!F) col = road ? slab(px, py) : null;
+      else if (F.f <= 0) {
+        col = unit(px, py, 1) < 0.07 ? C.asphaltLight : unit(px, py, 2) < 0.05 ? C.asphaltDark : C.asphalt;
+        // lane lines: the dividing line down a two-wide road (two of them on a wider one), dashed, broken at junctions
+        if (F.close < 2 && F.f < -1.5 && Math.abs(F.d - off) <= 0.5 && (F.s % 16) < 9) col = C.lane;
+        // the gutter: a darker strip, with leaves in the autumn and slush in the winter
+        else if (F.f > -1.5) {
+          col = C.asphaltDark;
+          if (season === 'autumn' && unit(px, py, 4) < 0.18) col = ['#6a3a1c', '#8a5a22', '#5a2a18'][(px + py) % 3];
+          if (season === 'winter' && unit(px, py, 5) < 0.3) col = '#6a7078';
+        }
+      } else if (F.f <= CURB_W) col = F.f <= 1 ? CURB.hi : F.f <= 2 ? CURB.mid : CURB.lo;
+      else if (road) col = slab(px, py);
+    }
+    if (col !== runCol) { if (runCol != null) g.rect(x0 + runX, py, i - runX, 1, runCol); runCol = col; runX = i; }
+   }
   }
-}
-const FILLET = 6;
-
-function dressWalk(g, map, tx, ty, h, season) {
-  const x = tx * 16, y = ty * 16;
-  const up = map.at(tx, ty - 1), down = map.at(tx, ty + 1), left = map.at(tx - 1, ty), right = map.at(tx + 1, ty);
-  // the curb: a raised stone edge where the pavement meets the road
-  const curb = (cx, cy, w, hgt, horizontal) => {
-    if (horizontal) { R(g, cx, cy, w, 1, CURB.hi); R(g, cx, cy + 1, w, 1, CURB.mid); R(g, cx, cy + 2, w, 1, CURB.lo); }
-    else { R(g, cx, cy, 1, hgt, CURB.hi); R(g, cx + 1, cy, 1, hgt, CURB.mid); R(g, cx + 2, cy, 1, hgt, CURB.lo); }
-  };
-  if (isRoadCh(up)) curb(x, y, 16, 0, true);
-  if (isRoadCh(down)) { R(g, x, y + 13, 16, 1, CURB.lo); R(g, x, y + 14, 16, 1, CURB.mid); R(g, x, y + 15, 16, 1, CURB.hi); }
-  if (isRoadCh(left)) curb(x, y, 0, 16, false);
-  if (isRoadCh(right)) { R(g, x + 13, y, 1, 16, CURB.lo); R(g, x + 14, y, 1, 16, CURB.mid); R(g, x + 15, y, 1, 16, CURB.hi); }
-  // the pavement's corner, where it bulges into a road on two sides: round it
-  const corners = [[up, left, 0], [up, right, 1], [down, left, 2], [down, right, 3]];
-  for (const [n1, n2, k] of corners) if (isRoadCh(n1) && isRoadCh(n2)) fillet(g, x, y, k, FILLET, C.asphalt, false);
-  // a dropped kerb where a crossing meets the pavement (a ramp, with its bumpy yellow strip)
-  if (map.at(tx, ty - 1) === '+' || map.at(tx, ty + 1) === '+') {
-    const yy = map.at(tx, ty - 1) === '+' ? y : y + 13;
-    for (let i = 0; i < 16; i += 2) R(g, x + i, yy, 1, 3, '#8a7a3a');
+  // wear, only well inside the road: a crack, a patch of newer tar, an oil stain, a manhole
+  if (road && mid.f < -9 && mid.close < 2) {
+    const k = h % 41, x = x0, y = y0;
+    if (k === 0) { const px = x + 3 + (h >> 3) % 8, py = y + 3 + (h >> 6) % 8; g.rect(px, py, 1, 3, '#0c0d11'); g.rect(px + 1, py + 2, 2, 1, '#0c0d11'); g.rect(px + 3, py + 3, 1, 2, '#0c0d11'); }
+    else if (k === 1) { g.rect(x + 3, y + 4, 9, 6, '#181a20'); g.rect(x + 3, y + 4, 9, 1, '#1f222a'); }
+    else if (k === 2) { g.rect(x + 5, y + 6, 6, 4, '#17121f'); g.rect(x + 6, y + 7, 3, 1, '#2a2236'); }
+    else if (k === 3) { g.rect(x + 4, y + 4, 8, 8, '#2a2c34'); g.rect(x + 5, y + 3, 6, 10, '#2a2c34'); g.rect(x + 5, y + 5, 6, 6, '#1a1c22'); g.rect(x + 5, y + 8, 6, 1, '#2a2c34'); g.rect(x + 8, y + 5, 1, 6, '#2a2c34'); g.rect(x + 5, y + 5, 6, 1, '#3a3d48'); }
   }
-  // wear and litter
-  const k = h % 29;
-  if (k === 0) R(g, x + 3 + (h >> 4) % 9, y + 3 + (h >> 7) % 9, 2, 1, '#4a4c50');             // a stain
-  if (k === 1) { const px = x + 2 + (h >> 5) % 10, py = y + 2 + (h >> 8) % 10; R(g, px, py, 1, 2, '#1c1e24'); R(g, px + 1, py + 2, 1, 1, '#1c1e24'); }   // a crack
-  if (k === 2) R(g, x + 4 + (h >> 3) % 8, y + 5 + (h >> 6) % 7, 1, 1, '#5a5a62');             // chewing gum, mostly
-  if (season === 'autumn' && h % 4 === 0) for (let i = 0; i < 3; i++) R(g, x + ((h >> (i + 1)) % 14), y + ((h >> (i + 5)) % 14), 2, 1, ['#8a5a22', '#6a3a1c', '#a0602a'][i]);
-  if (season === 'winter' && h % 5 === 0) R(g, x + (h % 8), y + 8 + (h >> 3) % 6, 4, 2, 'rgba(120,130,140,0.35)');
-  if (season === 'spring' && h % 6 === 0) R(g, x + (h >> 2) % 14, y + (h >> 5) % 14, 2, 1, '#c98a9a');   // blossom petals
+  // the pavement's own wear and litter, off the road
+  if (isWalkCh(ch) && mid.f > 4) {
+    const k = h % 29, x = x0, y = y0;
+    if (k === 0) g.rect(x + 3 + (h >> 4) % 9, y + 3 + (h >> 7) % 9, 2, 1, '#4a4c50');
+    if (k === 1) { const px = x + 2 + (h >> 5) % 10, py = y + 2 + (h >> 8) % 10; g.rect(px, py, 1, 2, '#1c1e24'); g.rect(px + 1, py + 2, 1, 1, '#1c1e24'); }
+    if (k === 2) g.rect(x + 4 + (h >> 3) % 8, y + 5 + (h >> 6) % 7, 1, 1, '#5a5a62');
+    if (season === 'autumn' && h % 4 === 0) for (let i = 0; i < 3; i++) g.rect(x + ((h >> (i + 1)) % 14), y + ((h >> (i + 5)) % 14), 2, 1, ['#8a5a22', '#6a3a1c', '#a0602a'][i]);
+    if (season === 'winter' && h % 5 === 0) g.rect(x + (h % 8), y + 8 + (h >> 3) % 6, 4, 2, '#4a5058');
+    if (season === 'spring' && h % 6 === 0) g.rect(x + (h >> 2) % 14, y + (h >> 5) % 14, 2, 1, '#c98a9a');
+  }
 }
 
 // A roundabout or a turning circle, painted as a true circle over the tiles that approximate it: the road
@@ -759,8 +751,17 @@ function paintCircle(g, map, c, r) {
 
 export function decorateCity(layout, DATA, tiles, extra = []) {
   const locOf = id => DATA.locations.find(l => l.id === id) ?? extra.find(l => l.id === id);
+  const net = layout.streets?.length ? buildStreetNet(layout.streets) : null;
   return (g, map, r) => {
     const m = 3, tx0 = r.tx0 - m, tx1 = r.tx1 + m, ty0 = r.ty0 - m, ty1 = r.ty1 + m;
+    if (net) {
+      const bx0 = Math.max(0, r.tx0), by0 = Math.max(0, r.ty0), bx1 = Math.min(map.cols - 1, r.tx1), by1 = Math.min(map.rowsN - 1, r.ty1);   // (each tile's pixels stay in its own chunk)
+      if (bx1 >= bx0 && by1 >= by0) {
+        const buf = new PixelBlock(bx0 * 16, by0 * 16, (bx1 - bx0 + 1) * 16, (by1 - by0 + 1) * 16);
+        for (let ty = by0; ty <= by1; ty++) for (let tx = bx0; tx <= bx1; tx++) { const ch = map.at(tx, ty); if (isRoadCh(ch) || isWalkCh(ch)) paintStreetTile(buf, net, tx, ty, ch, mixHash(tx, ty), tiles.season ?? 'summer'); }
+        buf.flush(g);
+      }
+    }
     for (let ty = ty0; ty <= ty1; ty++) for (let tx = tx0; tx <= tx1; tx++) {
       const ch = map.at(tx, ty), x = tx * 16, y = ty * 16, h = mixHash(tx, ty);
       if (isRoof(ch) && isFace(map.at(tx, ty + 1))) {
@@ -779,10 +780,6 @@ export function decorateCity(layout, DATA, tiles, extra = []) {
         const d = districtOf([map.at(tx - 1, ty), map.at(tx + 1, ty), map.at(tx, ty - 1)].find(isFace) ?? 'a');
         frontRow(g, x, y, d, 2, h, false, false);
         houseDoor(g, x, y - 16, d);
-      } else if (isRoadCh(ch)) {
-        dressRoad(g, map, tx, ty, h, tiles.season ?? 'summer');
-      } else if (isWalkCh(ch)) {
-        dressWalk(g, map, tx, ty, h, tiles.season ?? 'summer');
       } else if (ch === 'c') {
         car(g, x + 1, y - 14, C.car[h % C.car.length]);
       } else if (ch === '~') {

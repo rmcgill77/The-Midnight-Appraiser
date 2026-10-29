@@ -34,7 +34,8 @@ export const BEACH = { x0: 150, x1: 152 };
 // The river: where it runs (its middle, by row) and how wide it is.
 export const RIVER = { width: 5, midAt: y => 60 + Math.round(3 * Math.sin(y / 19 + 0.5) + 1.2 * Math.sin(y / 7.3 + 2)) };
 // The waterfront road's top row, by column. The quay is below it, then the dunes.
-export const coastAt = x => 118 + Math.round(1.5 * Math.sin(x / 23 + 0.7));
+export const coastAtF = x => 118 + 1.5 * Math.sin(x / 23 + 0.7);
+export const coastAt = x => Math.round(coastAtF(x));
 
 const DISTRICT_ROOF = { oldmarket: 'a', westside: 'w', kessler: 'k', eastgate: 'e', narrows: 'n', harbor: 'h' };
 
@@ -57,14 +58,15 @@ const SLANTS = [
 ];
 
 // Smooth curve through points [[t, v], ...] (t increasing): the value at t, rounded.
-function along(pts, t) {
+function alongF(pts, t) {
   if (t <= pts[0][0]) return pts[0][1];
   for (let i = 1; i < pts.length; i++) if (t <= pts[i][0]) {
     const [t0, v0] = pts[i - 1], [t1, v1] = pts[i], f = (t - t0) / (t1 - t0);
-    return Math.round(v0 + (v1 - v0) * (1 - Math.cos(Math.PI * f)) / 2);
+    return v0 + (v1 - v0) * (1 - Math.cos(Math.PI * f)) / 2;
   }
   return pts[pts.length - 1][1];
 }
+const along = (pts, t) => Math.round(alongF(pts, t));
 // Points every `step` along 0..len, wandering up to `a` from `base` (never so steeply that a
 // two-wide street comes apart).
 function wander(rng, base, a, len, step) {
@@ -86,6 +88,9 @@ const LOC_W = 12;   // a location's building; one tile of grass either side
 
 // `extra` are this game's own places (data/places.js): they take their spots after the
 // original's locations, so those never move.
+// Points along a curve: f(t) for t from `a` to `b` every `step`, and the end.
+const sample = (a, b, step, f) => { const out = []; for (let t = a; t < b; t += step) out.push(f(t)); out.push(f(b)); return out; };
+
 export function buildCityLayout(DATA, extra = [], { stops = [] } = {}) {
   const { W, H } = CITY;
   const g = Array.from({ length: H }, () => Array(W).fill('?'));
@@ -95,6 +100,9 @@ export function buildCityLayout(DATA, extra = [], { stops = [] } = {}) {
   const rng = new RNG('second-sight-city');
 
   // ---------- streets ----------
+  // Phase 32c: the centre line of every street as a smooth curve, tile coordinates (the middle of a tile is x+0.5), for
+  // painting the roads as true curves over the tile grid (the tiles say where you can walk; this says what it looks like).
+  const streets = [];
   const road = new Int16Array(W * H), lane = new Uint8Array(W * H), cross = new Uint8Array(W * H);
   const mark = (x, y, id, ns) => { if (!inside(x, y)) return; const i = y * W + x; if (road[i] && ns !== (road[i] > 0)) cross[i] = 1; if (!road[i] || ns) road[i] = ns ? 1 : -(id + 1); };
   const ns = NS.map(s => ({ ...s, w: s.w ?? 2, pts: wander(rng, s.x, s.a, H, 26) }));
@@ -118,12 +126,17 @@ export function buildCityLayout(DATA, extra = [], { stops = [] } = {}) {
           else mark(x, y + k, j, false);
         }
       }
+      if (!path && b > a) streets.push({ w: s.w, pts: sample(a, b + 1, 3, x => ({ x, y: alongF(s.pts, Math.min(x, b)) + s.w / 2 })) });
     }
   });
   // The old roads on the slant.
-  SLANTS.forEach((r, j) => { for (let x = r.pts[0][0]; x <= r.pts[r.pts.length - 1][0]; x++) { const y = along(r.pts, x); mark(x, y, 50 + j, false); mark(x, y + 1, 50 + j, false); } });
+  SLANTS.forEach((r, j) => {
+    for (let x = r.pts[0][0]; x <= r.pts[r.pts.length - 1][0]; x++) { const y = along(r.pts, x); mark(x, y, 50 + j, false); mark(x, y + 1, 50 + j, false); }
+    streets.push({ w: 2, pts: sample(r.pts[0][0], r.pts[r.pts.length - 1][0] + 1, 3, x => ({ x, y: alongF(r.pts, Math.min(x, r.pts[r.pts.length - 1][0])) + 1 })) });
+  });
   // The waterfront road along the harbor.
   for (let x = 1; x < W - 1; x++) for (let k = 0; k < 3; k++) mark(x, coastAt(x) + k, 99, false);
+  streets.push({ w: 3, pts: sample(1, W - 1, 3, x => ({ x, y: coastAtF(Math.min(x, W - 2)) + 1.5 })) });
   // North-south streets, stretch by stretch (between east-west streets): a road, a
   // footpath, or nothing (a long block, the street stopping at a T).
   ns.forEach((s, i) => {
@@ -139,6 +152,7 @@ export function buildCityLayout(DATA, extra = [], { stops = [] } = {}) {
           else if (kind === 'path' && c === 0) lane[y * W + x0] = 1;
         }
       }
+      if (kind === 'road' && yB > yA) streets.push({ w: s.w, pts: sample(yA, yB + 1, 3, y => ({ x: alongF(s.pts, Math.min(y, yB)) + s.w / 2, y })) });
     }
   });
   // ---------- Phase 32c: no street just ends ----------
@@ -150,6 +164,15 @@ export function buildCityLayout(DATA, extra = [], { stops = [] } = {}) {
   let woodsPair = null;
   for (let x = GATE.x0 - 21; x > 2 && !woodsPair; x--) if (road[W + x] && road[W + x - 1] && !road[W + x + 1]) woodsPair = { x0: x - 1, x1: x };
   for (let x = 1; x <= W - 2; x++) if (!woodsPair || x < woodsPair.x0 - 2 || x > woodsPair.x1 + 2) for (const y of [1, 2]) mark(x, y, 92, false);
+  {
+    let a = null;
+    for (let x = 1; x <= W - 1; x++) {
+      const on = x <= W - 2 && (!woodsPair || x < woodsPair.x0 - 2 || x > woodsPair.x1 + 2);
+      if (on && a === null) a = x;
+      if (!on && a !== null) { if (x - a >= 2) streets.push({ w: 2, pts: [{ x: a, y: 2 }, { x, y: 2 }] }); a = null; }
+    }
+  }
+  streets.push({ w: 2, pts: [{ x: 2, y: yTop }, { x: 2, y: coastAt(1) + 3 }] }, { w: 2, pts: [{ x: W - 2, y: yTop }, { x: W - 2, y: coastAt(W - 2) + 3 }] });
   for (let y = yTop; y <= coastAt(1) + 2; y++) for (const x of [1, 2]) mark(x, y, 90, true);
   for (let y = yTop; y <= coastAt(W - 2) + 2; y++) for (const x of [W - 3, W - 2]) mark(x, y, 91, true);
   // A roundabout where Garden Street (the long north-south street at x 90) meets the street at y 50.
@@ -195,6 +218,7 @@ export function buildCityLayout(DATA, extra = [], { stops = [] } = {}) {
       if (!best) continue;
       const { x, edge } = best;
       for (let k = 0; k < LEN; k++) for (const c of [0, 1]) mark(x + c, edge + side * k, 130 + spurs.length, true);
+      streets.push({ w: 2, pts: [{ x: x + 1, y: edge + (side < 0 ? 1 : 0) }, { x: x + 1, y: edge + side * (LEN + 2.4) }] });
       stampCircle(x + 1, edge + side * (LEN + 2.4), R_IN, R_OUT, 140 + spurs.length, 'cul-de-sac', [{ axis: 'y', dir: -side }]);
       spurs.push({ x, y: edge, side, cx: x + 1, cy: edge + side * (LEN + 2.4) });
     }
@@ -497,7 +521,7 @@ export function buildCityLayout(DATA, extra = [], { stops = [] } = {}) {
     rows: g.map(r => r.join('')),
     blocks: blocks.map(({ cells, spans, ...b }) => ({ ...b, size: cells.length })),
     locs, doors, busStops, plaza, river, gate, beach, docks, woods, beachArchY,
-    circles, spurs,
+    circles, spurs, streets,
     spawn: home.stand,
     blockAt(tx, ty) { const i = inside(tx, ty) ? regionOf[ty * W + tx] : -1; return i >= 0 ? this.blocks[i] : null; },
     districtAt(tx, ty) {

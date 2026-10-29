@@ -9,15 +9,21 @@ await startNewGame(page); await clearCards(page).catch(() => {});
 const setMinute = m => page.evaluate(m => { const c = __tma.clock.cycle; c.t = Math.floor(c.t / 1440) * 1440 + m; }, m);
 await setMinute(17 * 60 + 30);
 await page.evaluate(() => __tma.placeAt('city', 92, 60));
+const net = await page.evaluate(() => ({ streets: __tma.cityLayout.streets, circles: __tma.cityLayout.circles, rows: __tma.cityLayout.rows }));
+const segDist = (px, py, ax, ay, bx, by) => { const dx = bx - ax, dy = by - ay, t = Math.max(0, Math.min(1, ((px - ax) * dx + (py - ay) * dy) / (dx * dx + dy * dy || 1))); return Math.hypot(px - ax - dx * t, py - ay - dy * t); };
+// on a road = within a street's width of its centre line (or on a bridge, or in a circle), in pixels
+const onRoad = (x, y) => {
+  if ('u'.includes(net.rows[Math.floor(y / 16)]?.[Math.floor(x / 16)])) return true;
+  for (const c of net.circles) if (Math.hypot(x - c.x * 16, y - c.y * 16) <= (c.rOut + 0.6) * 16) return true;
+  for (const st of net.streets) for (let k = 0; k + 1 < st.pts.length; k++) if (segDist(x, y, st.pts[k].x * 16, st.pts[k].y * 16, st.pts[k + 1].x * 16, st.pts[k + 1].y * 16) <= st.w * 8 + 3) return true;
+  return false;
+};
 let rush = 0, seen = 0, offRoad = 0, kinds = new Set();
 for (let i = 0; i < 12; i++) {
   await page.waitForTimeout(1500);
-  const s = await page.evaluate(() => {
-    const rows = __tma.cityLayout.rows;
-    return __tma.vehicles.list.map(v => ({ kind: v.kind, ch: rows[Math.floor(v.y / 16)]?.[Math.floor(v.x / 16)], speed: v.speed }));
-  });
+  const s = await page.evaluate(() => __tma.vehicles.list.map(v => ({ kind: v.kind, x: v.x, y: v.y })));
   rush = Math.max(rush, s.length);
-  for (const v of s) { seen++; kinds.add(v.kind); if (!'=+uG'.includes(v.ch)) offRoad++; }
+  for (const v of s) { seen++; kinds.add(v.kind); if (!onRoad(v.x, v.y)) offRoad++; }
 }
 assert.ok(rush >= 5, `only ${rush} vehicles in the rush hour`);
 assert.equal(offRoad, 0, 'a vehicle left the road');

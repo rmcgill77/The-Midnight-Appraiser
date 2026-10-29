@@ -35,6 +35,7 @@ import { skylight } from './game/skylight.js';
 import { drawSunShadows, drawFigureShadow } from './ui/sun-shadows.js';
 import { Vehicles, density as trafficDensity, KINDS as VEHICLE_KINDS } from './game/vehicles.js';
 import { vehicleSprite } from './ui/vehicle-art.js';
+import { buildStreetNet } from './game/street-net.js';
 import * as EX from './game/exhaustion.js';
 import * as AP from './game/appraisals.js';
 import * as TR from './game/traffic.js';
@@ -274,7 +275,9 @@ let world = freshWorld();
 let rng = new RNG(1), target = null, time = 0;
 let crowd = null;
 let pedestrians = null, lastDistrict = null;
-let vehicles = null;   // Phase 32: cars, scooters and bikes on the roads (game/vehicles.js), made when you first reach the street
+let vehicles = null;
+let streetNetCache = null;
+const streetNet = () => (streetNetCache ??= buildStreetNet(cityLayout.streets));   // Phase 32: cars, scooters and bikes on the roads (game/vehicles.js), made when you first reach the street
 let light = makeCanvas(1, 1), lg = light.getContext('2d');
 
 function freshWorld() {
@@ -2108,7 +2111,7 @@ function update(dt) {
     if (world.room === 'city') {
       syncKeepers(dt);
       pedestrians?.update(dt);
-      vehicles ??= new Vehicles(maps.city, new RNG(`traffic:${st?.seed ?? 0}`));
+      vehicles ??= new Vehicles(maps.city, new RNG(`traffic:${st?.seed ?? 0}`), { snap: streetNet().lanePoint });
       if (st) vehicles.update(dt, {
         player: { x: player.center.x, y: player.center.y },
         density: trafficDensity(clock.minuteOfDay) * (nightCity() ? 0.5 : 1),
