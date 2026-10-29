@@ -22,6 +22,46 @@ export function buildStreetNet(streets, tile = 16) {
       arc += len;
     }
   });
+  // Zebra crossings: where two streets cross or meet, a crossing over each arm that carries on (a crossing is a row of
+  // stripes laid across the street, just outside the junction).
+  const crossings = [], crossCells = new Map();
+  const distToStreet = (si, px, py) => { let best = Infinity; for (const g of segs) { if (g.si !== si) continue; const dx = g.bx - g.ax, dy = g.by - g.ay; let t = ((px - g.ax) * dx + (py - g.ay) * dy) / (g.len * g.len); t = t < 0 ? 0 : t > 1 ? 1 : t; best = Math.min(best, Math.hypot(px - g.ax - dx * t, py - g.ay - dy * t)); } return best; };
+  {
+    const seen = [];
+    for (let i = 0; i < segs.length; i++) for (let j = i + 1; j < segs.length; j++) {
+      const a = segs[i], b = segs[j];
+      if (a.si === b.si) continue;
+      const rx = a.bx - a.ax, ry = a.by - a.ay, sx = b.bx - b.ax, sy = b.by - b.ay, den = rx * sy - ry * sx;
+      if (Math.abs(den) < 1e-6) continue;
+      const t = ((b.ax - a.ax) * sy - (b.ay - a.ay) * sx) / den, u = ((b.ax - a.ax) * ry - (b.ay - a.ay) * rx) / den;
+      const slack = 0.08;
+      if (t < -slack || t > 1 + slack || u < -slack || u > 1 + slack) continue;
+      const px = a.ax + rx * t, py = a.ay + ry * t;
+      if (seen.some(q => Math.hypot(q.x - px, q.y - py) < 12 && ((q.a === a.si && q.b === b.si) || (q.a === b.si && q.b === a.si)))) continue;
+      seen.push({ x: px, y: py, a: a.si, b: b.si });
+      for (const [g, other] of [[a, b], [b, a]]) {
+        const dx = (g.bx - g.ax) / g.len, dy = (g.by - g.ay) / g.len;
+        for (const sgn of [-1, 1]) {
+          const reach = other.hw + 16;
+          if (distToStreet(g.si, px + sgn * dx * reach, py + sgn * dy * reach) > 5) continue;        // the street stops at the junction on this side
+          const off = other.hw + 9, cx = px + sgn * dx * off, cy = py + sgn * dy * off;
+          const c = { cx, cy, dx, dy, half: g.hw - 2, depth: 4 };
+          const id = crossings.push(c) - 1;
+          for (let gx = Math.floor((cx - g.hw) / CELL); gx <= Math.floor((cx + g.hw) / CELL); gx++) for (let gy = Math.floor((cy - g.hw) / CELL); gy <= Math.floor((cy + g.hw) / CELL); gy++) { const k = gx * 100003 + gy; let l = crossCells.get(k); if (!l) crossCells.set(k, l = []); l.push(id); }
+        }
+      }
+    }
+  }
+  // Is this point a stripe of a crossing?
+  function crosswalk(px, py) {
+    const ids = crossCells.get(Math.floor(px / CELL) * 100003 + Math.floor(py / CELL));
+    if (!ids) return false;
+    for (const id of ids) {
+      const c = crossings[id], rx = px - c.cx, ry = py - c.cy, along = rx * c.dx + ry * c.dy, across = -rx * c.dy + ry * c.dx;
+      if (Math.abs(along) <= c.depth && Math.abs(across) <= c.half) return Math.floor((across + c.half) / 3) % 2 === 0;
+    }
+    return false;
+  }
   const bs = [], bd = [], bsArc = [], bw = [], bhw = [];       // the nearest approach to each street near a point (reused)
   // At a point: f (negative inside the asphalt: px from the edge, blended across streets), and the nearest street's
   // distance, arc position and width (for the lane lines) and how many streets are close.
@@ -46,6 +86,6 @@ export function buildStreetNet(streets, tile = 16) {
     }
     return { f: -SOFT * Math.log(sum), d: bd[nk], s: bsArc[nk], w: bw[nk], close };
   }
-  return { field, segs };
+  return { field, segs, crosswalk, crossings };
 }
 

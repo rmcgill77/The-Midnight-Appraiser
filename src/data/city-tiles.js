@@ -674,21 +674,23 @@ function paintStreetTile(g, net, tx, ty, ch, h, season) {
   if (outside && !road) return;
   const off = mid.w === 2 ? 0 : mid.w === 3 ? 8 : -99;
   const lanes = inside && mid.close < 2 && Math.abs(mid.d - off) < 13;       // might a lane line cross this tile?
+  const stripes = net.crossings.length && inside && net.crosswalk(x0 + 8, y0 + 8) !== undefined && net.crossings.some(c => Math.hypot(c.cx - (x0 + 8), c.cy - (y0 + 8)) < c.half + 14);   // might a zebra crossing?
   for (let j = 0; j < 16; j++) {
    let runCol = null, runX = 0;                               // a row's pixels are drawn in runs of one colour
    for (let i = 0; i <= 16; i++) {
     const px = x0 + i, py = y0 + j;
     let col = null;
     if (i === 16) { if (runCol != null) g.rect(x0 + runX, py, 16 - runX, 1, runCol); break; }
-    if (inside && !lanes) col = unit(px, py, 1) < 0.07 ? C.asphaltLight : unit(px, py, 2) < 0.05 ? C.asphaltDark : C.asphalt;
+    if (inside && !lanes && !stripes) col = unit(px, py, 1) < 0.07 ? C.asphaltLight : unit(px, py, 2) < 0.05 ? C.asphaltDark : C.asphalt;
     else if (outside) col = slab(px, py);
     else {
       const F = net.field(px + 0.5, py + 0.5);
       if (!F) col = road ? slab(px, py) : null;
       else if (F.f <= 0) {
         col = unit(px, py, 1) < 0.07 ? C.asphaltLight : unit(px, py, 2) < 0.05 ? C.asphaltDark : C.asphalt;
-        // lane lines: the dividing line down a two-wide road (two of them on a wider one), dashed, broken at junctions
-        if (F.close < 2 && F.f < -1.5 && Math.abs(F.d - off) <= 0.5 && (F.s % 16) < 9) col = C.lane;
+        // zebra crossings, lane lines: the dividing line down a two-wide road (two of them on a wider one), dashed, broken at junctions
+        if (F.f < -1.5 && net.crosswalk(px + 0.5, py + 0.5)) col = '#8a8678';
+        else if (F.close < 2 && F.f < -1.5 && Math.abs(F.d - off) <= 0.5 && (F.s % 16) < 9) col = C.lane;
         // the gutter: a darker strip, with leaves in the autumn and slush in the winter
         else if (F.f > -1.5) {
           col = C.asphaltDark;
@@ -736,7 +738,7 @@ function paintCircle(g, map, c, r) {
   });
   for (let ty = ty0; ty <= ty1; ty++) for (let tx = tx0; tx <= tx1; tx++) {
     const ch = map.at(tx, ty), td = Math.hypot(tx + 0.5 - c.x, ty + 0.5 - c.y);
-    const ringTile = ch === '=' || ch === '+', islandTile = (ch === ',' || ch === 'T') && td < c.rIn + 1.2, apron = ch === ',' && td >= c.rIn + 1.2 && td < c.rOut + 1.8;
+    const ringTile = ch === '=' || ch === '+', islandTile = (ch === ',' || ch === 'T') && td < c.rIn + 1.2, apron = (ch === ',' || OVERLAPPED.has(ch)) && td >= c.rIn + 1.2 && td < c.rOut + 2.4;
     if (!ringTile && !islandTile && !apron) continue;
     for (let j = 0; j < T; j++) for (let i = 0; i < T; i++) {
       const px = tx * T + i, py = ty * T + j, D = Math.hypot(px + 0.5 - cx, py + 0.5 - cy) / T;
@@ -748,7 +750,7 @@ function paintCircle(g, map, c, r) {
       } else if (D <= c.rOut) {
         if (islandTile || ringTile || apron) col = D < c.rIn + 0.12 ? CURB.lo : ((px * 7 + py * 3) % 53 === 0 ? C.asphaltLight : C.asphalt);
       } else if (!inEntry(px, py) && (ringTile || apron)) {
-        col = D <= c.rOut + 0.2 ? CURB.hi : D <= c.rOut + 0.34 ? CURB.mid : D <= c.rOut + 0.48 ? CURB.lo : slab();
+        col = D <= c.rOut + 0.2 ? CURB.hi : D <= c.rOut + 0.34 ? CURB.mid : D <= c.rOut + 0.48 ? CURB.lo : (ringTile || D <= c.rOut + 0.48 + WALK_W / T) ? slab() : null;   // a pavement band follows the circle, whatever is under it
       }
       if (col != null) R(g, px, py, 1, 1, col);
     }
