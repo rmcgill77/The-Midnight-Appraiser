@@ -13,6 +13,7 @@ export const DEFAULT_SETTINGS = {
   captions: false,          // short on-screen captions for sounds that carry information
   vibration: true,
   textSpeed: 'normal',      // slow | normal | fast | instant: how fast dialog types out
+  tempUnit: 'c',            // c | f: the weather's temperature and wind (C and km/h, or F and mph)
   autoAdvance: false,       // conversations move on by themselves at reading pace (off: tap to continue)
   assists: { slowEntities: false }, // placeholder for Phase 4 combat assists
 };
@@ -28,6 +29,7 @@ export function loadSettings(storage) {
   if (!['close', 'normal', 'wide'].includes(s.viewSize)) s.viewSize = 'normal';
   if (!['normal', 'large'].includes(s.textSize)) s.textSize = 'normal';
   if (!['slow', 'normal', 'fast', 'instant'].includes(s.textSpeed)) s.textSpeed = 'normal';
+  if (!['c', 'f'].includes(s.tempUnit)) s.tempUnit = 'c';
   s.autoAdvance = !!s.autoAdvance;
   s.brightness = Math.max(0.8, Math.min(1.6, Number(s.brightness) || DEFAULT_SETTINGS.brightness));
   for (const k of ['volMaster', 'volMusic', 'volSfx']) s[k] = Math.max(0, Math.min(1, Number(s[k]) || 0));
