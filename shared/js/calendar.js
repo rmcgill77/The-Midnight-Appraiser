@@ -116,6 +116,10 @@ const Calendar = {
   /* Midnight: the day ends. Rent is settled if it's a due day, the date moves on, and the day's tally
      starts over. What the day looked like waits in st.rollPre for the next morning's ledger. */
   rollDate(st) {
+    // appraisal jobs still open on their due day go home unpaid as it ends (they can run up to a week)
+    const r = { items: [], rep: {} };
+    Shop.takeBackOpen(st, r, it => it.job.due != null && it.job.due <= st.day);
+    st.rollJobs = [...(st.rollJobs || []), ...r.items];
     const pre = { day: st.day, cash: st.cash, today: Recap.today(st), dayStart: st.dayStart, arrears: st.rent.arrears };
     const rentNote = Calendar.collectRent(st);
     pre.rentPaid = Math.max(0, pre.cash - st.cash); pre.rentShort = st.rent.arrears > pre.arrears; pre.heat = st.heat;
@@ -130,7 +134,6 @@ const Calendar = {
 
   /* Waking up: rested, the morning's news, and the day's ledger for the date that just ended. */
   wake(st) {
-    Shop.settleJobs(st, null);               // anything left from appraisals goes home with its owner
     st.phase = 'morning';
     st.energy = st.maxEnergy;
     st.battery = 100;

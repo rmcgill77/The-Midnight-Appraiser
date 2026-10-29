@@ -2,6 +2,7 @@
 // lab and calls the same rules; only the layout is new. Everything here spends
 // bench time (6 hours a night to start), never the day clock.
 
+import { daysLeft, leftText } from '../game/appraisals.js';
 import { el } from './ui.js';
 import { itemArt, iconSvg } from './glyphs.js';
 import { S } from '../rules/index.js';
@@ -47,7 +48,7 @@ export function openBench(g) {
               el('button', { type: 'button', class: `stock-row bin-${s.kind}`, id: `find-${it.uid}`, onclick: () => openSpecimen(g, it.uid) },
                 itemArt(it, 'item-art sm'),
                 el('span', { class: 'stock-text' }, el('strong', {}, S.Items.name(it)),
-                  el('span', {}, `${it.job ? `Appraisal for ${it.job.who} · ` : ''}${S.Lab.testsRun(it)} test${S.Lab.testsRun(it) === 1 ? '' : 's'}`)),
+                  el('span', {}, `${it.job ? `Appraisal for ${it.job.who} · ${g.continuous && it.job.due != null ? `${leftText(daysLeft(it.job, st.day))} · ` : ''}` : ''}${S.Lab.testsRun(it)} test${S.Lab.testsRun(it) === 1 ? '' : 's'}`)),
                 el('span', { class: `bin-status ${s.alignment ? `al-${s.alignment}` : ''} st-${s.kind}` }, s.kind === 'settled' ? 'Ready to tag' : s.kind === 'new' ? 'New' : s.kind === 'unknown' ? 'Unknown' : `${S.Lab.candidates(st, it).length} left`)));
           }))
         : el('p', {}, 'Nothing on the bench. Buy from sellers at the counter by day, or scavenge at night once the zones open.'),
@@ -100,7 +101,7 @@ export function openSpecimen(g, uid) {
           last ? resultBox(last) : null)),
         S.Lab.tools(st).length < DATA.tools.length ? el('p', { class: 'note' }, 'A Spirit Box (Gear station) would hear what a find is built around.') : null,
         section('What it could be', `${cands.length} of ${known.length} left`, suspects(st, it, cands)),
-        it.job ? section('Appraisal report', `For ${it.job.who}`, jobReport(st, it, cands)) : section('Tag it', `Looks like ${money(S.Items.estimate(it))}`, verdict(st, it, cands)),
+        it.job ? section('Appraisal report', `For ${it.job.who}${g.continuous && it.job.due != null ? ` · ${leftText(daysLeft(it.job, st.day))}` : ''}`, jobReport(st, it, cands)) : section('Tag it', `Looks like ${money(S.Items.estimate(it))}`, verdict(st, it, cands)),
         el('details', { class: 'notes', open: !!it.contam || confirmRite },
           el('summary', {}, it.contam ? 'Basin · it needs washing' : 'Basin · wash, restore, purify, seal'), basinTiles(st, it)),
         el('details', { class: 'notes' },
@@ -206,7 +207,10 @@ export function openSpecimen(g, uid) {
         ids.map(a => el('button', { type: 'button', class: `idchip al-${a.alignment} ${d.anomalyId === a.id ? 'on' : ''}`, id: `ident-${a.id}`, onclick: () => { A.setIdentity(g.st, it, a.id); render(); } }, a.name))) : null,
       d.alignment && cands.length && !cands.some(a => a.alignment === d.alignment) ? el('p', { class: 'notice' }, `Nothing that fits your readings is ${d.alignment}. That’s a guess against the evidence.`) : null,
       el('button', { type: 'button', class: 'btn primary block', id: 'file-report', disabled: !d.alignment, onclick: () => {
-        if (A.fileReport(g.st, it.uid)) { g.changed(); ui.toast(`Report filed. ${j.who} collects it tonight.`); openBench(g); }
+        if (g.continuous) {
+          const r = A.fileReportNow(g.st, it.uid);
+          if (r) { g.changed(); ui.toast(r.items[0]?.text ?? `Report filed. ${j.who} collected it.`, 5200); openBench(g); }
+        } else if (A.fileReport(g.st, it.uid)) { g.changed(); ui.toast(`Report filed. ${j.who} collects it tonight.`); openBench(g); }
       } }, d.alignment ? `File report: ${S.cap(d.alignment)}${d.anomalyId ? ` · ${S.byId(DATA.anomalies, d.anomalyId).name}` : ''}` : 'File report'),
       el('p', { class: 'note' }, 'You can wash it, but restoring, purifying, sealing or breaking it down is not yours to do.'));
   };

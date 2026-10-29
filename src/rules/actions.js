@@ -221,11 +221,22 @@ export function rollDate(st) {
 
 // Waking up: appraisal owners collect, then the morning.
 export function wake(st) {
-  const r = { items: [], rep: {} };
-  const fees = S.Shop.settleJobs(st, r);
   S.Calendar.wake(st);
+  const jobs = st.rollJobs || [];          // owners who came for overdue appraisals during the night
+  st.rollJobs = [];
   cue('morning');
-  return { rentNote: null, jobs: r.items, fees };
+  return { rentNote: null, jobs, fees: 0 };
+}
+
+// File a report in the continuous day: the owner collects it at once and pays. Returns { it, items, fees } or null.
+export function fileReportNow(st, uid) {
+  const it = S.Shop.fileReport(st, uid);
+  if (!it) return null;
+  cue('stamp');
+  const r = { items: [], rep: {} };
+  const fees = S.Shop.payFiled(st, r);
+  if (fees) cue('coins');
+  return { it, items: r.items, fees };
 }
 
 // ---------- appraisal jobs and the inspector ----------

@@ -203,6 +203,13 @@ const Shop = {
   },
   /* Closing time: customers pick up their objects and pay for the reports. r is the day report, or null. */
   settleJobs(st, r) {
+    const fees = Shop.payFiled(st, r);
+    Shop.takeBackOpen(st, r, () => true);
+    if (r) r.fees = fees;
+    return fees;
+  },
+  /* Pay for the filed reports (st.shop.jobs) and send those customers home. Returns the fees. */
+  payFiled(st, r) {
     const R = DATA.appraisal.rep;
     const repD = (fac, d) => { if (fac === 'civilian' || !d) return; Rep.add(st, fac, d, r ? r.rep : null); };
     let fees = 0;
@@ -222,18 +229,24 @@ const Shop = {
         : { kind: 'bad', text: `${j.who} picked up the ${baseOf(it).name}. You called it ${said}. They had it checked across town: it is ${truth.alignment}${Lab.isKnown(st, truth) ? `: ${truth.name}` : ''}.`, tag: `Only ${money(amount)}` });
     }
     st.shop.jobs = [];
-    const open = st.inventory.loot.filter(x => x.job);
+    st.counters.appraisals = (st.counters.appraisals || 0) + done;
+    return fees;
+  },
+  /* Owners come back for objects whose report was never filed: they take them back unpaid. `which(it)`
+     picks the jobs (all of them at closing time; only the overdue ones in the continuous day). */
+  takeBackOpen(st, r, which) {
+    const R = DATA.appraisal.rep;
+    const repD = (fac, d) => { if (fac === 'civilian' || !d) return; Rep.add(st, fac, d, r ? r.rep : null); };
+    const open = st.inventory.loot.filter(x => x.job && which(x));
     for (const it of open) {
       repD(it.job.faction, R.unfinished);
       if (r) r.items.push({ kind: 'bad', text: `${it.job.who} came back for the ${baseOf(it).name}. The report was not done, so they took it back unpaid.`, tag: 'No fee' });
     }
     if (open.length) {
-      st.inventory.loot = st.inventory.loot.filter(x => !x.job);
+      st.inventory.loot = st.inventory.loot.filter(x => !open.includes(x));
       if (st.ui.bench && !st.inventory.loot.some(x => x.uid === st.ui.bench)) st.ui.bench = null;
     }
-    if (r) r.fees = fees;
-    st.counters.appraisals = (st.counters.appraisals || 0) + done;
-    return fees;
+    return open.length;
   },
 
   leave(st) {
