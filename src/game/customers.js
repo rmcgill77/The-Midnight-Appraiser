@@ -278,6 +278,7 @@ export class Crowd {
     const it = st.inventory.stock.find(x => x.uid === p.uid);
     this.reserved.delete(c.slot);
     if (!it) { this.#leave(c, 'angry'); return 0; }
+    if (this.fumble) amount = this.fumble(amount);        // a tired player rings it up wrong now and then
     if (!this.world.sell?.(c.sim, it, amount, p.fit)) S.Shop.sell(st, c.sim, it, amount, p.fit);
     for (const [slot, uid] of Object.entries(this.world.displays)) if (uid === it.uid) delete this.world.displays[slot];
     c.pending = null;
