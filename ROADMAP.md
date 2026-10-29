@@ -284,92 +284,113 @@ phase when we plan it.
 - **Roads (done):** lane lines already follow every bend (each street is one smooth curve, and they break only at junctions); the roundabout and turning circles now have a pavement band that follows the circle instead of tile-shaped apron squares; zebra crossings across every arm of every junction.
 - **Look (done):** warehouse bay numbers sit on painted plates on about one warehouse in three; night window glow has a wider halo and light spilling onto the pavement; evening sun shadows are softer (lower strength, shorter, fading earlier).
 
-### Phase 33: The woods (design settled with the owner; nothing built yet)
-**Decisions (owner):** tone is a blend of folk horror (the forest), a ceremonial lodge (the dungeon) and a
-hedge-witch (the ally in the cabin). The threat is a **surviving order, the Arcane Society**. The woods are **not
-tied to the player or their parents**: they are a town mystery the player gets drawn into. There are **two ways to
-open the woods**: through relationships with the new **Town Hall** staff (the Mayor above all), or through **Lou the
-barkeep**, who is secretly a member of a group that opposes the Society. The clues that lead the player to either
-are **locked until after the first audit**. Design only for now: nothing here is built until the owner says so.
+### Phase 33: The Ringval Wilds (design settled with the owner; nothing built yet)
+**Decisions (owner):** the woods are the **Ringval Wilds**. The threat is the **Arcane Society**; the group
+against it is the **Ringval Knights**. Tone is a blend of folk horror (the Wilds), a ceremonial lodge (the Society's
+Lodge) and a hedge-witch (the ally in the cabin). There is **no family tie** to the player: it is a town mystery.
+It is **purely side content, never required for the main game** (nothing in the inspection, the rent or the shop
+depends on it, and ignoring it costs nothing). The player can **join the Knights, join the Society, or join neither**
+(a third resolution), but never both sides. Joining either side has **positives and negatives**. Design only for
+now: nothing here is built until the owner says so.
 
-Why after the city look: the woods should match it. Already in the code: the roped-off trail with a sign
-(`woods` in `src/data/city.js`, rope tiles `%` and `&`), a woods ranger line in `src/game/night-city.js`, and a way
-to open areas off the map edge (`src/data/areas.js`, `src/game/edges.js`).
+Why after the city look: the Wilds should match it. Already in the code: the roped-off trail with a sign (`woods` in
+`src/data/city.js`, rope tiles `%` and `&`), a woods ranger line in `src/game/night-city.js`, and a way to open areas
+off the map edge (`src/data/areas.js`, `src/game/edges.js`).
 
-#### The story in one page
-- Long ago the **Arcane Society** held the woods north of town. They tried to *appraise the unseen*: to measure,
-  price and bind what lives in the dark, through rites at the **Standing Ring** and in their **Lodge**.
-- Something went wrong at the Ring one midwinter. The town sealed the trail "by order of the council" and told a
-  smaller story. The Society went underground; a few members still hold seats in town, and the Town Hall is where
-  their influence sits.
-- A second group has watched them ever since. Provisionally **the Lamplighters** (the name is open; it echoes the
-  Lamplighter sight in the night city and the Brass Lantern, soon the Brass Mug). Lou the barkeep is one of them.
-  They know the woods and the Society's habits, and they want the Society ended, not just contained.
-- The player has no secret family tie to any of this. The audit is the trigger: when it has come and gone, the
-  town's quiet breaks, and the player, a pawnbroker who sees the strange for a living, is the right person to
-  notice. Whom they trust decides how the woods open and what they find there.
-- **The Lodge's inner door** is opened by the **Pattern**: the sigil assembled from the six marks found in town.
-- **Payoff, three endings** (which are open depends on the path taken, see below): *seal* the Ring (contain it,
-  tell nobody), *break* the Society (expose it, at a cost to people who lied for years), or *take the seat* (become
-  the Warden, with the power and the weight).
+#### The story
+- The **Arcane Society** once held the Wilds north of town and tried to *appraise the unseen*: to measure, price and
+  bind what lives beyond, through rites at the **Standing Ring** and in their **Lodge**. A rite went wrong one
+  midwinter. The town sealed the trail "by order of the council" and told a smaller story. The Society went
+  underground, and its remnant now works from inside the **Town Hall**, led by the **Mayor**.
+- The **Ringval Knights**, a much older order sworn to guard the Wilds, never stopped watching. **Lou the barkeep**
+  is one of them.
+- **The trigger is the first audit** (pass or fail). Soon after, the Society, whose long work is close to done,
+  **attempts to open a portal to the entity's realm**, and the seams of town start to show: an **entity glimpsed in
+  daylight**, strange items turning up, **markers** that only the UV lamp shows, lamps that flicker at noon, clocks
+  stopping at 3:13, birds gathering silent, the same dream told by three people.
+- The player is a pawnbroker who sees the strange for a living, so they notice first, and they ask around.
+- Everything points to two people: **the Mayor** and **Lou**. Each can open the way into the Wilds (two ways in).
+- In the Wilds the player learns what both sides are really doing, and must choose (see below).
+
+#### The lead-up (the clues are locked until after the first audit)
+0. **Before the first audit: nothing.** The Town Hall and Lou are ordinary places and people; nobody mentions the
+   Wilds.
+1. **After the first audit, strange things appear around town** about one every day or two, escalating: the
+   entity seen by day (a figure that is gone when you look straight at it), odd items at the shop and on the street,
+   and six **markers** (an item at the shop, a headstone in Mike's yard, a bottle on Kip's beach, the bar top, a page
+   in Ms. Achterberg's collection, a night-run sight). They go into a **Strange Things** page of the journal; the
+   markers fill in a **Pattern**.
+2. **Asking around.** Show people what you found and ask. Everyone has something (a story, a rumour, a fear), and each
+   points to another clue or person. The more found, the more people say.
+3. **The fork.** After enough, people start saying the same two things: *"the Mayor would know"* and *"Lou hears
+   everything."*
+4. **Hearts gate the answer.** If the player's relationship with the Mayor or Lou is too low, they **hint that they know
+   more** until the player reaches the required hearts (about 5 for the Mayor and 4 for Lou, with extra steps below).
+- **Way in A, the Town Hall (the official way).** Theo the archivist (3 hearts, 3+ markers) gives the minutes of the
+  closing and the old maps; Bram the caretaker (4 hearts) the gate key and the trail's rules; Councillor Ines (3
+  hearts, with the minutes in hand) calls a public hearing on reopening the trail (an evening event; how the vote
+  goes depends on whom the player brought round and what the markers showed); the Mayor (5 hearts) gives her blessing.
+  On a dark moon the rope comes down at the trailhead.
+- **Way in B, Lou (the covert way).** Lou (4 hearts, with the markers) tells the player what the Knights are, takes
+  them through the **bar's cellar** and the old passage and opens the Wilds the back way on a dark moon, rope left up.
+- Opening the Wilds by either route **does not commit the player to a side**. Each route does colour the first welcome
+  (the Society is courteous if you came through the Town Hall; the Knights are wary of anyone who did).
+- The Wilds open **one area at a time**, each needing something from the one before (a key, a charm, a name), so it
+  feels like a whole new set of places.
+
+#### Choosing a side (never both)
+In the second half of the Wilds the truth comes out: the Society is not just contained, it is **opening a portal**, and
+the Knights' way of stopping it is not clean. The player chooses: **join the Knights, join the Society, or join
+neither.** The choice is a real fork with gains and costs, and it can be made at the first big reveal; before it, the
+player is free to help or hinder either.
+
+**The Ringval Knights (stop the portal, protect the Wilds).**
+- *Positives:* wards and gear (a larger ward meter in the Wilds, Knight charms); Lou's cellar becomes a free safe haven
+  and stash; discounts on ward items from Lou and from Hester Fenn the hedge-witch; **bounties** on the Society's
+  creatures and agents; Knights as allies on runs (a companion who draws a hit); the Wilds' creatures are less
+  hostile to a Knight.
+- *Negatives:* the Town Hall turns cold (the Mayor, Theo and Ines lose hearts and their services close to you, the
+  permits and the municipal favours); the Knights' raids raise **Heat** with the Office, who dislike vigilantes; Knight
+  dues (a monthly tithe, or missions to run for them); the Society's occult buyers stop buying from you; some
+  strange events at home get worse because the Society now targets you.
+
+**The Arcane Society (open the door).**
+- *Positives:* power (rite effects that make the Wilds and night runs easier: seeing in the dark, a veil to slip past
+  creatures); the Lodge's library (rare occult items and recipes); the Society buys occult loot at a premium; the Town
+  Hall's favours (permits, easier dealings with the Office); the entity's realm opens to you.
+- *Negatives:* the Knights and Lou become enemies, and the bar is closed to you (and Lou's friends cool toward you);
+  townsfolk who sense the wrongness lose hearts; the strange things in town **get worse** (restless nights, more
+  daytime sightings, unease: a mild standing penalty that grows with each rite); the Wilds' creatures become more
+  aggressive; moral weight (some rites need things given up).
+
+**Neither (the third resolution).** The player refuses both and closes the portal on their own terms, using the Pattern and
+what the Wilds taught them, with Hester Fenn's help.
+- *Positives:* both sides keep some of their trust (nobody turns hostile), a unique ending and reward (a one-of-a-kind
+  item), and the sense that it was the player's own answer.
+- *Negatives:* no faction shop, gear or bounties; both sides remain wary (neither will give favours); the climax is
+  harder (it needs full hearts with Hester and the Pattern complete, and a harder final encounter).
+
+*Three endings, one per choice:* **Knights, break the Society** (the portal is stopped and the order exposed, at a cost to
+the people who lied for years); **Society, open the door** (the portal opens and the town changes); **Neither, close
+the door** (sealed and bargained shut, nobody wins).
 
 #### The Town Hall (a new building, in the town)
-A civic building in Old Market, facing the square, open weekdays. It is useful on its own (permits, records, the
-council's weekly notices), and it is a normal place to make friends from the start; the woods are never mentioned
-there until the mystery begins.
-- **The Mayor, Constance Hargrove** (woman): warm, tired, hospitable. Publicly the face of the town; secretly the
-  Society's current **Warden**, who wants the old rites contained and will say so when she trusts you.
-- **The Archivist, Theo Maddox** (man): nervous, precise, keeps the council minutes and the old maps. Frightened of
-  what he has read.
-- **Councillor Ines Valdez** (woman): a sharp-tongued lawyer who chairs planning. Wants the woods developed and the
-  "superstition" ended; a sceptic whose mind can be changed, and the source of the **permit and the hearing**.
-- **Bram, the caretaker** (man): old, keeps the building's keys and the town's folklore; knows the trail's *rules*
-  (never go in at dusk, salt the threshold, don't answer the third call). Gives the **gate key**.
-All four use the existing relationship system (hearts, gifts, likes and dislikes, birthdays, schedules, collapse
-reactions) and get looks from the creator.
+A civic building in Old Market, facing the square, open weekdays. Useful on its own (permits, records, the council's weekly
+notices), and a normal place to make friends from the start; the Wilds are never mentioned there until the mystery begins.
+- **The Mayor, Constance Hargrove** (woman): warm, tired, hospitable. Publicly the town's face; secretly the Society's
+  **Warden**. Believes the portal is the town's only way to finally control what the Society started.
+- **The Archivist, Theo Maddox** (man): nervous, precise, keeps the minutes and the old maps; frightened of what he has read.
+- **Councillor Ines Valdez** (woman): a sharp lawyer who chairs planning; a sceptic whose mind can be changed; the source of the
+  permit and the hearing.
+- **Bram, the caretaker** (man): old, keeps the keys and the folklore; knows the trail's *rules* (never go in at dusk, salt the
+  threshold, don't answer the third call).
+All four use the existing relationship system (hearts, gifts, likes and dislikes, birthdays, schedules, collapse reactions).
 
 #### Lou, at the bar
-Lou already runs the bar. He becomes a full relationship character: a patient, watchful man who hears everything and
-says little. In truth he is a Lamplighter. His trust is the other way in.
+Lou already runs the bar. He becomes a full relationship character: patient, watchful, says little, hears everything. In truth
+he is a **Ringval Knight**. His trust is the other way in.
 
-#### The lead-up
-0. **Before the first audit: nothing.** The Town Hall and Lou are ordinary places and people. No woods clues exist,
-   and nobody mentions the woods.
-1. **The first audit, pass or fail, is the trigger.** After it, **strange things begin to turn up all over town**,
-   one every day or two. Some are small (lamps that flicker in daylight, birds gathering and silent, every clock
-   stopping at 3:13, a sigil chalked on a door, a customer paying in pressed leaves, the same dream told by three
-   people), and six are **marks** only the UV lamp shows: an item at the shop, a headstone in Mike's yard, a bottle
-   on Kip's beach, the carved bar top, a page in Ms. Achterberg's collection, and one on a night-run sight.
-   They go into a **Strange Things** page of the journal, with the Pattern filling in as marks are found.
-2. **Asking around.** The way forward is to show what you have found to people and ask. Everyone has something
-   (a story, a rumour, a fear), and each one points at another clue or another person. The more the player has
-   found, the more people say.
-3. **The fork.** After enough has been found, people start saying the same two things: *"the Mayor would know"* and
-   *"Lou hears everything."* The player can go to either, or both.
-4. **Hearts gate the answer.** If the player's relationship with the Mayor (or Lou) is still low, they **hint that
-   they know more** ("I might have something to tell you, if we knew each other a little better") until the player
-   reaches the required hearts. Rough thresholds: the Mayor 5, Lou 4, plus the extra steps below.
-
-**Path A: the Town Hall (the official way).** Needs the Mayor's trust, and the staff's: Theo (3 hearts, 3+ marks
-found) gives the minutes of the closing, the old maps and the Society's name; Bram (4 hearts) the gate key and the
-trail's rules; Ines (3 hearts, with the minutes in hand) calls a **public hearing** on reopening the trail (an
-evening event; how the vote goes depends on whom the player brought round and what the marks showed); the Mayor
-(5 hearts) gives her blessing and, if the player has earned it, her confession. On the next dark moon the rope comes
-down at the trailhead in a short scene. The town reopens the woods, and the Society is quietly in the room.
-
-**Path B: Lou (the covert way).** Needs Lou's trust (4 hearts) and the marks. Lou tells the player what the
-Lamplighters are, takes them through the **cellar of the bar** to the old passage and opens the woods the back way on a dark
-moon, with the rope left up. The woods are the same woods; the town does not know they are open.
-
-The two paths are not exclusive in what you can learn, but the first one taken sets the player's stance: Path A
-leaves them standing with the Mayor and Path B with Lou, and the other side becomes the one they are working
-against (and some endings close). Open question below.
-
-#### Opening in layers
-Whichever way in, the woods open **one area at a time**, each needing something from the one before (a key, a
-charm, a name). That is what makes it feel like a whole new set of places.
-
-#### The areas (several connected places joined by paths)
+#### The areas of the Ringval Wilds (several connected places joined by paths)
 - **The Trailhead and the Watch Post:** the ranger station, abandoned; the ranger's logbooks; the way in. The
   first shop is here.
 - **The Thornwood:** forest of hanging charms and bone chimes, where the paths slowly rearrange; salt lines and
@@ -381,42 +402,57 @@ charm, a name). That is what makes it feel like a whole new set of places.
   that only the Pattern opens.
 - **The Cabin:** a hedge-witch's home deep in the trees, a safe place with a hearth and a trading table.
 
-#### People and shops in the woods
+#### People and shops in the Wilds
 - **Ranger Dale Whitlock** (man): the Watch Post's last ranger, a decent man haunted by one night.
 - **Hester Fenn** (woman), the hedge-witch of the Cabin: herbs, salt, candles, hex bags and charms; trades for what
   the forest gives back. The woods' **shop** and the ally who teaches wards.
 - **The Brethren** (hooded, in the Lodge): members of the Arcane Society who never left. Some can be reasoned with.
 - Members of both groups in town are revealed through the story and not as a list: the Mayor for the Society, Lou for
-  the Lamplighters, and the player gets to decide whom to trust among the Professor, Mr. Pryce and the library.
+  the Ringval Knights, and the player gets to decide whom to trust among the Professor, Mr. Pryce and the library.
 
 #### New things for the player (rules and creatures)
 - **Wards:** salt, charms and candles protect a night run in the woods (a ward meter that falls with each strange
-  thing and refills at the Cabin). New ritual-component items for the shop's bench and the appraisal system; the UV
+  thing and refills at the Cabin or, for the Knights, in Lou's cellar). New ritual-component items for the shop's bench and the appraisal system; the UV
   lamp already reveals sigils.
 - **Moon rites:** some events and creatures depend on the moon's phase (the game already has a moon calendar).
 - **Creatures (for the night runs and the bestiary):** *Corpse-candles* (wisps that lead you the wrong way),
-  *Black Dogs* (the Hollow's hounds), *Effigy Men* (straw and wicker walkers), *The Salt Wives* (figures in white who
+  *Black Dogs* (the Wilds' hounds), *Effigy Men* (straw and wicker walkers), *The Salt Wives* (figures in white who
   stand at the threshold lines), *The Horned Judge* (a stag-headed presence at the Ring; appears at the finale),
   *Moths of the Hollow Hour* (a swarm that dims lamps), *The Drowned* (what the Mirror Lake gives back), and the
   Brethren themselves.
-- **The Pattern:** the sigil assembled from the six marks. At the Lodge's inner door it is the key, and the UV lamp shows
-  the Society's hidden writing in the woods.
+- **The Pattern:** the sigil assembled from the six markers. At the Lodge's inner door it is the key, and the UV lamp shows
+  the Society's hidden writing in the Wilds.
+
+#### Ryan's secret realm (a separate piece of side content, not part of the Wilds)
+A reward for the player's friendship with **Ryan, the Mystic Magician**.
+- **Unlock:** reach **full hearts** with Ryan. He then offers to **teleport the player to a secret place** for a night hunt,
+  **at any time of day or night**. This area can **only** be reached by Ryan's teleport.
+- **Price:** the **first trip is free**; **every trip after costs $250**.
+- **Staying:** the player can stay **until they are knocked out or choose to leave** (no timer, unlike a normal night run).
+  A way home can be called at any moment; being knocked out brings the player home as it does after a night run.
+- **Look:** mystical and completely foreign: nothing like the town or the Wilds (a drifting, glass-and-light place with a
+  sky of its own; provisional name **the Veilglass**), with its own palette and sounds.
+- **Unique entities and loot:** its own creatures and drops that exist nowhere else (provisional creatures: *prism moths*,
+  *lantern whales* drifting overhead, *mirror stags*, *glass thorns*, *star-eaters*) and its own loot (veil shards,
+  stardust, strange relics that the shop's bench and appraisal system can handle as a new category).
+- **Open:** whether the town's clock pauses while the player is in the realm (suggestion: it does, so a trip never costs
+  the day); how many trips Ryan allows in a day; what the realm's difficulty curve is; the realm's own bestiary page.
 
 #### Suggested build order (when the owner decides to build)
-33a Town Hall: the building, the four NPCs, hours and the relationship track, and Lou's relationship track. 33b The
-Strange Things after the first audit, the six marks and the journal's page. 33c Asking around, the fork, the hint
-dialogue, then Path A (the vouching, the hearing, the opening night) and Path B (Lou and the bar cellar). 33d the Trailhead, the Watch Post and the
-Thornwood, with the first creatures and Hester's table. 33e the creature set and the ward rules. 33f the Ring, the
-Lake, the Lodge and the Cabin. 33g the three endings. Each slice can be its own pull request, as in Phases 30-32.
+33a Town Hall: the building, the four NPCs, hours and the relationship track, and Lou's relationship track. 33b The Strange
+Things after the first audit, the markers and the journal's page. 33c Asking around, the fork, the hint dialogue, then
+Way in A (the vouching, the hearing, the opening night) and Way in B (Lou and the bar cellar). 33d the Trailhead, the Watch
+Post and the Thornwood, with the first creatures and Hester's table. 33e the creature set and the ward rules. 33f the Ring,
+the Lake, the Lodge and the Cabin. 33g the side choice with its gains and costs, and the three endings. 33h Ryan's secret
+realm (it can be built at any time, independent of the rest). Each slice can be its own pull request, as in Phases 30-32.
 
 #### Still open (to decide before building)
-- The Lamplighters' real name, and who else is one (only Lou, or a few townsfolk?).
-- Are the two paths exclusive (you ally with one), or can the player do both, and which endings does each allow?
-  (Suggestion: Path A allows *seal* or *take the seat*; Path B allows *break*; doing both lets the player choose late.)
-- Is anyone besides the Mayor in the Society (the Professor, Mr. Pryce, Ms. Achterberg)?
-- How the first audit's result (pass or fail) colours the Strange Things, if at all.
-- Whether the Town Hall NPCs' schedules follow the long day and whether the council meets on a fixed weekday; how hard
-  the Hearing should be to fail; the final names and looks of the Brethren and the Horned Judge.
+- Who else is a Ringval Knight (only Lou, or a few townsfolk?) and who else is in the Society (anyone besides the Mayor: the
+  Professor, Mr. Pryce, Ms. Achterberg?).
+- The exact size of each side's gains and costs (the tithe, the heat, the rite penalty) so each is a real choice.
+- How the first audit's result (pass or fail) colours the strange things, if at all.
+- Whether the Town Hall NPCs' schedules follow the long day and whether the council meets on a fixed weekday; how hard the
+  Hearing should be to fail; the final names and looks of the Brethren and the Horned Judge.
 
 ## Consistency check (done)
 
