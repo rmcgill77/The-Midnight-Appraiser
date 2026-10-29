@@ -22,6 +22,7 @@
 // onto the sidewalk below it.
 
 import { RNG } from '../engine/rng.js';
+import { buildStreetNet } from '../game/street-net.js';
 
 // land: the rows the original's map is spread over (v2.5b: the dunes are below them, down to
 // the bottom edge, where the boardwalk leaves town for the beach; no sea until you're there).
@@ -481,20 +482,27 @@ export function buildCityLayout(DATA, extra = [], { stops = [] } = {}) {
   }
   for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) if (g[y][x] === '?') g[y][x] = '"';
 
+  // The roads are painted as smooth curves that can run up to half a tile over the tile edge, so anything standing at a
+  // curb (lamps, bus stops) has to be checked against the curves themselves: clear of the kerb, not just beside a road tile.
+  const net = buildStreetNet(streets);
+  const clearOfRoad = (x, y, min = 7) => { const F = net.field(x * 16 + 8, y * 16 + 8); return !F || F.f >= min; };
   // Phase 22: bus stops (Q) on the sidewalk a few steps from these places' doors.
   const busStops = {};
   for (const id of stops) {
     const L = locs[id];
     if (!L) continue;
-    const tx = L.stand.tx + 3, ty = L.stand.ty;
-    if (g[ty][tx] !== ',') continue;
-    set(tx, ty, 'Q');
-    busStops[id] = { id, tx, ty, stand: { tx: tx - 1, ty } };
+    for (const dx of [3, -3, 4, -4, 5, -5, 2, 6]) {
+      const tx = L.stand.tx + dx, ty = L.stand.ty;
+      if (g[ty][tx] !== ',' || !clearOfRoad(tx, ty)) continue;
+      set(tx, ty, 'Q');
+      busStops[id] = { id, tx, ty, stand: { tx: tx - 1, ty } };
+      break;
+    }
   }
 
   // Street lamps along the curbs, spaced out, never in front of a door.
   const lamps = [], keepClear = [...Object.values(locs).map(L => L.stand), ...Object.values(busStops)];
-  const roadside = (x, y) => [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => '=+'.includes(at(x + dx, y + dy)));
+  const roadside = (x, y) => [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [-1, 1], [1, -1], [-1, -1]].some(([dx, dy]) => '=+'.includes(at(x + dx, y + dy))) && clearOfRoad(x, y);
   for (let y = 1; y < H - 1; y++) for (let x = 1; x < W - 1; x++) {
     if (g[y][x] !== ',' || !roadside(x, y) || 'oOGQ'.includes(at(x, y - 1)) || at(x, y - 1) === ',' && at(x, y + 1) === ',') continue;
     if (lamps.some(l => Math.abs(l.x - x) < 9 && Math.abs(l.y - y) < 7)) continue;
