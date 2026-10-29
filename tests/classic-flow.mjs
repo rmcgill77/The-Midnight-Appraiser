@@ -22,6 +22,9 @@ await page.click('#get-up');
 await page.evaluate(() => __tma.openHomeDoor());
 await page.waitForSelector('#choose-shop');
 assert.equal(await page.locator('#choose-city').count(), 1);
+// The normal game keeps its one-weather-a-day forecast (the climate is only for ?continuous=1).
+assert.equal(await page.evaluate(() => __tma.weather === __tma.weatherOn(__tma.st.day)), true);
+
 // The appraisal settling the normal game uses at bedtime still works after being split in two:
 // a filed report is paid, an unfiled one is taken back unpaid, and the day report gets both lines.
 const settled = await page.evaluate(() => {

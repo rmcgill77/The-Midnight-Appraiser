@@ -86,8 +86,14 @@ export const weatherOverride = () => override;
 
 // The weather on a day (1 = the first day: always overcast, an easy start). Cached per seed.
 const cache = new Map();
+// Phase 30: the continuous day swaps the one-type-a-day forecast for the climate (game/climate.js): the
+// provider gives each day's single answer (midday), for the things that need one a day.
+let climateProvider = null;
+export function setClimateProvider(fn) { climateProvider = fn; }
+
 export function weatherOn(seed = 0, day = 1) {
   if (override) return override;
+  if (climateProvider) return climateProvider(seed, day);
   if (day <= 1) return 'overcast';
   const key = `${seed}:${calendarKey()}`;
   let list = cache.get(key);
