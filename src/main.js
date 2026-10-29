@@ -32,6 +32,8 @@ import { ContinuousClock } from './game/continuous-clock.js';
 import { ShopHours } from './game/shophours.js';
 import { openHoursPanel } from './ui/hours-panel.js';
 import * as NW from './game/nightwindow.js';
+import * as EX from './game/exhaustion.js';
+import { SleepFx } from './ui/sleepfx.js';
 import { Player } from './game/player.js';
 import { Crowd } from './game/customers.js';
 import { createStorage } from './game/storage.js';
@@ -107,6 +109,7 @@ import { freshDraw, drawState, extrasToday, comfortMods, adOn, adBooked, regular
 
 const layer = document.getElementById('game');
 const canvas = document.getElementById('view');
+let sleepFx = null;   // continuous mode only: what the second skipped night does to the screen
 // Phase 30: the continuous day and night, still being built. It's switched on with ?continuous=1
 // and keeps its saves apart (tma-cont.*), so the real game and its saves are untouched.
 const CONTINUOUS = new URLSearchParams(globalThis.location?.search ?? '').has('continuous');
@@ -222,6 +225,7 @@ function makePedestrians() {
 const player = new Player(CONFIG.player);
 const zone = new ZoneRunner(player);
 const clock = CONTINUOUS ? new ContinuousClock(CONFIG) : new Clock(CONFIG);
+if (CONTINUOUS) sleepFx = new SleepFx({ canvas, layer, sound: S.Sound });
 const ui = new UI(pause);
 const guide = new Guide();
 // Phase 16: the dialog box. Talk waits for a tap, the radio runs on a timer, and every
@@ -259,7 +263,7 @@ let pedestrians = null, lastDistrict = null;
 let light = makeCanvas(1, 1), lg = light.getContext('2d');
 
 function freshWorld() {
-  return { room: 'apartment', dayMode: null, night: null, shopHours: null, shopSession: null, shopClosedDate: null, displays: {}, crowd: null, playTimeMs: 0, shop: freshShop(), staff: freshStaff(), draw: freshDraw(), look: null, background: null, tutorial: { done: true, step: null }, notes: {}, guide: null };
+  return { room: 'apartment', dayMode: null, night: null, shopHours: null, shopSession: null, shopClosedDate: null, collapse: null, displays: {}, crowd: null, playTimeMs: 0, shop: freshShop(), staff: freshStaff(), draw: freshDraw(), look: null, background: null, tutorial: { done: true, step: null }, notes: {}, guide: null };
 }
 
 const godBadge = document.getElementById('god-badge');
@@ -287,6 +291,13 @@ function makeCrowd() {
     ui.toast(by ? `${by} sold the ${S.Items.name(it)} for ${money(paid)}.` : `Sold the ${S.Items.name(it)} for ${money(paid)}.`, 1800);
     if (cust?.sim?.friend) { const fc = T.makeCtx(world, st, cust.sim.name, { name: cust.sim.name }); T.addRel(fc, 2); fc.p.lastDay = st.day; }
     changed();
+  };
+  // Phase 30: after a skipped night, now and then a sale is rung up a little short.
+  c.fumble = amount => {
+    if (!CONTINUOUS || !clock.cycle.penalties.shopMistakes) return amount;
+    const r = EX.fumbleAmount(amount, rng);
+    if (r.slipped) ui.toast(`Tired fingers: you rang it up ${money(r.slipped)} short.`, 2400);
+    return r.amount;
   };
   c.events.walkout = () => cue('refuse');
   // v2.0: a sale the Office's restrictions won't allow. Say so, so it isn't a mystery.
@@ -1414,6 +1425,36 @@ function endShopSession(reason) {
   });
 }
 
+// The third skipped night: the player passes out and the whole date is lost. Somebody finds them and
+// takes them home, everyone who knows them takes it to heart (half a heart each), and the sim's days
+// roll on (rent is still due). The reactions show on waking.
+function collapseScene(e) {
+  if (ui.isOpen) ui.close();
+  if (world.shopSession) { endShopSession('early'); if (ui.isOpen) ui.close(); }
+  if (world.night) backToFreeTime();
+  clock.stop();
+  const known = REL.relationshipNames().filter(n => T.personOf(world, n).met).map(n => ({ name: n, hearts: REL.heartsOf(T.personOf(world, n).rel) }));
+  world.collapse = { found: NC.seenHome('city', known, st.day), reactions: EX.collapseReactions(known, rng), missedDate: e.missedDate };
+  for (const n of REL.relationshipNames()) { const p = T.personOf(world, n); if (p.met) p.rel = EX.afterMissedDay(p.rel); }
+  changed();
+  sleep();
+}
+
+function collapseWakeCard() {
+  const c = world.collapse; world.collapse = null;
+  ui.open({
+    id: 'collapse', eyebrow: `${CAL.formatDate(st.day)} · ${clock.label}`, title: 'You lost a whole day', reason: 'morning', dismissable: false,
+    body: [
+      el('p', {}, 'You pushed it too far and passed out. When you came to, the day was gone.'),
+      ...c.found.lines.map(l => el('p', { class: 'speech' }, l)),
+      c.reactions.length ? el('p', { class: 'label' }, 'Word got around') : null,
+      ...c.reactions.map(r => el('p', { class: `note collapse-${r.tier}` }, r.line)),
+      c.reactions.length ? el('p', { class: 'note warnline' }, 'Everyone who knows you well took it to heart. Half a heart lost with each of them. Rent was still due.') : null,
+    ],
+    actions: [{ id: 'collapse-ok', label: 'Get up', kind: 'primary', onClick: () => beginContinuousDay(false) }],
+  });
+}
+
 // Phase 30 (continuous mode): sleeping is allowed from 8 PM to 10 AM, once a window, and takes at
 // least six hours. It fast-forwards, then the sim's own sleep runs (rent, the morning, and so on).
 function continuousBed() {
@@ -1976,6 +2017,13 @@ function goThrough(go) {
 
 clock.onDayEnd = reason => (CONTINUOUS ? (world.room === 'zone' && st?.run ? endRun(N.clockOut(st)) : world.night === 'city' ? nightCityClock() : ui.toast('Your bed is at home. Turn in there.', 2400)) : world.room === 'zone' && st?.run ? endRun(N.clockOut(st)) : world.night === 'city' ? nightCityClock() : world.night === 'shop' ? endNightShop() : endDay(reason));
 
+if (CONTINUOUS) {
+  clock.onEvent = e => {
+    if (e.type === 'skipped') ui.toast(e.count === 1 ? 'You didn’t sleep. You can feel it: you’re slower, and your hands aren’t steady.' : 'Two nights without sleep. The edges of things aren’t right.', 4200);
+    else if (e.type === 'collapse') collapseScene(e);
+  };
+}
+
 const shopOpen = () => world.dayMode === 'shop' && st?.phase === 'day' && clock.state === 'running';
 const clerkOnDuty = () => shopOpen() && onStaff(world, 'clerk');
 const isNight = () => st?.phase === 'night';
@@ -2004,6 +2052,7 @@ function update(dt) {
     player.speedMul = world.room === 'city' ? CR.walkSpeed(st, riding()) * streetPace(todayWeather(), riding(), vehicleOf(st)?.kind)
       : world.room === 'zone' && st.run ? N.sprintStep(st, dt, input.sprintHeld, move.mag > 0.1) : 1;
     if (world.room === 'beach' && nightCity() && nightArea().inTide) player.speedMul *= 0.6;   // v2.5: wading
+    if (CONTINUOUS && clock.cycle.penalties.slow) player.speedMul *= EX.SLOW;                     // Phase 30: tired
     if (fishing) { if (!outdoors()) fishing = null; else stepFishing(dt, move, action, input.actionHeld); }
     else player.update(dt, move, world.room === 'city' ? cityMoveMap() : m);
     // v2.1: walked off the edge of an area onto the next one (game/edges.js).
@@ -2086,6 +2135,7 @@ function update(dt) {
   syncBanner();
   clock.tick(dt * 1000, pause.paused || (god.unlocked && !!god.freeze));
   if (CONTINUOUS && world.shopSession && clock.cycle.t >= world.shopSession.to) endShopSession('timeout');
+  if (sleepFx) sleepFx.update(dt, !!st && clock.cycle.penalties.screenEffects, { reduced: settings.reducedMotion });
   const c = arranger.on ? { x: arranger.cursor.tx * 16 + 8, y: arranger.cursor.ty * 16 + 8 } : player.center;
   camera.follow(c.x, c.y, m.pxW, m.pxH, dt, CONFIG.camera.followLerp, settings.reducedMotion);
   time += dt;
@@ -3004,6 +3054,7 @@ function openMorning(first = false, extra = null) {
 function beginContinuousDay(first = false) {
   if (ui.isOpen) ui.close();
   clock.endTimed();
+  if (world.collapse) return collapseWakeCard();
   if (st.phase === 'morning') CR.startErrandDay(st, clock);
   world.dayMode = 'city';
   pedestrians = null;
@@ -3240,6 +3291,14 @@ function confirmSleep() {
 let lastSleep = null;
 function sleep() {
   const res = A.sleep(st);
+  // Phase 30 (continuous mode): the clock's date can be ahead of the sim's day if the player stayed up
+  // past midnight; let the sim's days catch up (rent and all) before the morning.
+  if (CONTINUOUS) {
+    for (let n = 0; st.day < clock.cycle.date + 1 && n < 14; n++) {
+      const more = A.sleep(st);
+      res.rentNote = [res.rentNote, more.rentNote].filter(Boolean).join(' ') || res.rentNote;
+    }
+  }
   lastSleep = res;
   changed();
   if (st.gameOver) { openGameOver(); return; }
@@ -3830,7 +3889,7 @@ globalThis.__tma = {
   audio, talkTo, cityLayout, T, enterPlace: id => enterPlace(extraPlace(id) ?? WALK_INS[id]), leavePlace, spawnEvent: id => spawnEvent(id), setWeather: t => setWeatherOverride(t), get weather() { return todayWeather(); }, weatherFx, get eventEnt() { return eventEnt; }, toggleRide, get placeCrowd() { return placeCrowd; },
   get st() { return st; }, get crowd() { return crowd; }, get world() { return world; }, refreshSeason, parkToday, CAL, get fishing() { return fishing; }, beachToday,
   G, BN, yard: () => nightArea(), tollBell, get target() { return target; }, openGrave, NC, NS, MOON, startNightCity, startNightShop, nightState: () => nightState(), placeSight, nightSpots: () => nightSpots(), nightTarget: () => nightTarget(), nightInteract: e => nightInteract(e), inTheDark: () => inTheDark(), tackleHooks: () => tackleHooks(),
-  get loop() { return loop; }, placeAt, sleep, continuousBed, shopSignCard, endShopSession, openShopHoursPanel, openNight, cityLayout, CR, N, zone, enterZone, endRun, morningChoice,
+  get loop() { return loop; }, placeAt, sleep, continuousBed, shopSignCard, endShopSession, openShopHoursPanel, collapseScene, sleepFx, rng: () => rng, openNight, cityLayout, CR, N, zone, enterZone, endRun, morningChoice,
   guide, speech, wt, finishPrologue, syncShop, shopMap, staffFloor, autosave, quitToTitle,
   interact: t => interact(t), openStanding: () => openStanding(g, () => ui.close()), openBag: () => openBag(g, () => ui.close()),
   board: tab => openRenovation(g, { tab }), chooseDay: w => chooseDay(w), openHomeDoor: () => openHomeDoor(), goHome: () => goHome(), syncHome: () => syncHome(), arranger, openMagic: w => openMagicAct(w ?? 'Outside the Brass Lantern'), get magician() { return magician; }, arrange: () => startArranging(), stopArranging: () => stopArranging(), arrangeAct: () => arrangeAct(), arrangeTo: (tx, ty) => { arranger.point(tx, ty); }, tileToScreen: (tx, ty) => ({ x: (tx * 16 + 8 - camera.ix) * renderer.scale / renderer.dpr, y: (ty * 16 + 8 - camera.iy) * renderer.scale / renderer.dpr }), get layout() { return world.shop?.layout; }, shopRoom: () => shopRoom(), syncLook, god, openGodMenu: () => openGodMenu(() => ui.close()), offerUpdate, whatsNewOnce,

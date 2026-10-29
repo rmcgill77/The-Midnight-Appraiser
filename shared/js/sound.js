@@ -30,7 +30,10 @@ const Sound = {
     const makeup = c.createGain(); makeup.gain.value = 4.5;   // the layers are mixed quiet; this brings the whole game up to phone-speaker level
     const limit = c.createDynamicsCompressor();             // a brick wall at the end, so nothing ever clips
     limit.threshold.value = -2; limit.knee.value = 0; limit.ratio.value = 20; limit.attack.value = .001; limit.release.value = .1;
-    this.master = c.createGain(); this.master.connect(comp); comp.connect(makeup); makeup.connect(limit); limit.connect(c.destination);
+    // a low-pass at the front of the chain, wide open (22 kHz) unless the game muffles the sound (tiredness)
+    this.muffle = c.createBiquadFilter(); this.muffle.type = 'lowpass'; this.muffle.frequency.value = 22000; this.muffle.Q.value = 0.5;
+    this.muffle.connect(comp);
+    this.master = c.createGain(); this.master.connect(this.muffle); comp.connect(makeup); makeup.connect(limit); limit.connect(c.destination);
     this.music = c.createGain(); this.music.connect(this.master);
     this.sfx = c.createGain(); this.sfx.connect(this.master);
     // reverb: a generated room, a little dark
