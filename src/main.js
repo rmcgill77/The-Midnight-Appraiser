@@ -31,6 +31,7 @@ import { Clock } from './game/clock.js';
 import { ContinuousClock } from './game/continuous-clock.js';
 import { ShopHours } from './game/shophours.js';
 import { openHoursPanel } from './ui/hours-panel.js';
+import * as NW from './game/nightwindow.js';
 import { Player } from './game/player.js';
 import { Crowd } from './game/customers.js';
 import { createStorage } from './game/storage.js';
@@ -310,7 +311,7 @@ const g = {
   ui, clock, cityHourMs: CONFIG.city.hourMs, settings,
   get st() { return st; }, get crowd() { return crowd; }, get world() { return world; },
   changed: () => changed(),
-  goHome: () => goHome(),
+  goHome: () => { if (CONTINUOUS && nightCity()) endNightWalk('home'); goHome(); },
   arrange: () => startArranging(),
   weather: () => (st && !wt.active ? todayWeather() : null),
 };
@@ -411,12 +412,13 @@ function startNightCity() {
   night = null; nightState();
   clock.setSpan(NIGHT_SPAN);
   clock.load({ ...clock.save(), state: 'stopped', elapsedMs: 0, day: st.day });
+  if (CONTINUOUS) clock.beginTimed(nightRunMinutes());
   pedestrians = null;
   const L = cityLayout.locs.apartment;
   goThrough({ room: 'city', tx: L.stand.tx, ty: L.stand.ty, facing: 'down' });
   clock.start();
   const mo = moonTonight();
-  ui.toast(`${mo.name}. The streets until four. Keep to the lamps.`, 3200);
+  ui.toast(`${mo.name}. The streets until ${CONTINUOUS ? clockText(NW.dawnMinute(CAL.seasonOf(st.day))) : 'four'}. Keep to the lamps.`, 3200);
   // Kristen's breathing drill works out here too (v2.5).
   const guard = kristenGuard(T.personOf(world, 'Kristen').rel);
   world.nerve = guard ? { day: st.day, left: guard, max: guard } : null;
@@ -539,6 +541,7 @@ function noticed(lvl) {
 
 // Four in the morning: home, a half hour's grace, then someone sees you home.
 function nightCityClock() {
+  if (CONTINUOUS) return endNightWalk('dawn');
   const S0 = nightState();
   if (world.room === 'apartment') { clock.stop(); world.night = 'done'; ui.toast('Four in the morning. The bed’s in the bedroom.', 2600); return; }
   if (!S0.grace) {
@@ -1200,12 +1203,20 @@ function openHomeDoor() {
   const L = cityLayout.locs.apartment;
   const toStreet = () => { ui.close(); goThrough({ room: 'city', tx: L.stand.tx, ty: L.stand.ty, facing: 'down' }); };
   if (CONTINUOUS && !wt.active) {
+    const nightOk = !world.shopSession && nightRunOk();
     return ui.open({
       id: 'door', eyebrow: `${CAL.formatDate(st.day)} · ${clock.label}`, title: 'Your front door',
-      body: [el('p', {}, world.shopSession ? 'The shop across the street is open.' : 'The shop is across the street. The rest of town is out the other way.')],
+      body: [
+        el('p', {}, world.shopSession ? 'The shop across the street is open.' : 'The shop is across the street. The rest of town is out the other way.'),
+        nightOk ? el('p', { class: 'note', id: 'door-dark' }, `It’s dark until ${clockText(NW.dawnMinute(CAL.seasonOf(st.day)))}. ${MOON.moonOn(st.day).name} tonight.`) : null,
+      ],
       actions: [
         { id: 'door-shop', label: 'Across the street: the shop', kind: 'primary', onClick: () => { ui.close(); const sp = shopRoom().spawn; goThrough({ room: 'shop', tx: sp.tx, ty: sp.ty, facing: 'down' }); } },
         { id: 'door-street', label: 'Out to the street', onClick: toStreet },
+        ...(nightOk ? [
+          { id: 'door-night-city', label: 'Walk the city tonight', onClick: () => startNightWalk() },
+          { id: 'door-night-zones', label: 'Go out into the zones', onClick: () => { sendText('zones'); startZones(); } },
+        ] : []),
         { label: 'Not yet', kind: 'quiet', onClick: () => ui.close() },
       ],
     });
@@ -1270,6 +1281,36 @@ function useBed() {
     actions: [{ id: 'bed-end', label: 'End the day', kind: 'primary', onClick: () => { ui.close(); clock.endDay(); } }, { label: 'Not yet', kind: 'quiet', onClick: () => ui.close() }],
   });
   return ui.toast(st.phase === 'morning' ? 'You just got up. The day’s waiting.' : 'Not yet. The day isn’t over.');
+}
+
+// ---- Phase 30 (continuous mode): night runs ----
+// Night runs start at the front door whenever it's dark and the shop isn't open. How much dark is
+// left depends on the season, so a summer night is a short run and a winter one a long one.
+const nightRunOk = () => !!st && !world.shopSession && !world.night && NW.canRun(CAL.seasonOf(st.day), clock.cycle.minuteOfDay);
+const nightRunMinutes = () => NW.runMinutes(CAL.seasonOf(st.day), clock.cycle.minuteOfDay, CONFIG.night.hours * 60);
+
+function startNightWalk() {
+  st.phase = 'night';
+  startNightCity();
+}
+function startZones() {
+  st.phase = 'night';
+  openZones(g, enterZone, () => { st.phase = 'errands'; openHomeDoor(); }, { shield: shieldPreview() });
+}
+// A run is over (dawn, or the player went home): back to free time.
+function backToFreeTime() {
+  clock.endTimed();
+  night = null;
+  world.night = null;
+  st.phase = 'errands';
+  world.dayMode = 'city';
+  clock.start();
+}
+function endNightWalk(why) {
+  clock.stop();
+  backToFreeTime();
+  if (why === 'dawn') ui.toast('Dawn’s coming. The night’s over.', 2800);
+  changed();
 }
 
 // ---- Phase 30 (continuous mode): the shop's hours and the OPEN sign ----
@@ -1933,7 +1974,7 @@ function goThrough(go) {
   }, 140);
 }
 
-clock.onDayEnd = reason => (CONTINUOUS ? ui.toast('Your bed is at home. Turn in there.', 2400) : world.room === 'zone' && st?.run ? endRun(N.clockOut(st)) : world.night === 'city' ? nightCityClock() : world.night === 'shop' ? endNightShop() : endDay(reason));
+clock.onDayEnd = reason => (CONTINUOUS ? (world.room === 'zone' && st?.run ? endRun(N.clockOut(st)) : world.night === 'city' ? nightCityClock() : ui.toast('Your bed is at home. Turn in there.', 2400)) : world.room === 'zone' && st?.run ? endRun(N.clockOut(st)) : world.night === 'city' ? nightCityClock() : world.night === 'shop' ? endNightShop() : endDay(reason));
 
 const shopOpen = () => world.dayMode === 'shop' && st?.phase === 'day' && clock.state === 'running';
 const clerkOnDuty = () => shopOpen() && onStaff(world, 'clerk');
@@ -2962,6 +3003,7 @@ function openMorning(first = false, extra = null) {
 // For now the shop can't be opened and the sim's day number only moves at sleep, not at midnight.
 function beginContinuousDay(first = false) {
   if (ui.isOpen) ui.close();
+  clock.endTimed();
   if (st.phase === 'morning') CR.startErrandDay(st, clock);
   world.dayMode = 'city';
   pedestrians = null;
@@ -3116,6 +3158,7 @@ function enterZone(zoneId) {
   snapCamera();
   clock.setSpan(NIGHT_SPAN);
   clock.load({ ...clock.save(), state: 'stopped', elapsedMs: 0, day: st.day });
+  if (CONTINUOUS) clock.beginTimed(nightRunMinutes());
   changed();
   ui.close();
   clock.start();
@@ -3175,6 +3218,7 @@ function endRun(result) {
     ui.close();
     clock.setSpan(shopDaySpan());
     clock.load({ ...clock.save(), state: 'stopped', elapsedMs: 0, day: st.day });
+    if (CONTINUOUS) backToFreeTime();
     if (world.lastZone === 'undercroft') { placeAt('lab', 5, 2, 'down'); ui.toast('You close the other door behind you. Home is across the street.'); }
     else if (wt.active) { placeAt('apartment', 11, 9, 'up'); wt.event('runEnd', result.how); }
     else { const d = APARTMENT.door; placeAt('apartment', d.tx, d.ty, 'up'); ui.toast('Home. The bed’s in the bedroom.'); }
