@@ -159,7 +159,7 @@ export function paintHD(lookIn, facing = 'down', frame = 0, pose = 'walk', opts 
   paintBody(L, look, C, view, frame, pose, opts);
   if (facing === 'left') L.mirror();
   const g = compose(L, C.R);
-  return look.height ? stretchTall(g) : look.short ? squashShort(g) : g;
+  return look.height === 3 ? stretchTall(g, 4) : look.height === 2 || (!look.height && look.short) ? squashShort(g) : look.height ? stretchTall(g) : g;
 }
 
 // Short (v2.4, for Mike): two rows out of the body and the legs, the head and feet kept.
@@ -171,10 +171,10 @@ function squashShort(g) {
 
 // Tall (Phase 23, for Dex): the finished figure, a few pixels longer in the body and the
 // legs, using the empty rows above the head. Same face, same width, same feet.
-function stretchTall(g) {
+function stretchTall(g, most = 3) {
   let empty = 0;
   while (empty < g.length && g[empty].every(c => !c)) empty++;
-  const k = Math.min(3, empty), extra = new Set([21, 27, 24].slice(0, k));
+  const k = Math.min(most, empty), extra = new Set([21, 27, 24, 18].slice(0, k));
   const out = [];
   for (let y = k; y < g.length; y++) { out.push(g[y]); if (extra.has(y)) out.push([...g[y]]); }
   return out;
@@ -189,14 +189,29 @@ function paintKO(look, opts) {
   return Array.from({ length: HD_W }, (_, y) => Array.from({ length: HD_H }, (_, x) => g[x][y]));
 }
 
+const HD_NEAREST = {
+  eyes: { Almond: 'Round', Downturned: 'Hooded' },
+  brows: { Bushy: 'Heavy', Unibrow: 'Heavy', Shaved: 'Thin' },
+  mark: { 'Burn scar': 'Cheek scar', Birthmark: 'Mole', 'Stitched scar': 'Cheek scar', 'Eye scar': 'Brow scar' },
+  facial: { Handlebar: 'Mustache', 'Soul patch': 'Goatee', Chinstrap: 'Beard' },
+};
+// Widths by build: Slim, Regular, Broad, Lean, Stocky, Heavyset, Athletic. The first three are
+// as they have always been; Heavyset also gets the round belly.
+const BODY_HW = [4, 5, 6, 4, 6, 7, 6];
+const BODY_SIDE = [[9, 13], [9, 14], [8, 15], [9, 13], [8, 15], [7, 16], [8, 14]];
+const BODY_RX = [15, 17, 19, 16, 18, 21, 20];
+const BELLY = 5;
+
 function paintBody(L, look, C, view, frame, pose, opts) {
   const { P, R, S, O } = L;
+  const near = (k, n) => HD_NEAREST[k]?.[n] ?? n;   // the small figure draws the newer options as their nearest older one
   const names = {
     hair: PARTS.hair[look.hair], hat: PARTS.hat[look.hat], top: PARTS.top[look.top], bottom: PARTS.bottom[look.bottom],
     extra: PARTS.extra[look.extra], facial: PARTS.facial[look.facial], face: PARTS.face[look.face],
-    eyes: PARTS.eyes[look.eyes], brows: PARTS.brows[look.brows], mouth: PARTS.mouth[look.mouth], mark: PARTS.mark[look.mark],
+    eyes: near('eyes', PARTS.eyes[look.eyes]), brows: near('brows', PARTS.brows[look.brows]), mouth: PARTS.mouth[look.mouth], mark: near('mark', PARTS.mark[look.mark]),
     pattern: PARTS.pattern[look.pattern], neck: PARTS.neck[look.neck],
   };
+  names.facial = near('facial', names.facial);
   const walking = pose === 'walk' || pose === 'carry';
   const bob = (walking && frame % 2 === 1) || (pose === 'idle' && frame === 1) ? 1 : 0;
   // Which leg is forward: +1 the left (or near) leg, -1 the other, 0 both under you.
@@ -208,7 +223,7 @@ function paintBody(L, look, C, view, frame, pose, opts) {
   if (view === 'right') return paintSide(L, ctx);
 
   const front = view === 'down';
-  const hw = [4, 5, 6][b], x0 = 12 - hw, x1 = 11 + hw;
+  const hw = BODY_HW[b], x0 = 12 - hw, x1 = 11 + hw;
   const U = y => y - bob;
   ctx.x0 = x0; ctx.x1 = x1; ctx.U = U;
 
@@ -241,8 +256,8 @@ function paintBody(L, look, C, view, frame, pose, opts) {
   // --- torso ---
   paintTopFront(L, ctx);
   // v2.4: a round belly over the belt.
-  if (look.plump) for (let y = 19; y <= 23; y++) { const w = y === 19 || y === 23 ? 0 : 1; if (w) { P(x0 - 1, U(y), 'top'); P(x1 + 1, U(y), 'top'); } }
-  if (look.plump && front) for (let x = x0 + 1; x < x1; x++) L.O(x, U(23), c => c && shade(c, 0.72));
+  if (look.plump || b === BELLY) for (let y = 19; y <= 23; y++) { const w = y === 19 || y === 23 ? 0 : 1; if (w) { P(x0 - 1, U(y), 'top'); P(x1 + 1, U(y), 'top'); } }
+  if ((look.plump || b === BELLY) && front) for (let x = x0 + 1; x < x1; x++) L.O(x, U(23), c => c && shade(c, 0.72));
 
   // --- head ---
   S({ 4: [9, 14], 5: [8, 15], 6: [7, 16], 7: [7, 16], 8: [7, 16], 9: [7, 16], 10: [7, 16], 11: [7, 16], 12: [7, 16], 13: [7, 16], 14: [8, 15], 15: [9, 14] }, 'skin', null, 0, -bob);
@@ -752,7 +767,7 @@ function paintSide(L, ctx) {
   const { names, bob, stride, longCoat, b, pose, C, look, opts } = ctx;
   const U = y => y - bob;
   ctx.U = U;
-  const [sx0, sx1] = [[9, 13], [9, 14], [8, 15]][b];
+  const [sx0, sx1] = BODY_SIDE[b];
   ctx.x0 = sx0; ctx.x1 = sx1;
   const top = names.top;
   const skirt = names.bottom === 'Skirt' || names.bottom === 'Long skirt';
@@ -803,7 +818,7 @@ function paintSide(L, ctx) {
     for (let y = 17; y <= 21; y++) { O(sx0, U(y), WHITE); O(sx0 + 1, U(y), c => c && shade(c, 1.12)); }
     R(sx1 - 1, U(17), 2, 1, 'neckSkin'); O(sx1, U(18), C.neck); O(sx1, U(19), C.neck); O(sx1 - 1, U(19), shade(C.neck, 0.7));
   }
-  if (look.plump) { for (let y = 19; y <= 22; y++) P(sx1 + 1, U(y), 'top'); for (const y of [20, 21]) P(sx1 + 2, U(y), 'top'); }
+  if (look.plump || b === BELLY) { for (let y = 19; y <= 22; y++) P(sx1 + 1, U(y), 'top'); for (const y of [20, 21]) P(sx1 + 2, U(y), 'top'); }
   if (look.prop === 'shovel' && pose !== 'ko') {
     // Over the shoulder: the shaft from the near hand up behind the head, the blade behind.
     for (let i = 0; i <= 12; i++) P(Math.round(16 - i), U(Math.round(20 - i * 0.9)), 'wood');
@@ -1016,6 +1031,37 @@ function paintMoodTouches(mood, { O, each, inEll, C, L }) {
   if (mood.sweat) for (const [x, y, c] of [[35, 16, '#8ab4d4'], [34, 17, '#cfe6f5'], [35, 17, '#cfe6f5'], [35, 18, '#8ab4d4']]) O(x, y, c);
 }
 
+// Phase 31c: makeup, eye details, piercings and skin details, drawn over the finished face.
+function paintLookFx(look, { O, each, inEll, C, L, mouthPx, eye }) {
+  const tint = (ex, ey, rx, ry, col, amt, test = () => true) => each((x, y) => { if (inEll(x, y, ex, ey, rx, ry) && L.at(x, y) === 'skin' && L.ov[y][x] == null && test(x, y)) O(x, y, c => c && mix(c, col, amt)); });
+  const SILVER_ = '#cfd2da', GOLD_ = '#e8cf7a';
+  const sf = look.skinFx, ef = look.eyeFx, mk = look.makeup, pc = look.piercing;
+  if (sf === 1) { tint(17, 27, 3.2, 2.4, '#f2e2d6', 0.7); tint(26, 14, 3, 2, '#f2e2d6', 0.65, (x, y) => (x + y) % 3); tint(34, 31, 2.4, 2.2, '#f2e2d6', 0.7); }
+  if (sf === 2) { tint(23.5, 26, 8, 3.5, '#d8624e', 0.28); tint(23.5, 22, 11, 8, '#d8624e', 0.1); }
+  if (sf === 3) { tint(23.5, 22, 11, 10, '#c8d4e6', 0.28); for (const [x, y] of [[13, 18], [14, 19], [14, 20], [34, 18], [33, 19], [33, 20]]) O(x, y, c => c && mix(c, '#6a7eb8', 0.45)); }
+  if (mk === 4) for (const ex of [16.5, 30.5]) tint(ex, 27.5, 3, 1.9, '#d0504e', 0.4);
+  if (mk === 5) for (let y = 21; y <= 26; y++) for (const x of [14, 33]) O(x, y, '#e8e0d0');
+  if (mk >= 1 && mk <= 3) {
+    const col = ['', '#b8283a', '#6a2a5a', '#2a1a2a'][mk];
+    for (const [x, y, c] of mouthPx) { const [r, g, b] = rgb(c); if ((r + g + b) / 3 < 170) O(x, y, mix(c, col, 0.8)); }
+  }
+  const ink = INK, ring = [[16, 19], [28, 31]];
+  if (ef === 1) { for (const [a, b] of ring) for (let x = a; x <= b; x++) O(x, 20, ink); O(15, 19, ink); O(32, 19, ink); }
+  if (ef === 2) for (const [a, b] of ring) for (let x = a - 1; x <= b + 1; x++) for (const y of [19, 20]) if (L.ov[y][x] == null) O(x, y, c => c && mix(c, '#6a4a8a', 0.55));
+  if (ef === 3) { for (const [x, y] of [[17, 23], [17, 22], [29, 22], [30, 23]]) O(x, y, '#aff4ee'); for (const [a, b] of ring) for (let x = a; x <= b; x++) O(x, 25, c => c && mix(c, '#8fe6e0', 0.45)); }
+  if (ef === 4) for (const [x, y] of [[29, 22], [30, 23]]) O(x, y, mix(eye, '#5a9ad8', 0.85));
+  if (ef === 5) {
+    each((x, y) => { if (inEll(x, y, 18, 22.5, 3.4, 3.4)) O(x, y, '#15131a'); });
+    for (let x = 15; x <= 34; x++) O(x, Math.round(20 - (x - 15) * 0.32), '#15131a');
+    O(17, 21, '#3a3a48');
+  }
+  if (pc === 1) O(21, 28, GOLD_);
+  if (pc === 2) { O(23, 29, SILVER_); O(24, 29, SILVER_); }
+  if (pc === 3) { O(19, 17, SILVER_); O(19, 19, SILVER_); }
+  if (pc === 4) { O(22, 33, SILVER_); O(22, 34, SILVER_); }
+  if (pc === 5) for (const x of [10, 37]) for (const y of [22, 23, 24]) O(x, y, SILVER_);
+}
+
 export function paintPortrait(lookIn, opts = {}) {
   const look = cleanLook(lookIn);
   const N = PORTRAIT_SIZE, L = makeLayer(N, N), C = palette(look, opts);
@@ -1038,7 +1084,7 @@ export function paintPortrait(lookIn, opts = {}) {
   if (hair === 'Afro') fill((x, y) => inEll(x, y, cx, 17, 17, 15) && y >= Math.max(hatCut, 0), 'hair', null, 1);
 
   // --- shoulders and clothes ---
-  const rx = [15, 17, 19][look.build];
+  const rx = BODY_RX[look.build];
   fill((x, y) => inEll(x, y, cx, 53, rx, 16) && y >= 36, 'top');
   const opening = ['Trench coat', 'Jacket', 'Vest', 'Suit jacket', 'Overcoat'].includes(top);
   if (opening || top === 'Shirtsleeves') {
@@ -1122,8 +1168,16 @@ export function paintPortrait(lookIn, opts = {}) {
     const lid = (y, c, w = 4) => { for (let i = 0; i < w; i++) O(X(i), y, c); };
     if (shape === 'Narrow') { lid(22, ink); lid(23, WHITE); O(X(2), 23, eye); O(X(3), 23, ink); lid(24, C.skinD); return; }
     if (shape === 'Wide') { lid(20, ink); for (const y of [21, 22, 23, 24]) lid(y, WHITE); for (const y of [22, 23]) { O(X(1), y, eye); O(X(2), y, y === 23 ? ink : eye); } O(X(1), 22, '#f4f8fb'); return; }
-    lid(21, ink);
     const Wd = shade(WHITE, 0.82);
+    if (shape === 'Almond' || shape === 'Downturned') {
+      for (let i = shape === 'Almond' ? 0 : 1; i < 4; i++) O(X(i), 21, ink);
+      if (shape === 'Almond') O(X(-1), 20, ink); else { O(X(0), 22, ink); O(X(-1), 23, ink); }
+      O(X(1), 22, WHITE); O(X(2), 22, eye); O(X(3), 22, Wd);
+      O(X(0), 23, shape === 'Almond' ? WHITE : ink); O(X(1), 23, eye); O(X(2), 23, ink); O(X(3), 23, Wd);
+      lid(24, C.skinD, 3);
+      return;
+    }
+    lid(21, ink);
     if (shape === 'Hooded') lid(22, C.skinDD);
     else { O(X(0), 22, WHITE); O(X(1), 22, '#f4f8fb'); O(X(2), 22, eye); O(X(3), 22, Wd); }
     O(X(0), 23, WHITE); O(X(1), 23, eye); O(X(2), 23, ink); O(X(3), 23, Wd);
@@ -1132,17 +1186,21 @@ export function paintPortrait(lookIn, opts = {}) {
   };
   drawEye(16, false); drawEye(28, true);
   const brow = hair === 'Bald' ? shade(C.skin, 0.5) : C.hairD;
-  const bc = nm('brows') === 'Thin' ? mix(brow, C.skin, 0.4) : brow;
+  const bc = nm('brows') === 'Thin' ? mix(brow, C.skin, 0.4) : nm('brows') === 'Shaved' ? mix(brow, C.skin, 0.8) : brow;
   const browsBase = {
     Straight: [[0, 18], [1, 18], [2, 18], [3, 18], [4, 18]],
     Arched: [[-1, 19], [0, 18], [1, 17], [2, 17], [3, 17], [4, 18]],
     Heavy: [[-1, 18], [0, 18], [1, 18], [2, 18], [3, 18], [4, 18], [0, 17], [1, 17], [2, 17], [3, 17], [4, 19]],
     Thin: [[0, 18], [1, 18], [2, 18], [3, 18]],
     Furrowed: [[0, 17], [1, 17], [2, 18], [3, 18], [4, 19]],
+    Bushy: [[-1, 18], [0, 18], [1, 18], [2, 18], [3, 18], [4, 18], [-1, 17], [0, 17], [1, 17], [2, 17], [3, 17], [4, 17], [1, 16], [2, 16], [3, 16]],
+    Unibrow: [[0, 18], [1, 18], [2, 18], [3, 18], [4, 18]],
+    Shaved: [[1, 18], [2, 18], [3, 18]],
   }[nm('brows')];
   const browsL = mood.brows ?? browsBase, browsR = mood.browsR ?? browsL;
   for (const [i, y] of browsL) O(16 + i, y, bc);
   for (const [i, y] of browsR) O(31 - i, y, bc);
+  if (nm('brows') === 'Unibrow' && !mood.brows) for (let x = 21; x <= 26; x++) O(x, 18, bc);
   // Nose: the shadow side of the bridge, the tip, the nostrils.
   // Lashes (a softer face, Phase 29b): a shorter, lighter line down the nose.
   for (let y = nm('eyes') === 'Lashes' ? 25 : 23; y <= 27; y++) O(25, y, nm('eyes') === 'Lashes' ? mix(C.skin, C.skinD, 0.6) : C.skinD);
@@ -1161,7 +1219,8 @@ export function paintPortrait(lookIn, opts = {}) {
     'Soft smile': [[21, 31, mix(C.skin, '#c46a6e', 0.45)], [22, 32, mix(LIP, '#c8686c', 0.55)], [23, 32, mix(LIP, '#b8585e', 0.4)], [24, 32, mix(LIP, '#b8585e', 0.4)], [25, 32, mix(LIP, '#c8686c', 0.55)], [26, 31, mix(C.skin, '#c46a6e', 0.45)],
       [22, 33, mix(C.skin, '#d8888a', 0.55)], [23, 33, mix(C.skin, '#e8a8a4', 0.7)], [24, 33, mix(C.skin, '#d8888a', 0.6)], [25, 33, mix(C.skin, '#d8888a', 0.5)]],
   }[nm('mouth')];
-  for (const [x, y, c] of (mood.mouth ? mood.mouth({ lip, lipL, LIP, WHITE, dark: shade(LIP, 0.35) }) : mouth)) O(x, y, c);
+  const mouthPx = mood.mouth ? mood.mouth({ lip, lipL, LIP, WHITE, dark: shade(LIP, 0.35) }) : mouth;
+  for (const [x, y, c] of mouthPx) O(x, y, c);
   paintMoodTouches(mood, { O, each, inEll, C, L });
   const face = nm('face'), mark = nm('mark');
   if (face === 'Freckles') for (const [x, y] of [[16, 26], [18, 27], [17, 28], [20, 26], [27, 26], [29, 27], [30, 26], [31, 28]]) O(x, y, c => c && shade(c, 0.8));
@@ -1176,6 +1235,15 @@ export function paintPortrait(lookIn, opts = {}) {
   if (fh === 'Stubble') each((x, y) => { if (head(x, y) && y >= 28 && (x + y) % 2 === 0 && L.ov[y][x] == null && !(y >= 30 && y <= 32 && x >= 20 && x <= 27)) O(x, y, c => c && mix(c, H, 0.35)); });
   if (fh === 'Mustache') for (let x = 20; x <= 27; x++) { O(x, 29, H); O(x, 30, x === 20 || x === 27 ? HD2 : H); }
   if (fh === 'Beard') each((x, y) => { if (head(x, y) && (y >= 29 || (y >= 24 && Math.abs(x - cx) >= 8)) && !(y >= 31 && y <= 32 && x >= 21 && x <= 26)) O(x, y, (x + y) % 3 ? H : HD2); });
+  // Phase 31c: newer marks, beards, and the extras (makeup, eye details, piercings, skin).
+  if (mark === 'Burn scar') each((x, y) => { if (inEll(x, y, 17.5, 28, 3.2, 3.4) && (x * 7 + y * 3) % 5 && L.at(x, y) === 'skin') O(x, y, c => c && mix(c, '#d4888a', 0.5)); });
+  if (mark === 'Birthmark') each((x, y) => { if (inEll(x, y, 30, 27, 2.2, 1.8) && L.at(x, y) === 'skin') O(x, y, c => c && mix(c, '#7a3a34', 0.5)); });
+  if (mark === 'Stitched scar') for (let y = 25; y <= 31; y++) { O(29, y, scar); if (y % 2) { O(28, y, C.skinDD); O(30, y, C.skinDD); } }
+  if (mark === 'Eye scar') for (let y = 15; y <= 26; y++) O(y <= 21 ? 18 : 19, y, scar);
+  if (fh === 'Handlebar') { for (let x = 20; x <= 27; x++) { O(x, 29, H); O(x, 30, x === 20 || x === 27 ? HD2 : H); } for (const [x, y] of [[19, 30], [19, 29], [28, 30], [28, 29], [18, 28], [29, 28]]) O(x, y, H); }
+  if (fh === 'Soul patch') for (const [x, y] of [[23, 34], [24, 34], [23, 33], [24, 33]]) O(x, y, (x + y) % 2 ? H : HD2);
+  if (fh === 'Chinstrap') each((x, y) => { if (head(x, y) && !head(x, y, -2.2) && y >= 25) O(x, y, (x + y) % 3 ? H : HD2); });
+  paintLookFx(look, { O, each, inEll, C, L, mouthPx, eye });
   if (fh === 'Goatee') { each((x, y) => { if (head(x, y) && y >= 33 && Math.abs(x - cx) <= 3.5) O(x, y, (x + y) % 3 ? H : HD2); }); for (let x = 21; x <= 26; x++) O(x, 30, H); }
   if (fh === 'Sideburns') for (let y = 17; y <= 27; y++) for (const x of [13, 14, 33, 34]) if (head(x, y)) O(x, y, H);
 

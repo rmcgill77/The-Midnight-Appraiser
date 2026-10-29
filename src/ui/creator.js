@@ -4,13 +4,13 @@
 // panel never jumps while you click through hairstyles.
 
 import { el } from './ui.js';
-import { PARTS, COLOR_OF, CLASSIC_LOOK, cleanLook, randomLook } from '../engine/figure.js';
+import { PARTS, COLOR_OF, CLASSIC_LOOK, EXTRA_KEYS, cleanLook, randomLook, randomExtras } from '../engine/figure.js';
 import { paintHD, HD_W, HD_H, PORTRAIT_SIZE } from '../engine/figure-hd.js';
 import { paintInto } from './portraits.js';
 
 const TABS = [
-  ['body', 'Body', [['build', 'Build'], ['skin', 'Skin', 'color'], ['pronouns', 'Pronouns']]],
-  ['face', 'Face', [['eyes', 'Eyes'], ['eyeColor', 'Eye color', 'color'], ['brows', 'Brows'], ['mouth', 'Mouth'], ['face', 'Complexion'], ['mark', 'Marks'], ['facial', 'Facial hair']]],
+  ['body', 'Body', [['build', 'Build'], ['height', 'Height'], ['skin', 'Skin', 'color'], ['skinFx', 'Skin details'], ['pronouns', 'Pronouns']]],
+  ['face', 'Face', [['eyes', 'Eyes'], ['eyeColor', 'Eye color', 'color'], ['brows', 'Brows'], ['mouth', 'Mouth'], ['face', 'Complexion'], ['mark', 'Marks'], ['eyeFx', 'Eye details'], ['makeup', 'Makeup'], ['piercing', 'Piercings'], ['facial', 'Facial hair']]],
   ['hair', 'Hair', [['hair', 'Style'], ['hairColor', 'Color', 'color']]],
   ['hat', 'Hat', [['hat', 'Hat'], ['hatColor', 'Hat color', 'color']]],
   ['clothes', 'Outfit', [['top', 'Top'], ['topColor', 'Top color', 'color'], ['pattern', 'Pattern'], ['neck', 'Neck'], ['neckColor', 'Neck color', 'color'], ['bottom', 'Bottoms'], ['bottomColor', 'Bottoms color', 'color']]],
@@ -100,7 +100,7 @@ export function openCreator(ui, { look: start, onDone, onBack, eyebrow = 'New ga
     ],
     actions: [
       { id: 'look-ok', label: okLabel, kind: 'primary', onClick: () => { stop(); onDone({ ...look }); } },
-      { id: 'look-random', label: 'Surprise me', onClick: () => { Object.assign(look, randomLook(Math.random, { full: true })); sync(); } },
+      { id: 'look-random', label: 'Surprise me', onClick: () => { for (const k of [...EXTRA_KEYS, 'height']) look[k] = 0; Object.assign(look, randomLook(Math.random, { full: true }), randomExtras()); sync(); } },
       { label: 'Back', kind: 'quiet', onClick: () => { stop(); onBack?.({ ...look }); } },
     ],
   });

@@ -30,22 +30,31 @@ export const EYE_COLORS = ['#3a2a1e', '#1c1a18', '#4a6a3a', '#3a5a7a', '#6a6a6e'
 // Options are only ever added at the end of a list, so a stored index keeps its meaning.
 export const PARTS = {
   pronouns: ['They/them', 'She/her', 'He/him'],
-  build: ['Slim', 'Regular', 'Broad'],
+  build: ['Slim', 'Regular', 'Broad', 'Lean', 'Stocky', 'Heavyset', 'Athletic'],
   hair: ['Bald', 'Crop', 'Side part', 'Long', 'Bun', 'Curls', 'Mohawk', 'Bob', 'Slick back', 'Ponytail', 'Afro', 'Undercut', 'Braid', 'Streaked long', 'Shaggy', 'Waves'],
   face: ['Plain', 'Freckles', 'Tired eyes', 'Rosy'],
-  facial: ['None', 'Stubble', 'Mustache', 'Beard', 'Goatee', 'Sideburns'],
+  facial: ['None', 'Stubble', 'Mustache', 'Beard', 'Goatee', 'Sideburns', 'Handlebar', 'Soul patch', 'Chinstrap'],
   hat: ['None', 'Fedora', 'Flat cap', 'Beanie', 'Bowler', 'Wide brim', 'Trilby', 'Beret', 'Hair bow', 'Top hat', 'Garrison cap', 'Sailor cap'],
   top: ['Trench coat', 'Jacket', 'Sweater', 'Vest', 'Hoodie', 'Overcoat', 'Suit jacket', 'Shirtsleeves', 'Tank top', 'Uniform shirt', 'Jumper'],
   bottom: ['Trousers', 'Skirt', 'Work pants', 'Long skirt'],
   extra: ['None', 'Scarf', 'Glasses', 'Pendant', 'Satchel', 'Gloves', 'Pocket watch', 'Hair clips', 'Earrings', 'Aviators', 'Small hoops'],
   // Phase 14: the finer details the bigger figure has room for.
-  eyes: ['Round', 'Narrow', 'Hooded', 'Wide', 'Lashes'],
-  brows: ['Straight', 'Arched', 'Heavy', 'Thin', 'Furrowed'],
+  eyes: ['Round', 'Narrow', 'Hooded', 'Wide', 'Lashes', 'Almond', 'Downturned'],
+  brows: ['Straight', 'Arched', 'Heavy', 'Thin', 'Furrowed', 'Bushy', 'Unibrow', 'Shaved'],
   mouth: ['Neutral', 'Smirk', 'Frown', 'Full', 'Grin', 'Smile', 'Soft smile'],
-  mark: ['None', 'Brow scar', 'Cheek scar', 'Mole', 'Bandage'],
+  mark: ['None', 'Brow scar', 'Cheek scar', 'Mole', 'Bandage', 'Burn scar', 'Birthmark', 'Stitched scar', 'Eye scar'],
   pattern: ['Plain', 'Pinstripe', 'Check', 'Patched'],
   neck: ['Open collar', 'Necktie', 'Bow tie', 'Turtleneck', 'Bandana'],
+  // Phase 31c: extras only the portrait shows (and height, which stretches the whole figure).
+  // Stored only when not 'None'/'Average', so nobody else's look changes.
+  height: ['Average', 'Tall', 'Short', 'Very tall'],
+  skinFx: ['None', 'Vitiligo', 'Sun-flushed', 'Pale and veined'],
+  eyeFx: ['None', 'Eyeliner', 'Eyeshadow', 'Faint glow', 'Mismatched eyes', 'Eye patch'],
+  makeup: ['None', 'Red lipstick', 'Plum lipstick', 'Dark lips', 'Blush', 'Face-paint stripe'],
+  piercing: ['None', 'Nose stud', 'Septum ring', 'Brow ring', 'Lip ring', 'Ear cuffs'],
 };
+// The keys outside ALL_KEYS that are stored on a look only when set.
+export const EXTRA_KEYS = ['skinFx', 'eyeFx', 'makeup', 'piercing'];
 // Which list each color choice comes from.
 // Phase 31b: the faces a portrait can make. 'neutral' is the face as the creator draws it.
 export const MOODS = ['neutral', 'happy', 'sad', 'annoyed', 'angry', 'upset', 'flirty', 'surprised', 'scared', 'embarrassed', 'smug', 'tired'];
@@ -60,10 +69,10 @@ const LIST_OF = { ...PARTS, ...COLOR_OF };
 // How long each list was in Phase 12. Crowds are still drawn small (until Phase 15), so
 // they only pick from these, and the small painter maps any newer choice to its nearest.
 export const LEGACY_SIZE = { build: 3, skin: 10, hair: 8, hairColor: 12, face: 4, facial: 4, hat: 6, hatColor: 20, top: 6, topColor: 20, bottom: 3, bottomColor: 20, extra: 5, extraColor: 20 };
-const LEGACY_MAP = { hair: { 8: 2, 9: 1, 10: 5, 11: 1, 12: 3, 13: 3, 14: 7, 15: 3 }, hat: { 6: 1, 7: 3, 8: 0, 9: 4, 10: 2, 11: 3 }, facial: { 4: 1, 5: 1 }, top: { 6: 1, 7: 3, 8: 2, 9: 3, 10: 2 }, bottom: { 3: 1 }, extra: { 5: 0, 6: 3, 7: 0, 8: 0, 9: 2, 10: 0 } };
+const LEGACY_MAP = { build: { 3: 0, 4: 2, 5: 2, 6: 1 }, hair: { 8: 2, 9: 1, 10: 5, 11: 1, 12: 3, 13: 3, 14: 7, 15: 3 }, hat: { 6: 1, 7: 3, 8: 0, 9: 4, 10: 2, 11: 3 }, facial: { 4: 1, 5: 1 }, top: { 6: 1, 7: 3, 8: 2, 9: 3, 10: 2 }, bottom: { 3: 1 }, extra: { 5: 0, 6: 3, 7: 0, 8: 0, 9: 2, 10: 0 } };
 // How long each list was at the end of Phase 19. Seeded rolls (townsfolk, details) draw from
 // these, so adding options (Phase 20 on) never changes anyone already in town.
-export const ROLL_SIZE = { hair: 13, hat: 8, top: 8, facial: 6, bottom: 4, extra: 7, eyes: 5, eyeColor: 6, brows: 5, mouth: 5, mark: 5, pattern: 4, neck: 5, neckColor: 20 };
+export const ROLL_SIZE = { build: 3, hair: 13, hat: 8, top: 8, facial: 6, bottom: 4, extra: 7, eyes: 5, eyeColor: 6, brows: 5, mouth: 5, mark: 5, pattern: 4, neck: 5, neckColor: 20 };
 const legacy = L => { const o = { ...L }; for (const [k, m] of Object.entries(LEGACY_MAP)) if (m[o[k]] != null) o[k] = m[o[k]]; return o; };
 
 // The original appraiser, rebuilt from parts: fedora, trench coat, dark hair, a dark tie.
@@ -80,7 +89,9 @@ export function cleanLook(look) {
     const n = Number.isInteger(look?.[k]) ? look[k] : fallback;
     out[k] = Math.max(0, Math.min(LIST_OF[k].length - 1, n));
   }
-  if (look?.height) out.height = 1;
+  // height: 1 was always 'tall' (Dex); 2 short and 3 very tall came with Phase 31c.
+  if (look?.height) out.height = Number.isInteger(look.height) && look.height >= 1 && look.height < PARTS.height.length ? look.height : 1;
+  for (const k of EXTRA_KEYS) if (Number.isInteger(look?.[k]) && look[k] > 0 && look[k] < PARTS[k].length) out[k] = look[k];
   // Phase 31a: pronouns NPCs use for the player (0 they, 1 she, 2 he). Outside ALL_KEYS so painters ignore it.
   if (Number.isInteger(look?.pronouns) && look.pronouns > 0 && look.pronouns < PARTS.pronouns.length) out.pronouns = look.pronouns;
   // v2.4: a few touches for one-off characters (Mike, the Gravekeeper): a balding crown, a
@@ -105,6 +116,14 @@ export function randomLook(random = Math.random, { full = false } = {}) {
   for (const k of DETAIL_KEYS) out[k] = Math.floor(random() * (ROLL_SIZE[k] ?? LIST_OF[k].length));
   if (random() < 0.6) out.mark = 0;
   if (random() < 0.5) out.pattern = 0;
+  return out;
+}
+
+// What 'Surprise me' adds on top of randomLook({ full: true }): the Phase 31c extras, each set now and then.
+export function randomExtras(random = Math.random) {
+  const out = {};
+  for (const k of EXTRA_KEYS) if (random() < 0.25) out[k] = 1 + Math.floor(random() * (PARTS[k].length - 1));
+  if (random() < 0.2) out.height = 1 + Math.floor(random() * 3);
   return out;
 }
 
