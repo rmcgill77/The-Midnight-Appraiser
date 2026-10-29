@@ -14,6 +14,7 @@ import { iconRects } from '../rules/index.js';
 import { frontOf, mapIcon } from './places.js';
 import { buildStreetNet } from '../game/street-net.js';
 import { dressBuildingTile } from './building-dress.js';
+import { dressProps, dressShopFront } from './street-props.js';
 
 const C = {
   asphalt: '#1b1d24', asphaltLight: '#23262f', asphaltDark: '#14161b', lane: '#6b6550',
@@ -794,6 +795,19 @@ export function decorateCity(layout, DATA, tiles, extra = []) {
     for (let ty = ty0; ty <= ty1; ty++) for (let tx = tx0; tx <= tx1; tx++) {
       const ch = map.at(tx, ty);
       if (isRoof(ch) || isFace(ch) || isHouseDoor(ch)) dressBuildingTile(g, map, tx, ty, ch, mixHash(tx, ty), tiles.season ?? 'summer', { districtOf, isRoof, isFace, isHouseDoor });
+    }
+    // Phase 32d: street furniture and clutter
+    for (let ty = ty0; ty <= ty1; ty++) for (let tx = tx0; tx <= tx1; tx++) {
+      const ch = map.at(tx, ty);
+      if (ch !== ',' && ch !== 'y' && !isHouseDoor(ch)) continue;
+      const nearDoor = ch === ',' && (isFace(map.at(tx, ty - 1)) || isDoor(map.at(tx, ty - 1)) || isDoor(map.at(tx - 1, ty)) || isDoor(map.at(tx + 1, ty)) || 'LQ'.includes(map.at(tx - 1, ty)) || 'LQ'.includes(map.at(tx + 1, ty)));
+      dressProps(g, map, net, tx, ty, ch, mixHash(tx * 3 + 1, ty * 5 + 2), tiles.season ?? 'summer', { district: layout.districtAt?.(tx, ty)?.id ?? null, nearDoor });
+    }
+    for (const L of Object.values(layout.locs ?? {})) {
+      if (!L.stand || !L.door) continue;
+      const sx = L.stand.tx + 2, sy = L.stand.ty;
+      if (sx < tx0 || sx > tx1 || sy < ty0 || sy > ty1 || map.at(sx, sy) !== ',' || mixHash(sx, sy) % 3 === 0) continue;
+      dressShopFront(g, sx, sy, mixHash(L.door.tx, L.door.ty));
     }
     for (const c of layout.circles ?? []) paintCircle(g, map, c, r);
     if (layout.plaza) {
