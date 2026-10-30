@@ -304,7 +304,7 @@ off the map edge (`src/data/areas.js`, `src/game/edges.js`).
   underground, and its remnant now works from inside the **Town Hall**, led by the **Mayor**.
 - The **Ringval Knights**, a much older order sworn to guard the Wilds, never stopped watching. **Lou the barkeep**
   is one of them.
-- **The trigger is the first audit** (pass or fail). Soon after, the Society, whose long work is close to done,
+- **The trigger is the first audit** (pass or fail), and it **only unlocks** the strange things: its result changes nothing about them. Soon after, the Society, whose long work is close to done,
   **attempts to open a portal to the entity's realm**, and the seams of town start to show: an **entity glimpsed in
   daylight**, strange items turning up, **markers** that only the UV lamp shows, lamps that flicker at noon, clocks
   stopping at 3:13, birds gathering silent, the same dream told by three people.
@@ -407,8 +407,10 @@ he is a **Ringval Knight**. His trust is the other way in.
 - **Hester Fenn** (woman), the hedge-witch of the Cabin: herbs, salt, candles, hex bags and charms; trades for what
   the forest gives back. The woods' **shop** and the ally who teaches wards.
 - **The Brethren** (hooded, in the Lodge): members of the Arcane Society who never left. Some can be reasoned with.
-- Members of both groups in town are revealed through the story and not as a list: the Mayor for the Society, Lou for
-  the Ringval Knights, and the player gets to decide whom to trust among the Professor, Mr. Pryce and the library.
+- **Who belongs to what (owner's rule):** in the city, the **only Ringval Knight is Lou**, and the **only Society presence is the
+  Town Hall** (the Mayor and her staff). **Every other member of either group lives in the Wilds only**, and they are
+  **new NPCs** (the Brethren and the Knights' own, introduced there). No existing townsperson (the Professor, Mr. Pryce, Ms.
+  Achterberg and the rest) is a member of either group.
 
 #### New things for the player (rules and creatures)
 - **Wards:** salt, charms and candles protect a night run in the woods (a ward meter that falls with each strange
@@ -447,10 +449,10 @@ the Lake, the Lodge and the Cabin. 33g the side choice with its gains and costs,
 realm (it can be built at any time, independent of the rest). Each slice can be its own pull request, as in Phases 30-32.
 
 #### Still open (to decide before building)
-- Who else is a Ringval Knight (only Lou, or a few townsfolk?) and who else is in the Society (anyone besides the Mayor: the
-  Professor, Mr. Pryce, Ms. Achterberg?).
+- Which of the Town Hall staff besides the Mayor know about the Society (Theo, Ines and Bram: members, unknowing, or
+  somewhere between), since the Town Hall is the Society's only presence in the city.
+- Who the new Knights and Society members in the Wilds are (names, looks, roles).
 - The exact size of each side's gains and costs (the tithe, the heat, the rite penalty) so each is a real choice.
-- How the first audit's result (pass or fail) colours the strange things, if at all.
 - Whether the Town Hall NPCs' schedules follow the long day and whether the council meets on a fixed weekday; how hard the
   Hearing should be to fail; the final names and looks of the Brethren and the Horned Judge.
 
