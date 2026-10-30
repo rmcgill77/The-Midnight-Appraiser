@@ -379,11 +379,12 @@ A civic building in Old Market, facing the square, open weekdays. Useful on its 
 notices), and a normal place to make friends from the start; the Wilds are never mentioned there until the mystery begins.
 - **The Mayor, Constance Hargrove** (woman): warm, tired, hospitable. Publicly the town's face; secretly the Society's
   **Warden**. Believes the portal is the town's only way to finally control what the Society started.
-- **The Archivist, Theo Maddox** (man): nervous, precise, keeps the minutes and the old maps; frightened of what he has read.
-- **Councillor Ines Valdez** (woman): a sharp lawyer who chairs planning; a sceptic whose mind can be changed; the source of the
-  permit and the hearing.
-- **Bram, the caretaker** (man): old, keeps the keys and the folklore; knows the trail's *rules* (never go in at dusk, salt the
-  threshold, don't answer the third call).
+- **The Archivist, Theo Maddox** (man): nervous, precise, keeps the minutes and the old maps; a Society member out of fear more than
+  belief, frightened of what he has read.
+- **Councillor Ines Valdez** (woman): a sharp lawyer who chairs planning and a Society member who has half-convinced herself it is
+  all civic duty; a sceptic at heart whose mind can be changed; the source of the permit and the hearing.
+- **Bram, the caretaker** (man): old, keeps the keys and the folklore; a long-standing Society member who knows the trail's *rules*
+  (never go in at dusk, salt the threshold, don't answer the third call) because he has kept them for decades.
 All four use the existing relationship system (hearts, gifts, likes and dislikes, birthdays, schedules, collapse reactions).
 
 #### Lou, at the bar
@@ -408,9 +409,14 @@ he is a **Ringval Knight**. His trust is the other way in.
   the forest gives back. The woods' **shop** and the ally who teaches wards.
 - **The Brethren** (hooded, in the Lodge): members of the Arcane Society who never left. Some can be reasoned with.
 - **Who belongs to what (owner's rule):** in the city, the **only Ringval Knight is Lou**, and the **only Society presence is the
-  Town Hall** (the Mayor and her staff). **Every other member of either group lives in the Wilds only**, and they are
-  **new NPCs** (the Brethren and the Knights' own, introduced there). No existing townsperson (the Professor, Mr. Pryce, Ms.
+  Town Hall**, where the **Mayor, Theo, Ines and Bram are all members**. **Every other member of either group lives in the
+  Wilds only**, as new NPCs (see the two headquarters below). No existing townsperson (the Professor, Mr. Pryce, Ms.
   Achterberg and the rest) is a member of either group.
+- **Ines can be turned.** Of the Town Hall four, only **Councillor Ines Valdez** can change sides if the player convinces her
+  (her trust, plus proof: the minutes and the markers, and a conversation where she faces what the rites cost). Once turned she stays
+  at the Town Hall as an **informant**: on the Knights' side she keeps the permits and favours open (offsetting the cold shoulder
+  from the rest of the Town Hall) and gives inside warnings; on the Neither path she helps close the portal; if the player joins
+  the Society she turns on them. Theo, Bram and the Mayor cannot be turned.
 
 #### New things for the player (rules and creatures)
 - **Wards:** salt, charms and candles protect a night run in the woods (a ward meter that falls with each strange
@@ -424,6 +430,38 @@ he is a **Ringval Knight**. His trust is the other way in.
   Brethren themselves.
 - **The Pattern:** the sigil assembled from the six markers. At the Lodge's inner door it is the key, and the UV lamp shows
   the Society's hidden writing in the Wilds.
+
+#### The two headquarters and the named NPCs (all new, all in the Wilds)
+Each side has a **headquarters** somewhere in the Wilds that the player can find and enter, with **at least five named,
+unique NPCs** the player can talk to and build relationships with (hearts, gifts, likes and dislikes, a schedule, a look from the
+creator), and with **roaming NPCs** around it as the city has: ambient people who walk, work and talk between its buildings. Before
+the player joins a side both headquarters can be visited (so the choice is an informed one); after joining, the other
+headquarters turns hostile (its people become encounters, not friends). Provisional names and characters, all open to change:
+
+**The Ringval Knights, HQ: the Ringhold** (a hidden stone keep on a ridge above the Mirror Lake, with a kennel yard, an armoury, a
+refectory and a watch tower; reached through Lou's way or by finding the ridge path).
+- **Dame Isolde Varn** (woman), the Knight-Commander: stern, courteous, carries the weight of every Knight who died at the Ring.
+- **Sir Corvin Ashby** (man), the Quartermaster and armourer: blunt and funny; the Knights' shop (wards, charms, gear).
+- **Brother Ambrose Quill** (man), the loremaster and bestiary-keeper: gentle, forgetful, knows every creature of the Wilds.
+- **Sergeant Maren Holt** (woman), head of patrols: a scout who gives the bounties and the runs.
+- **Garrick Thorne** (man), the hound-master: old, taciturn, keeps the war-dogs (the Knights' companions on runs).
+- **Juniper "Juno" Hale** (woman), a young squire: eager and overconfident; wants to come along.
+- *Roaming at the Ringhold:* squires drilling, sentries on the wall, kennel-hands, cooks and the washerwoman, a scout back from a
+  patrol, a pilgrim asking to be admitted.
+
+**The Arcane Society, HQ: Greyfall Lodge** (the Lodge, with a lived-in wing: a candlelit hall, a library, a vestry, a poison
+garden and the cellar stairs to the dungeon below; the ruined parts of the same house are the dungeon).
+- **High Magus Lysander Crowe** (man), the Society's head in the Wilds: gracious, patient, entirely certain; the one working the portal.
+- **Magistra Odalys Venn** (woman), Master of Rites: precise and cold; runs the rites at the Standing Ring.
+- **Frater Silas Kell** (man), the Society's quartermaster and trader: pleasant, mercenary; the Society's shop (rite components, premium
+  prices for occult loot).
+- **Soror Imogen Pale** (woman), the Seer: spends her days watching the entity and sees too much; unsettling and kind.
+- **Calla Draven** (woman), the Keeper of the Library: bookish, wry; the librarian who knows where everything is buried.
+- **Initiate Felix Marlowe** (man), a new recruit: unsure, easily led; the one who might talk.
+- *Roaming at Greyfall Lodge:* hooded runners carrying candles, scribes copying out rites, acolytes chanting in the hall, a gardener
+  in the poison garden, a veiled figure who does not speak.
+
+**Neutral in the Wilds (not on either side):** **Hester Fenn** the hedge-witch at the Cabin, and **Ranger Dale Whitlock** at the Watch Post.
 
 #### Ryan's secret realm (a separate piece of side content, not part of the Wilds)
 A reward for the player's friendship with **Ryan, the Mystic Magician**.
@@ -449,9 +487,9 @@ the Lake, the Lodge and the Cabin. 33g the side choice with its gains and costs,
 realm (it can be built at any time, independent of the rest). Each slice can be its own pull request, as in Phases 30-32.
 
 #### Still open (to decide before building)
-- Which of the Town Hall staff besides the Mayor know about the Society (Theo, Ines and Bram: members, unknowing, or
-  somewhere between), since the Town Hall is the Society's only presence in the city.
-- Who the new Knights and Society members in the Wilds are (names, looks, roles).
+- The final names, looks and details of the twelve named Knights and Society members (the list above is a first draft).
+- Where exactly each headquarters is found in the Wilds and what unlocks it.
+- Exactly what convinces Ines, and what she gives the player once she has turned.
 - The exact size of each side's gains and costs (the tithe, the heat, the rite penalty) so each is a real choice.
 - Whether the Town Hall NPCs' schedules follow the long day and whether the council meets on a fixed weekday; how hard the
   Hearing should be to fail; the final names and looks of the Brethren and the Horned Judge.
