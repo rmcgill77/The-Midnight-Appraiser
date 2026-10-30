@@ -282,6 +282,8 @@ phase when we plan it.
   (once a night); the night zones are entered from their own doors in the city (Suds Laundromat, the Line 9 entrance, the
   Level B4 garage, St. Agnes), where a card shows the danger, the energy cost and the pack for the run; the other door in the
   basement does the same for Beneath Old Market. The landlord (rent, rest) is on the apartment's board.
+- **Late opening:** after dark, the shop's sign also offers to open late (twice a week, the night's one run): night buyers, Heat for
+  every sale, the Office's inspectors as the risk, and "Lights off" at the end (the window closing, or you closing up).
 
 ### Refinement pass (after Phase 32, owner's order: characters, roads, look)
 - **Characters (done):** the walking figure now has real drawings for the ten newer hairstyles and ten

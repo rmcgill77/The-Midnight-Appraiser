@@ -974,15 +974,29 @@ function areaNightDrawables() {
 function startNightShop() {
   ui.close();
   NS.openTonight(st);
-  world.night = 'shop';
+  world.night = 'shop'; st.phase = 'night';
   clock.setSpan(NIGHT_SPAN);
   clock.load({ ...clock.save(), state: 'stopped', elapsedMs: 0, day: st.day });
+  clock.beginTimed(nightRunMinutes()); world.nightRunWindow = clock.cycle.window;
   crowd = makeNightCrowd();
   world.nightTake = { sold: 0, total: 0, heat: 0, bust: null };
-  const s = shopRoom().spawn;
-  goThrough({ room: 'shop', tx: s.tx, ty: s.ty, facing: 'down' });
+  if (world.room !== 'shop') { const s = shopRoom().spawn; goThrough({ room: 'shop', tx: s.tx, ty: s.ty, facing: 'down' }); }   // (you open it from inside, so you are already there)
   clock.start();
   ui.toast(`Open after dark. ${NS.onNotice(st) ? 'You’re on notice. The Office could have anyone in here tonight.' : 'Whoever comes in won’t ask, and you won’t either.'}`, 3600);
+  changed();
+}
+// Lights off: the night opening is over (the window ended, or you closed up). The shop goes quiet and it is free time again.
+function endNightShop() {
+  for (const c0 of [...crowd.list]) crowd.dismiss(c0);
+  const T0 = world.nightTake ?? { sold: 0, total: 0, heat: 0 };
+  clock.stop();
+  ui.open({
+    id: 'nightShopEnd', eyebrow: `${CAL.formatDate(st.day)} · ${clock.label}`, title: 'Lights off',
+    body: [el('p', {}, T0.sold ? `${T0.sold} sale${T0.sold === 1 ? '' : 's'} after dark, ${money(T0.total)} in cash. Nobody gave a name.` : 'Nobody bought anything. A few came in, looked at you, and left.'),
+      T0.heat ? el('p', { class: 'note warnline' }, `Heat +${T0.heat}. Cursed things sold at night since the last inspection: ${st.nightShop?.cursedSince ?? 0}${(st.nightShop?.cursedSince ?? 0) >= NS.NIGHT_SHOP.row.per ? ' (the inspectors will notice)' : ''}.`) : null,
+      el('p', { class: 'note' }, `${NS.opensLeft(st)} night opening${NS.opensLeft(st) === 1 ? '' : 's'} left this week.`)],
+    actions: [{ id: 'nightshop-done', label: 'Lock up', kind: 'primary', onClick: () => { ui.close(); backToFreeTime(); } }],
+  });
   changed();
 }
 function makeNightCrowd() {
@@ -1228,12 +1242,12 @@ function wakeUp() { const w = APARTMENT.wake; placeAt('apartment', w.tx, w.ty, w
 const HOME_ID = S.DATA.locations.find(l => l.home)?.id ?? 'shop';
 // From the street into your shop and back out again, freely, whenever it is not open.
 function enterShopFromStreet() {
-  if (world.shopSession) return ui.toast('The shop’s open. You can’t come and go until you close.', 2400);
+  if (world.shopSession || world.night === 'shop') return ui.toast('The shop’s open. You can’t come and go until you close.', 2400);
   const sp = shopRoom().spawn;
   goThrough({ room: 'shop', tx: sp.tx, ty: sp.ty, facing: 'up' });
 }
 function leaveShopToStreet() {
-  if (world.shopSession) return ui.toast('The shop’s open. The front door stays shut until you close.', 2400);
+  if (world.shopSession || world.night === 'shop') return ui.toast('The shop’s open. The front door stays shut until you close.', 2400);
   const st0 = cityLayout.locs[HOME_ID].stand;
   goThrough({ room: 'city', tx: st0.tx, ty: st0.ty, facing: 'down' });
 }
@@ -1335,7 +1349,20 @@ function shopProgress() {
   return s ? Math.max(0, Math.min(1, (clock.cycle.t - s.opened) / Math.max(1, s.to - s.opened))) : 0;
 }
 
+// The late opening, on the sign after dark (twice a week; whoever comes in doesn't ask questions).
+function lateOpeningActions() {
+  if (world.shopSession || !NW.canRun(CAL.seasonOf(st.day), clock.cycle.minuteOfDay) || !(world.night === 'city' || nightRunOk())) return [];
+  const no = NS.cantOpen(st, Object.keys(world.displays).length);
+  return [{ id: 'open-late', label: no ? `Open late tonight · ${no.toLowerCase()}` : `Open late tonight · ${NS.opensLeft(st)} left this week`, disabled: !!no, onClick: () => { ui.close(); sendText('nightShop'); startNightShop(); } }];
+}
 function shopSignCard() {
+  if (nightShop()) {
+    return ui.open({
+      id: 'shop-sign', eyebrow: `${CAL.formatDate(st.day)} · ${clock.label}`, title: 'Open late',
+      body: [el('p', {}, 'The door stays on the latch until you close up. Whoever comes in after dark doesn’t ask questions.')],
+      actions: [{ id: 'close-late', label: 'Close up', kind: 'danger', onClick: () => { ui.close(); endNightShop(); } }, { label: 'Keep going', kind: 'quiet', onClick: () => ui.close() }],
+    });
+  }
   const s = world.shopSession, win = shopWindowNow();
   const today = hoursObj().hoursOn(weekdayOfDate(clock.cycle.date));
   const eyebrow = `${CAL.formatDate(st.day)} · ${clock.label}`;
@@ -1353,6 +1380,7 @@ function shopSignCard() {
       actions: [
         { id: 'open-shop', label: `Open the shop until ${clockText(win.to)}`, kind: 'primary', onClick: () => openShopSession(win) },
         { id: 'sign-hours', label: 'Set the weekly hours', onClick: () => openShopHoursPanel() },
+        ...lateOpeningActions(),
         { id: 'sign-out', label: 'Step out to the street', onClick: () => { ui.close(); leaveShopToStreet(); } },
         { id: 'sign-home', label: 'Head home', onClick: () => { ui.close(); goHome(); } },
         { label: 'Not yet', kind: 'quiet', onClick: () => ui.close() },
@@ -1363,7 +1391,7 @@ function shopSignCard() {
   return ui.open({
     id: 'shop-sign', eyebrow, title: 'Closed',
     body: [el('p', {}, why), el('p', { class: 'note' }, 'The back room is open while the shop’s shut.')],
-    actions: [{ id: 'sign-out', label: 'Step out to the street', kind: 'primary', onClick: () => { ui.close(); leaveShopToStreet(); } }, { id: 'sign-home', label: 'Head home', onClick: () => { ui.close(); goHome(); } }, { id: 'sign-hours', label: 'Set the weekly hours', onClick: () => openShopHoursPanel() }, { label: 'Stay', kind: 'quiet', onClick: () => ui.close() }],
+    actions: [...lateOpeningActions(), { id: 'sign-out', label: 'Step out to the street', kind: 'primary', onClick: () => { ui.close(); leaveShopToStreet(); } }, { id: 'sign-home', label: 'Head home', onClick: () => { ui.close(); goHome(); } }, { id: 'sign-hours', label: 'Set the weekly hours', onClick: () => openShopHoursPanel() }, { label: 'Stay', kind: 'quiet', onClick: () => ui.close() }],
   });
 }
 
@@ -2012,7 +2040,7 @@ function goThrough(go) {
   }, 140);
 }
 
-clock.onDayEnd = () => (world.room === 'zone' && st?.run ? endRun(N.clockOut(st)) : world.night === 'city' ? nightCityClock() : ui.toast('Your bed is at home. Turn in there.', 2400));
+clock.onDayEnd = () => (world.room === 'zone' && st?.run ? endRun(N.clockOut(st)) : world.night === 'city' ? nightCityClock() : world.night === 'shop' ? endNightShop() : ui.toast('Your bed is at home. Turn in there.', 2400));
 
 // closer friends drop by the shop more often (game/visits.js)
 setVisitBoost(name => VS.visitBoost(REL.heartsOf(T.personOf(world, name).rel)));
@@ -2079,7 +2107,7 @@ function update(dt) {
     tickNightAreas(dt);
     tickWeather(dt);
     world.playTimeMs += dt * 1000;
-    crowd.update(dt, { open: shopOpen() || (nightShop() && clock.state === 'running'), progress: shopProgress(), playerAtTill: playerAtTill() || clerkOnDuty() });
+    crowd.update(dt, { open: shopOpen() || (nightShop() && clock.state === 'running'), progress: nightShop() ? clock.progress : shopProgress(), playerAtTill: playerAtTill() || clerkOnDuty() });
     for (const e of staffFloor.update(dt, { st, world, map: maps.shop, open: shopOpen() })) {
       if (e.stocked && world.room === 'shop') ui.toast(`${e.by.split(' ')[0]} put the ${S.Items.name(e.stocked)} out.`, 1600, { minor: true });
     }
@@ -3094,7 +3122,7 @@ function interact(t) {
         return z && openZoneDoor(g, z, enterZoneFromDoor, { shield: shieldPreview(), eyebrow: `${CAL.formatDate(st.day)} · ${clock.label}` });
       }
       // Your shop's own door: walk straight in when it isn't open for business (no detour via home). It is shut to you only while it is open.
-      if (id === HOME_ID && !nightCity()) return enterShopFromStreet();
+      if (id === HOME_ID) return enterShopFromStreet();
       // v2.4: at night only the late places are open.
       if (isNight() && id === 'chapel') return G.cemeteryOf(world).gear.gate ? (ui.toast('Mike’s key turns in the side gate. The churchyard, after dark.', 2200), enterCemetery(true)) : ui.toast('St. Brigid’s is locked. The side gate to the churchyard is locked too. Mike has the key.', 2800);
       if (isNight() && extraPlace(id)?.enter) { const no = NC.nightOpen(id, clock.minute); if (!no.open) return ui.toast(no.sign, 2600); return enterPlace(extraPlace(id)); }
