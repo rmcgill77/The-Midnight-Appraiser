@@ -82,7 +82,7 @@ import { WeatherFX, weatherIconSvg } from './ui/weather-fx.js';
 import { EVENTS, EVENT_CONVOS, rollHour, startEvent, endEvent, eventsState, pickpocketTakes, PICKPOCKET_GRACE } from './game/city-events.js';
 import { ZoneRunner, ZONE_CELL } from './game/zone-runner.js';
 import * as N from './rules/night.js';
-import { openZones, openFight, openBag, openRunEnd } from './ui/night-panels.js';
+import { openZones, openZoneDoor, openFight, openBag, openRunEnd } from './ui/night-panels.js';
 import { openCaseFiles } from './ui/case-panels.js';
 import { GameAudio, sceneFor } from './game/audio.js';
 import { cue } from './rules/cues.js';
@@ -449,7 +449,7 @@ function spotNear(list, rand) {
 }
 const WALKING_KINDS = { lamp: 'lamps', bus: 'bus', bridge: 'bridges', square: 'square', dark: 'dark', walk: 'walk', harbor: 'harbor' };
 
-function startNightCity() {
+function startNightCity(opts = {}) {
   ui.close();
   world.night = 'city';
   const N = NC.nightCityOf(world); N.nights += 1;
@@ -459,7 +459,7 @@ function startNightCity() {
   clock.beginTimed(nightRunMinutes()); world.nightRunWindow = clock.cycle.window;
   pedestrians = null;
   const L = cityLayout.locs.apartment;
-  goThrough({ room: 'city', tx: L.stand.tx, ty: L.stand.ty, facing: 'down' });
+  if (!opts.keep) goThrough({ room: 'city', tx: L.stand.tx, ty: L.stand.ty, facing: 'down' });   // (walking out into the dark: you stay where you are)
   clock.start();
   const mo = moonTonight();
   ui.toast(`${mo.name}. The streets until ${clockText(NW.dawnMinute(CAL.seasonOf(st.day)))}. Keep to the lamps.`, 3200);
@@ -1225,81 +1225,27 @@ function openMagicAct(where) {
 // Every day starts in your apartment, across the street from the shop, and every night ends
 // there. The front door is where you choose the day.
 function wakeUp() { const w = APARTMENT.wake; placeAt('apartment', w.tx, w.ty, w.facing); }
+const HOME_ID = S.DATA.locations.find(l => l.home)?.id ?? 'shop';
+// From the street into your shop and back out again, freely, whenever it is not open.
+function enterShopFromStreet() {
+  if (world.shopSession) return ui.toast('The shop’s open. You can’t come and go until you close.', 2400);
+  const sp = shopRoom().spawn;
+  goThrough({ room: 'shop', tx: sp.tx, ty: sp.ty, facing: 'up' });
+}
+function leaveShopToStreet() {
+  if (world.shopSession) return ui.toast('The shop’s open. The front door stays shut until you close.', 2400);
+  const st0 = cityLayout.locs[HOME_ID].stand;
+  goThrough({ room: 'city', tx: st0.tx, ty: st0.ty, facing: 'down' });
+}
 function goHome() { const d = APARTMENT.door; goThrough({ room: 'apartment', tx: d.tx, ty: d.ty, facing: 'up' }); }
 const youSay = (lines, opts = {}) => speech.say([].concat(lines).map(t => ({ who: 'you', text: t })), { who: 'you', ...opts });
 
+// Your front door: out to the street, any time (no card). The shop is across the street; the night is out in the town.
 function openHomeDoor() {
   if (wt.active) return ui.toast('Not now. Mina wants a word.');
   const L = cityLayout.locs.apartment;
-  const toStreet = () => { ui.close(); goThrough({ room: 'city', tx: L.stand.tx, ty: L.stand.ty, facing: 'down' }); };
-  if (!wt.active) {
-    const nightOk = !world.shopSession && nightRunOk();
-    return ui.open({
-      id: 'door', eyebrow: `${CAL.formatDate(st.day)} · ${clock.label}`, title: 'Your front door',
-      body: [
-        el('p', {}, world.shopSession ? 'The shop across the street is open.' : 'The shop is across the street. The rest of town is out the other way.'),
-        nightOk ? el('p', { class: 'note', id: 'door-dark' }, `It’s dark until ${clockText(NW.dawnMinute(CAL.seasonOf(st.day)))}. ${MOON.moonOn(st.day).name} tonight.`) : null,
-        !nightOk && !world.shopSession && !world.night && nightRunUsed() && NW.canRun(CAL.seasonOf(st.day), clock.cycle.minuteOfDay) ? el('p', { class: 'note', id: 'door-been-out' }, 'You’ve already been out tonight.') : null,
-      ],
-      actions: [
-        { id: 'door-shop', label: 'Across the street: the shop', kind: 'primary', onClick: () => { ui.close(); const sp = shopRoom().spawn; goThrough({ room: 'shop', tx: sp.tx, ty: sp.ty, facing: 'down' }); } },
-        { id: 'door-street', label: 'Out to the street', onClick: toStreet },
-        ...(nightOk ? [
-          { id: 'door-night-city', label: 'Walk the city tonight', onClick: () => startNightWalk() },
-          { id: 'door-night-zones', label: 'Go out into the zones', onClick: () => { sendText('zones'); startZones(); } },
-        ] : []),
-        { label: 'Not yet', kind: 'quiet', onClick: () => ui.close() },
-      ],
-    });
-  }
-  if (st.phase === 'morning' && !world.dayMode) {
-    const closed = closedToday();
-    return ui.open({
-      id: 'door', eyebrow: `${CAL.formatDate(st.day)} · Your front door`, title: 'Where to today?',
-      body: [
-        forecastCard(),
-        closed.length ? el('p', { class: 'note' }, `Closed all day in town: ${closed.join(', ')}.`) : null,
-        el('dl', { class: 'readout' },
-          el('dt', {}, 'Shop'), el('dd', {}, `${stageOf(world).name} · open ${shopHours(shopState(world).tier)} · ${Object.keys(world.displays).length} of ${world.shop?.layout?.cases?.length ?? 0} cases full`),
-          el('dt', {}, 'Errands'), el('dd', {}, `${(st.ap?.max ?? 8) + (hasEdge(world, 'errand') ? 1 : 0)} hours in the city`)),
-        el('p', { class: 'note' }, 'One or the other. The clock starts when you step out.'),
-      ],
-      actions: [
-        { id: 'choose-shop', label: 'Open the shop across the street', kind: 'primary', onClick: () => chooseDay('shop') },
-        { id: 'choose-city', label: 'Go into the city', onClick: () => chooseDay('city') },
-        { id: 'door-stay', label: 'Not yet', kind: 'quiet', onClick: () => ui.close() },
-      ],
-    });
-  }
-  if (world.dayMode === 'city' && clock.state === 'running') {
-    return ui.open({
-      id: 'door', eyebrow: `Your front door · ${clock.label}`, title: 'Heading out?',
-      body: [el('p', {}, `${hoursText(clock)} of errands left. The landlord lives downstairs, if you need him.`)],
-      actions: [
-        { id: 'door-out', label: 'Back out to the street', kind: 'primary', onClick: toStreet },
-        { id: 'door-landlord', label: 'Knock on the landlord’s door', onClick: () => { ui.close(); openLocation(g, 'apartment'); } },
-        { label: 'Not yet', kind: 'quiet', onClick: () => ui.close() },
-      ],
-    });
-  }
-  if (world.dayMode === 'shop' && clock.state === 'running') return ui.open({
-    id: 'door', eyebrow: 'Your front door', title: 'The shop’s open',
-    body: [el('p', {}, 'Customers are waiting across the street.')],
-    actions: [{ id: 'door-shop', label: 'Back to the shop', kind: 'primary', onClick: () => { ui.close(); const sp = shopRoom().spawn; goThrough({ room: 'shop', tx: sp.tx, ty: sp.ty, facing: 'down' }); } }, { label: 'Not yet', kind: 'quiet', onClick: () => ui.close() }],
-  });
-  // v2.4: out for the night: back out, or back to the shop.
-  if (nightCity() && clock.state === 'running') return ui.open({
-    id: 'door', eyebrow: `Your front door · ${clock.label}`, title: 'Back out?',
-    body: [el('p', {}, 'The street’s dark and quiet. You could still turn in.')],
-    actions: [{ id: 'door-out', label: 'Back out into the night', kind: 'primary', onClick: toStreet }, { label: 'Stay in', kind: 'quiet', onClick: () => ui.close() }],
-  });
-  if (nightShop() && clock.state === 'running') return ui.open({
-    id: 'door', eyebrow: 'Your front door', title: 'The shop’s open late',
-    body: [el('p', {}, 'Someone might be waiting at the till across the street.')],
-    actions: [{ id: 'door-shop', label: 'Back to the shop', kind: 'primary', onClick: () => { ui.close(); const sp = shopRoom().spawn; goThrough({ room: 'shop', tx: sp.tx, ty: sp.ty, facing: 'down' }); } }, { label: 'Not yet', kind: 'quiet', onClick: () => ui.close() }],
-  });
-  if (isNight() && world.night !== 'done' && world.night !== 'city' && world.night !== 'shop') return openNight();
-  return ui.toast(isNight() ? 'It’s late. The bed’s in the bedroom.' : 'Not now.');
+  if (ui.isOpen) ui.close();
+  return goThrough({ room: 'city', tx: L.stand.tx, ty: L.stand.ty, facing: 'down' });
 }
 
 function useBed() {
@@ -1342,9 +1288,14 @@ const nightRunUsed = () => world.nightRunWindow != null && world.nightRunWindow 
 const nightRunOk = () => !!st && !world.shopSession && !world.night && !nightRunUsed() && NW.canRun(CAL.seasonOf(st.day), clock.cycle.minuteOfDay);
 const nightRunMinutes = () => NW.runMinutes(CAL.seasonOf(st.day), clock.cycle.minuteOfDay, CONFIG.night.hours * 60);
 
-function startNightWalk() {
+function startNightWalk(opts = {}) {
   st.phase = 'night';
-  startNightCity();
+  startNightCity(opts);
+}
+// Out in the town after dark, with the night's run still unspent: the night begins. There is no menu to choose it.
+function maybeStartNightWalk() {
+  if (world.room !== 'city' || ui.isOpen || wt.active || speech.visible || clock.state !== 'running') return;
+  if (nightRunOk()) startNightWalk({ keep: true });
 }
 function startZones() {
   st.phase = 'night';
@@ -1402,6 +1353,7 @@ function shopSignCard() {
       actions: [
         { id: 'open-shop', label: `Open the shop until ${clockText(win.to)}`, kind: 'primary', onClick: () => openShopSession(win) },
         { id: 'sign-hours', label: 'Set the weekly hours', onClick: () => openShopHoursPanel() },
+        { id: 'sign-out', label: 'Step out to the street', onClick: () => { ui.close(); leaveShopToStreet(); } },
         { id: 'sign-home', label: 'Head home', onClick: () => { ui.close(); goHome(); } },
         { label: 'Not yet', kind: 'quiet', onClick: () => ui.close() },
       ],
@@ -1411,7 +1363,7 @@ function shopSignCard() {
   return ui.open({
     id: 'shop-sign', eyebrow, title: 'Closed',
     body: [el('p', {}, why), el('p', { class: 'note' }, 'The back room is open while the shop’s shut.')],
-    actions: [{ id: 'sign-home', label: 'Head home', kind: 'primary', onClick: () => { ui.close(); goHome(); } }, { id: 'sign-hours', label: 'Set the weekly hours', onClick: () => openShopHoursPanel() }, { label: 'Stay', kind: 'quiet', onClick: () => ui.close() }],
+    actions: [{ id: 'sign-out', label: 'Step out to the street', kind: 'primary', onClick: () => { ui.close(); leaveShopToStreet(); } }, { id: 'sign-home', label: 'Head home', onClick: () => { ui.close(); goHome(); } }, { id: 'sign-hours', label: 'Set the weekly hours', onClick: () => openShopHoursPanel() }, { label: 'Stay', kind: 'quiet', onClick: () => ui.close() }],
   });
 }
 
@@ -1594,6 +1546,7 @@ function openHomeBoard() {
     ],
     actions: [
       { id: 'home-arrange', label: 'Rearrange the furniture', kind: 'primary', onClick: () => startArranging() },
+      { id: 'home-landlord', label: 'Go downstairs: the landlord', onClick: () => { ui.close(); openLocation(g, 'apartment'); } },
       { label: 'Close', kind: 'quiet', onClick: () => ui.close() },
     ],
   });
@@ -2108,6 +2061,7 @@ function update(dt) {
     if (world.room === 'city') {
       syncKeepers(dt);
       pedestrians?.update(dt);
+      maybeStartNightWalk();
       const c = player.center, d = cityLayout.districtAt(Math.floor(c.x / 16), Math.floor(c.y / 16));
       if (d && d.id !== lastDistrict) { if (lastDistrict) ui.toast(d.name, 1400, { minor: true }); lastDistrict = d.id; }
       // v2.2: Old Market Square, by name, as you walk into it.
@@ -3132,6 +3086,15 @@ function interact(t) {
     case 'loc': {
       const id = cityLayout.doors[`${t.hit.tx},${t.hit.ty}`];
       if (id === 'apartment') return goHome();   // Phase 27: your place, to walk around in
+      // A night zone's door, after dark: pack and go in. (By day it is an ordinary building you can scout.)
+      const zl = S.City.loc(id);
+      if (zl?.zone && NW.canRun(CAL.seasonOf(st.day), clock.cycle.minuteOfDay)) {
+        if (!(world.night === 'city' || nightRunOk())) return ui.toast(nightRunUsed() ? 'You’ve already been out tonight.' : 'Not now.', 2600);
+        const z = S.DATA.zones.find(z => z.id === zl.zone);
+        return z && openZoneDoor(g, z, enterZoneFromDoor, { shield: shieldPreview(), eyebrow: `${CAL.formatDate(st.day)} · ${clock.label}` });
+      }
+      // Your shop's own door: walk straight in when it isn't open for business (no detour via home). It is shut to you only while it is open.
+      if (id === HOME_ID && !nightCity()) return enterShopFromStreet();
       // v2.4: at night only the late places are open.
       if (isNight() && id === 'chapel') return G.cemeteryOf(world).gear.gate ? (ui.toast('Mike’s key turns in the side gate. The churchyard, after dark.', 2200), enterCemetery(true)) : ui.toast('St. Brigid’s is locked. The side gate to the churchyard is locked too. Mike has the key.', 2800);
       if (isNight() && extraPlace(id)?.enter) { const no = NC.nightOpen(id, clock.minute); if (!no.open) return ui.toast(no.sign, 2600); return enterPlace(extraPlace(id)); }
@@ -3306,7 +3269,15 @@ function otherDoor() {
     const shut = st.story.door === 'shut';
     return ui.toast(shut ? D.shut : st.story.pages.includes('p4') ? 'It doesn’t move. The wood is warm, like a door with a room behind it.' : 'An old door, painted shut. It doesn’t go anywhere. You’re fairly sure.', 3600);
   }
-  ui.toast('The other door is open. Choose it from the zones when night falls.', 3800);
+  if (!NW.canRun(CAL.seasonOf(st.day), clock.cycle.minuteOfDay)) return ui.toast('The other door is open. Come back after dark.', 3200);
+  if (!(world.night === 'city' || nightRunOk())) return ui.toast(nightRunUsed() ? 'You’ve already been out tonight.' : 'Not now.', 2600);
+  const z = S.DATA.zones.find(z => z.secret);
+  return z && openZoneDoor(g, z, enterZoneFromDoor, { shield: shieldPreview(), eyebrow: `${CAL.formatDate(st.day)} · ${clock.label}` });
+}
+// A zone's own door, in the dark: the run starts here (there is no menu to choose it from).
+function enterZoneFromDoor(zoneId) {
+  st.phase = 'night';
+  enterZone(zoneId);
 }
 
 function enterZone(zoneId) {
@@ -3997,7 +3968,7 @@ globalThis.__tma = {
   audio, talkTo, cityLayout, T, enterPlace: id => enterPlace(extraPlace(id) ?? WALK_INS[id]), leavePlace, spawnEvent: id => spawnEvent(id), setWeather: t => setWeatherOverride(t), get weather() { return todayWeather(); }, weatherFx, get eventEnt() { return eventEnt; }, toggleRide, get placeCrowd() { return placeCrowd; },
   get st() { return st; }, get crowd() { return crowd; }, get world() { return world; }, refreshSeason, parkToday, CAL, get fishing() { return fishing; }, beachToday,
   G, BN, yard: () => nightArea(), tollBell, get target() { return target; }, openGrave, NC, NS, MOON, startNightCity, startNightShop, nightState: () => nightState(), placeSight, nightSpots: () => nightSpots(), nightTarget: () => nightTarget(), nightInteract: e => nightInteract(e), inTheDark: () => inTheDark(), tackleHooks: () => tackleHooks(),
-  get loop() { return loop; }, groundNow: () => groundNow(), get cityLayout() { return cityLayout; }, placeAt, sleep, continuousBed, shopSignCard, endShopSession, openShopHoursPanel, collapseScene, syncSimDate, afterTakeJob: c => g.afterTakeJob(c), openDisplay: slot => openDisplay(g, slot), climateNow: () => climateNow(), groundNow: () => groundNow(), openWeatherPanel: () => openWeatherPanel(), openSettings: sec => openSettings(sec), weatherOn: d => weatherOn(st.seed ?? 0, d), sleepFx, rng: () => rng, openNight, cityLayout, CR, N, zone, enterZone, endRun, morningChoice,
+  get loop() { return loop; }, openZoneDoor: id => { const z = S.DATA.zones.find(z => z.id === id); return openZoneDoor(g, z, enterZoneFromDoor, { shield: shieldPreview() }); }, groundNow: () => groundNow(), get cityLayout() { return cityLayout; }, placeAt, sleep, continuousBed, shopSignCard, endShopSession, openShopHoursPanel, enterShopFromStreet, leaveShopToStreet, collapseScene, syncSimDate, afterTakeJob: c => g.afterTakeJob(c), openDisplay: slot => openDisplay(g, slot), climateNow: () => climateNow(), groundNow: () => groundNow(), openWeatherPanel: () => openWeatherPanel(), openSettings: sec => openSettings(sec), weatherOn: d => weatherOn(st.seed ?? 0, d), sleepFx, rng: () => rng, openNight, cityLayout, CR, N, zone, enterZone, endRun, morningChoice,
   guide, speech, wt, finishPrologue, syncShop, shopMap, staffFloor, autosave, quitToTitle,
   interact: t => interact(t), openStanding: () => openStanding(g, () => ui.close()), openBag: () => openBag(g, () => ui.close()),
   board: tab => openRenovation(g, { tab }), chooseDay: w => chooseDay(w), openHomeDoor: () => openHomeDoor(), goHome: () => goHome(), syncHome: () => syncHome(), arranger, openMagic: w => openMagicAct(w ?? 'Outside the Brass Lantern'), get magician() { return magician; }, arrange: () => startArranging(), stopArranging: () => stopArranging(), arrangeAct: () => arrangeAct(), arrangeTo: (tx, ty) => { arranger.point(tx, ty); }, tileToScreen: (tx, ty) => ({ x: (tx * 16 + 8 - camera.ix) * renderer.scale / renderer.dpr, y: (ty * 16 + 8 - camera.iy) * renderer.scale / renderer.dpr }), get layout() { return world.shop?.layout; }, shopRoom: () => shopRoom(), syncLook, god, openGodMenu: () => openGodMenu(() => ui.close()), offerUpdate, whatsNewOnce,

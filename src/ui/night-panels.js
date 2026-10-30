@@ -44,6 +44,32 @@ export function openZones(g, onEnter, onBack, extra = {}) {
   });
 }
 
+// Phase 30 (the flow): there is no "where tonight?" menu. After dark you go to the place itself; at its door this card
+// shows what is in there and lets you pack for it. onEnter(zoneId) starts the run.
+export function openZoneDoor(g, zone, onEnter, extra = {}) {
+  const { ui } = g, st = g.st;
+  const pack = Object.entries(DATA.kit).filter(([, k]) => k.run);
+  const block = N.enterBlocker(st, zone);
+  ui.open({
+    id: 'zone-door', eyebrow: `${extra.eyebrow ?? 'Night'} · energy ${st.energy}/${st.maxEnergy} · stress ${st.stress}`, title: zone.name,
+    body: [
+      iconSvg(zone.icon, 'px-icon'),
+      el('p', {}, zone.sub),
+      el('p', { class: 'note' }, `Danger ${'▮'.repeat(zone.danger)}${'▯'.repeat(4 - zone.danger)} · ${zone.energy} energy. Climb out where you came in to keep everything. If the night runs out you lose a third of what you carry; if your nerve breaks you lose half and some Heat.`),
+      extra.shield ? el('p', { class: 'note shield-note' }, `Kristen’s shield: the first ${extra.shield} stress you take tonight won’t touch your nerve.`) : null,
+      block ? el('p', { class: 'note warnline', id: 'zone-block' }, block) : null,
+      el('div', { class: 'field' }, el('p', { class: 'label' }, 'Pack for the run'),
+        pack.map(([key, k]) => el('label', { class: 'toggle', for: `pack-${key}` },
+          el('span', {}, `${k.name} ×${st.kit[key]}`, el('small', { class: 'block-note' }, k.note)),
+          el('input', { type: 'checkbox', id: `pack-${key}`, checked: !!st.pack[key], disabled: !(st.kit[key] > 0), onchange: e => { st.pack[key] = e.target.checked; } })))),
+    ],
+    actions: [
+      { id: `zone-${zone.id}`, label: zone.secret ? 'Open the other door' : 'Go in', kind: block ? '' : 'primary', disabled: !!block, onClick: () => onEnter(zone.id) },
+      { label: 'Not tonight', kind: 'quiet', onClick: () => ui.close() },
+    ],
+  });
+}
+
 // ---------- the fight ----------
 
 export function openFight(g, { onEnd, onKnockout }) {

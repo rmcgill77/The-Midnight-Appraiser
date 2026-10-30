@@ -275,6 +275,14 @@ phase when we plan it.
 - **Status: Phase 32 is built (32a-32f); polish after play remains.**
 - Likely files: `src/data/city.js`, `src/data/city-tiles.js`, `src/data/tiles.js`.
 
+### Flow change (owner request after 3.0.0): doors and the night
+- The apartment's front door and the shop's street door are plain doors: walk in and out freely whenever the shop is not
+  open (no "head home" card). Opening the shop is done only at the shop, at its sign.
+- There is no "how will you spend tonight" menu. After dark, stepping out into the town starts the night walk by itself
+  (once a night); the night zones are entered from their own doors in the city (Suds Laundromat, the Line 9 entrance, the
+  Level B4 garage, St. Agnes), where a card shows the danger, the energy cost and the pack for the run; the other door in the
+  basement does the same for Beneath Old Market. The landlord (rent, rest) is on the apartment's board.
+
 ### Refinement pass (after Phase 32, owner's order: characters, roads, look)
 - **Characters (done):** the walking figure now has real drawings for the ten newer hairstyles and ten
   newer hats (no more borrowing a near neighbour); the Cowboy hat (creased crown, curled brim) and

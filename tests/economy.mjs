@@ -53,21 +53,20 @@ const morning = await T(() => ({ left: __tma.st.ap.left, max: __tma.st.ap.max })
 assert.equal(morning.left, morning.max, 'a fresh budget in the morning');
 
 // 5. one night run a night
-await T(() => { __tma.clock.cycle.t = 3 * 1440 + 22 * 60; __tma.openHomeDoor(); });
-await page.waitForSelector('#door-night-city');
-await page.click('#door-night-city');
-await page.waitForFunction(() => __tma.world.night === 'city');
+await T(() => { __tma.placeAt('apartment', 5, 5, 'down'); __tma.clock.cycle.t = 3 * 1440 + 22 * 60; });
+await T(() => __tma.openHomeDoor());
+await page.waitForFunction(() => __tma.world.night === 'city', null, { timeout: 8000 });
 await settle();
 // the walk is over (the player went home): back to free time, still the same night
-await T(() => { __tma.clock.cycle.t = 3 * 1440 + 23 * 60; __tma.clock.timed = null; __tma.world.night = null; __tma.st.phase = 'errands'; __tma.world.dayMode = 'city'; __tma.clock.state = 'running'; __tma.openHomeDoor(); });
-await page.waitForSelector('#door-street');
-assert.equal(await page.locator('#door-night-city').count(), 0, 'no second run tonight');
-assert.equal(await page.locator('#door-night-zones').count(), 0);
-assert.match(await page.innerText('#door-been-out'), /already been out tonight/);
-await page.locator('.btn:visible:has-text("Not yet")').first().click();
+await T(() => { __tma.clock.cycle.t = 3 * 1440 + 23 * 60; __tma.clock.timed = null; __tma.world.night = null; __tma.st.phase = 'errands'; __tma.world.dayMode = 'city'; __tma.clock.state = 'running'; __tma.placeAt('apartment', 5, 5, 'down'); });
+await T(() => __tma.openHomeDoor());
+await page.waitForFunction(() => __tma.world.room === 'city');
+await page.waitForTimeout(1200);
+assert.equal(await T(() => __tma.world.night), null, 'no second run tonight');
 // the next night it's available again
-await T(() => { __tma.clock.cycle.t = 4 * 1440 + 22 * 60; __tma.openHomeDoor(); });
-await page.waitForSelector('#door-night-city');
+await T(() => { __tma.placeAt('apartment', 5, 5, 'down'); __tma.clock.cycle.t = 4 * 1440 + 22 * 60; });
+await T(() => __tma.openHomeDoor());
+await page.waitForFunction(() => __tma.world.night === 'city', null, { timeout: 8000 });
 
 await close();
 if (problems.length) { console.error('FAIL\n' + problems.join('\n')); process.exit(1); }
