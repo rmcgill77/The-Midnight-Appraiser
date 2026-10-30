@@ -1225,6 +1225,18 @@ function openMagicAct(where) {
 // Every day starts in your apartment, across the street from the shop, and every night ends
 // there. The front door is where you choose the day.
 function wakeUp() { const w = APARTMENT.wake; placeAt('apartment', w.tx, w.ty, w.facing); }
+const HOME_ID = S.DATA.locations.find(l => l.home)?.id ?? 'shop';
+// From the street into your shop and back out again, freely, whenever it is not open.
+function enterShopFromStreet() {
+  if (world.shopSession) return ui.toast('The shop’s open. You can’t come and go until you close.', 2400);
+  const sp = shopRoom().spawn;
+  goThrough({ room: 'shop', tx: sp.tx, ty: sp.ty, facing: 'up' });
+}
+function leaveShopToStreet() {
+  if (world.shopSession) return ui.toast('The shop’s open. The front door stays shut until you close.', 2400);
+  const st0 = cityLayout.locs[HOME_ID].stand;
+  goThrough({ room: 'city', tx: st0.tx, ty: st0.ty, facing: 'down' });
+}
 function goHome() { const d = APARTMENT.door; goThrough({ room: 'apartment', tx: d.tx, ty: d.ty, facing: 'up' }); }
 const youSay = (lines, opts = {}) => speech.say([].concat(lines).map(t => ({ who: 'you', text: t })), { who: 'you', ...opts });
 
@@ -1402,6 +1414,7 @@ function shopSignCard() {
       actions: [
         { id: 'open-shop', label: `Open the shop until ${clockText(win.to)}`, kind: 'primary', onClick: () => openShopSession(win) },
         { id: 'sign-hours', label: 'Set the weekly hours', onClick: () => openShopHoursPanel() },
+        { id: 'sign-out', label: 'Step out to the street', onClick: () => { ui.close(); leaveShopToStreet(); } },
         { id: 'sign-home', label: 'Head home', onClick: () => { ui.close(); goHome(); } },
         { label: 'Not yet', kind: 'quiet', onClick: () => ui.close() },
       ],
@@ -1411,7 +1424,7 @@ function shopSignCard() {
   return ui.open({
     id: 'shop-sign', eyebrow, title: 'Closed',
     body: [el('p', {}, why), el('p', { class: 'note' }, 'The back room is open while the shop’s shut.')],
-    actions: [{ id: 'sign-home', label: 'Head home', kind: 'primary', onClick: () => { ui.close(); goHome(); } }, { id: 'sign-hours', label: 'Set the weekly hours', onClick: () => openShopHoursPanel() }, { label: 'Stay', kind: 'quiet', onClick: () => ui.close() }],
+    actions: [{ id: 'sign-out', label: 'Step out to the street', kind: 'primary', onClick: () => { ui.close(); leaveShopToStreet(); } }, { id: 'sign-home', label: 'Head home', onClick: () => { ui.close(); goHome(); } }, { id: 'sign-hours', label: 'Set the weekly hours', onClick: () => openShopHoursPanel() }, { label: 'Stay', kind: 'quiet', onClick: () => ui.close() }],
   });
 }
 
@@ -3132,6 +3145,8 @@ function interact(t) {
     case 'loc': {
       const id = cityLayout.doors[`${t.hit.tx},${t.hit.ty}`];
       if (id === 'apartment') return goHome();   // Phase 27: your place, to walk around in
+      // Your shop's own door: walk straight in when it isn't open for business (no detour via home). It is shut to you only while it is open.
+      if (id === HOME_ID && !nightCity()) return enterShopFromStreet();
       // v2.4: at night only the late places are open.
       if (isNight() && id === 'chapel') return G.cemeteryOf(world).gear.gate ? (ui.toast('Mike’s key turns in the side gate. The churchyard, after dark.', 2200), enterCemetery(true)) : ui.toast('St. Brigid’s is locked. The side gate to the churchyard is locked too. Mike has the key.', 2800);
       if (isNight() && extraPlace(id)?.enter) { const no = NC.nightOpen(id, clock.minute); if (!no.open) return ui.toast(no.sign, 2600); return enterPlace(extraPlace(id)); }
@@ -3997,7 +4012,7 @@ globalThis.__tma = {
   audio, talkTo, cityLayout, T, enterPlace: id => enterPlace(extraPlace(id) ?? WALK_INS[id]), leavePlace, spawnEvent: id => spawnEvent(id), setWeather: t => setWeatherOverride(t), get weather() { return todayWeather(); }, weatherFx, get eventEnt() { return eventEnt; }, toggleRide, get placeCrowd() { return placeCrowd; },
   get st() { return st; }, get crowd() { return crowd; }, get world() { return world; }, refreshSeason, parkToday, CAL, get fishing() { return fishing; }, beachToday,
   G, BN, yard: () => nightArea(), tollBell, get target() { return target; }, openGrave, NC, NS, MOON, startNightCity, startNightShop, nightState: () => nightState(), placeSight, nightSpots: () => nightSpots(), nightTarget: () => nightTarget(), nightInteract: e => nightInteract(e), inTheDark: () => inTheDark(), tackleHooks: () => tackleHooks(),
-  get loop() { return loop; }, groundNow: () => groundNow(), get cityLayout() { return cityLayout; }, placeAt, sleep, continuousBed, shopSignCard, endShopSession, openShopHoursPanel, collapseScene, syncSimDate, afterTakeJob: c => g.afterTakeJob(c), openDisplay: slot => openDisplay(g, slot), climateNow: () => climateNow(), groundNow: () => groundNow(), openWeatherPanel: () => openWeatherPanel(), openSettings: sec => openSettings(sec), weatherOn: d => weatherOn(st.seed ?? 0, d), sleepFx, rng: () => rng, openNight, cityLayout, CR, N, zone, enterZone, endRun, morningChoice,
+  get loop() { return loop; }, groundNow: () => groundNow(), get cityLayout() { return cityLayout; }, placeAt, sleep, continuousBed, shopSignCard, endShopSession, openShopHoursPanel, enterShopFromStreet, leaveShopToStreet, collapseScene, syncSimDate, afterTakeJob: c => g.afterTakeJob(c), openDisplay: slot => openDisplay(g, slot), climateNow: () => climateNow(), groundNow: () => groundNow(), openWeatherPanel: () => openWeatherPanel(), openSettings: sec => openSettings(sec), weatherOn: d => weatherOn(st.seed ?? 0, d), sleepFx, rng: () => rng, openNight, cityLayout, CR, N, zone, enterZone, endRun, morningChoice,
   guide, speech, wt, finishPrologue, syncShop, shopMap, staffFloor, autosave, quitToTitle,
   interact: t => interact(t), openStanding: () => openStanding(g, () => ui.close()), openBag: () => openBag(g, () => ui.close()),
   board: tab => openRenovation(g, { tab }), chooseDay: w => chooseDay(w), openHomeDoor: () => openHomeDoor(), goHome: () => goHome(), syncHome: () => syncHome(), arranger, openMagic: w => openMagicAct(w ?? 'Outside the Brass Lantern'), get magician() { return magician; }, arrange: () => startArranging(), stopArranging: () => stopArranging(), arrangeAct: () => arrangeAct(), arrangeTo: (tx, ty) => { arranger.point(tx, ty); }, tileToScreen: (tx, ty) => ({ x: (tx * 16 + 8 - camera.ix) * renderer.scale / renderer.dpr, y: (ty * 16 + 8 - camera.iy) * renderer.scale / renderer.dpr }), get layout() { return world.shop?.layout; }, shopRoom: () => shopRoom(), syncLook, god, openGodMenu: () => openGodMenu(() => ui.close()), offerUpdate, whatsNewOnce,
