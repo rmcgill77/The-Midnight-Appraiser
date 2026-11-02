@@ -95,7 +95,7 @@ export function cleanLook(look) {
     const n = Number.isInteger(look?.[k]) ? look[k] : fallback;
     out[k] = Math.max(0, Math.min(LIST_OF[k].length - 1, n));
   }
-  // height: 1 was always 'tall' (Dex); 2 short and 3 very tall came with Phase 31c.
+  // height: 1 was always 'tall' (Rex); 2 short and 3 very tall came with Phase 31c.
   if (look?.height) out.height = Number.isInteger(look.height) && look.height >= 1 && look.height < PARTS.height.length ? look.height : 1;
   for (const k of EXTRA_KEYS) if (Number.isInteger(look?.[k]) && look[k] > 0 && look[k] < PARTS[k].length) out[k] = look[k];
   if (out.extra2 && Number.isInteger(look?.extra2Color) && look.extra2Color >= 0 && look.extra2Color < CLOTH.length) out.extra2Color = look.extra2Color;

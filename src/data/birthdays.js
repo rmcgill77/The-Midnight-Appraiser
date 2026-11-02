@@ -8,7 +8,7 @@ import { isMonthDay, weekdayName, MONTHS } from '../game/calendar.js';
 
 export const BIRTHDAYS = {
   // The townsfolk.
-  Jackson: '01-21', Morgan: '07-08', Kristen: '07-07', Pablo: '05-05', Ryan: '09-25', Jade: '04-16', Erin: '07-24', Dex: '09-01', Stuart: '10-31',
+  Jackson: '01-21', Morgan: '07-08', Kristen: '07-07', Pablo: '05-05', Ryan: '09-25', Jade: '04-16', Erin: '07-24', Rex: '09-01', Stuart: '10-31',
   // Staff in town.
   Lou: '02-05', Teddy: '06-11', Abernathy: '08-18', Dot: '11-22', Rose: '06-26',
   // The shopkeepers.
@@ -34,7 +34,7 @@ const THANKS = {
   Lou: 'Nobody remembers that. Fine. This one’s on the house. Don’t tell anybody.',
   Dot: 'Oh, hon. Fifty-two years and you’re the first customer who’s ever asked. Extra whipped cream for you.',
   Morgan: 'You remembered! I made a list of everyone who’d remember. It was one name long. Now it’s two!',
-  Dex: 'Huh. Thanks. Morgan’s making a cake. Morgan’s making a cake shaped like a book. Of course she is.',
+  Rex: 'Huh. Thanks. Morgan’s making a cake. Morgan’s making a cake shaped like a book. Of course she is.',
   Ryan: 'For me? Watch: I’ll pull a candle out of your ear. …Okay, Erin hid the candles. Thanks, really.',
   Erin: 'Oh, sweetheart. Ryan’s been weird all week; I think he’s planning something with doves. Thank you.',
   Kristen: 'Thanks, shipmate. I don’t do candles. I do one beer and an early night. Okay, two beers.',

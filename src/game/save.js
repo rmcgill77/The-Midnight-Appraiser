@@ -36,6 +36,9 @@ export function migrate(data, target = SAVE_VERSION, migrations = MIGRATIONS) {
     if (!step) throw new Error(`no migration from version ${d.version}`);
     d = step(d);
   }
+  // Rex became Rex after version 6 shipped. Saves key people by name, so rename on every load (harmless when absent).
+  const j = JSON.stringify(d);
+  if (j.includes('"Rex"')) d = JSON.parse(j.split('"Rex"').join('"Rex"'));
   return d;
 }
 

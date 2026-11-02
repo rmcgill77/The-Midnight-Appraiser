@@ -177,13 +177,13 @@ export const RELATIONSHIPS = {
     events: {
       2: ['Can I tell you a library secret? Every book that comes back late has a reason. I write them down.', 'Someone returned a cookbook nine years late with every recipe crossed out but one. Soup. Just soup.', { who: 'you', text: 'What did you write?' }, '“Somebody got better.” I like to think so.'],
       4: ['There’s a book in the stacks that isn’t in the catalog. Nobody checks it out. It moves shelves on its own.', 'I followed it for a month. It always ends up next to whatever I’m about to need.', { who: 'you', text: 'That’s… helpful?' }, 'Very. Slightly terrifying. Mostly helpful.'],
-      6: ['Dex thinks I collect rumors because I like gossip. I collect them because rumors are how a town warns itself.', 'Half of what I tell you is nonsense. The other half kept somebody out of a basement after dark.', { who: 'you', text: 'Which half is which?' }, 'If I knew that, I wouldn’t need the notebook.'],
+      6: ['Rex thinks I collect rumors because I like gossip. I collect them because rumors are how a town warns itself.', 'Half of what I tell you is nonsense. The other half kept somebody out of a basement after dark.', { who: 'you', text: 'Which half is which?' }, 'If I knew that, I wouldn’t need the notebook.'],
       8: ['Your mom used to come in on Thursdays. Always the same table, always the same question: “Anything new about the flood?”', 'I pulled every clipping for her. I still have the folder. I didn’t know what to do with it.', { who: 'you', text: 'Can I see it?' }, 'It’s yours. It was always going to be yours. Come by the desk.'],
       10: ['I made you something. Don’t laugh.', 'A card. A real one, for the special collections. I signed it myself, which I’m not technically allowed to do.', 'And my own copy of the town’s ghost stories, with my notes in the margins. Every one I could check, I checked.', { who: 'you', text: 'Morgan. Thank you.' }, 'Shh. It’s a library.'],
     },
     rewards: { 10: { research: { species: 'wraith', n: 20 } } },
   },
-  Dex: {
+  Rex: {
     fish: 'like', fishReactions: { like: 'Nice one. I’ll grill it. Morgan will read the whole time and say it’s the best fish she ever had.' },
     loves: ['hardware'], likes: ['coin', 'electronics'], dislikes: ['photo'],
     birthday: '09-01',
@@ -216,7 +216,7 @@ export const RELATIONSHIPS = {
       2: ['You want to know the secret to a good taco? It isn’t the meat. It’s the tortilla.', 'Warm it on the flat top until it puffs a little. If it doesn’t puff, it isn’t ready. Same with people.', { who: 'you', text: 'Same with people?' }, 'Give everybody a minute on the heat. They puff up. You’ll see.'],
       4: ['My abuela fed the whole block. Every Sunday. Didn’t matter who you were. You came, you ate.', 'One Sunday a man came nobody knew. Wet hair, no coat, in July. She fed him. He thanked her and walked into the river.', { who: 'you', text: 'He what?' }, 'Walked right in. She set a plate for him every Sunday after. The plate was always clean on Monday.'],
       6: ['You don’t eat. I watch you. Coffee and nerves.', 'Here. A burrito. Don’t argue. Eat it while it’s warm and don’t tell Kristen, she’ll say something about salt.', { who: 'you', text: 'Thanks, Pablo.' }, 'Somebody has to look after the people who look after everybody.'],
-      8: ['I want to open a place. Small. Six stools and a window. My abuela’s recipes on the wall.', 'I’ve been saving. I keep the money in a coffee can, which Dex says is a terrible idea.', { who: 'you', text: 'It is a terrible idea.' }, 'It’s a good can! It has a lid!'],
+      8: ['I want to open a place. Small. Six stools and a window. My abuela’s recipes on the wall.', 'I’ve been saving. I keep the money in a coffee can, which Rex says is a terrible idea.', { who: 'you', text: 'It is a terrible idea.' }, 'It’s a good can! It has a lid!'],
       10: ['I wrote something down for you. My abuela’s remedy, for after a bad night. Ginger, honey, a little chile.', 'She swore it would scare off anything. Even the things out there.', { who: 'you', text: 'Does it work?' }, 'It works on hangovers. The rest, you tell me. I made you a few bottles.'],
     },
     rewards: { 10: { kit: { tincture: 3 } } },
@@ -267,7 +267,7 @@ export const RELATIONSHIPS = {
       love: 'Oh, this is so thoughtful. I’m going to cry. I’m not going to cry. I’m crying a little.',
       like: 'You remembered I like these! Thank you!',
       neutral: 'Aw, thank you! Seriously, you didn’t have to.',
-      dislike: 'It’s… a wrench? Thank you! I’ll give it to Dex. He’ll love it.',
+      dislike: 'It’s… a wrench? Thank you! I’ll give it to Rex. He’ll love it.',
     },
     events: {
       2: ['Can I tell you why I’m always at the Lantern? My apartment is very quiet. Too quiet.', 'Here, somebody’s always talking. Pablo’s cooking, Jackson’s theorizing, Lou’s pretending he doesn’t like us.', { who: 'you', text: 'He likes you.' }, 'I know. He keeps the corner booth for me. Don’t tell him I noticed.'],

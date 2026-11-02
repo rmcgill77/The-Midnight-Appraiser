@@ -172,7 +172,7 @@ function squashShort(g) {
   return [...Array.from({ length: drop.size }, () => Array(g[0].length).fill(null)), ...out];
 }
 
-// Tall (Phase 23, for Dex): the finished figure, a few pixels longer in the body and the
+// Tall (Phase 23, for Rex): the finished figure, a few pixels longer in the body and the
 // legs, using the empty rows above the head. Same face, same width, same feet.
 function stretchTall(g, most = 3) {
   let empty = 0;

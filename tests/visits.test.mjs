@@ -66,8 +66,8 @@ test('visits fit inside the shift and the same seed gives the same time', () => 
 });
 
 test('a boost makes a friend drop by more often; without one nothing changes', () => {
-  const count = boost => { let n = 0; for (let day = 1; day <= 3000; day++) if (shopVisitors(day, 7, boost).includes('Dex')) n++; return n; };
-  const base = count(undefined), same = count(() => 1), boosted = count(name => (name === 'Dex' ? 2 : 1));
+  const count = boost => { let n = 0; for (let day = 1; day <= 3000; day++) if (shopVisitors(day, 7, boost).includes('Rex')) n++; return n; };
+  const base = count(undefined), same = count(() => 1), boosted = count(name => (name === 'Rex' ? 2 : 1));
   assert.equal(base, same, 'a boost of 1 is the old behaviour');
   assert.ok(boosted > base * 1.3, `${boosted} visits with a boost of 2 vs ${base} without`);
 });
