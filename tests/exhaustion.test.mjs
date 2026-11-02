@@ -43,9 +43,9 @@ test('the closer the friend, the more likely they are worried', () => {
 });
 
 test('reactions: the closest few friends, strongest first, with a line each', () => {
-  const people = [{ name: 'Kristen', hearts: 7 }, { name: 'Dex', hearts: 0 }, { name: 'Ryan', hearts: 2 }, { name: 'Erin', hearts: 4 }, { name: 'Mina', hearts: 1 }];
+  const people = [{ name: 'Kristen', hearts: 7 }, { name: 'Rex', hearts: 0 }, { name: 'Ryan', hearts: 2 }, { name: 'Erin', hearts: 4 }, { name: 'Mina', hearts: 1 }];
   const r = collapseReactions(people, new RNG(5));
   assert.deepEqual(r.map(x => x.name), ['Kristen', 'Erin', 'Ryan']);
   for (const x of r) { assert.ok(['worried', 'annoyed', 'unaware'].includes(x.tier)); assert.ok(x.line.includes(x.name)); }
-  assert.deepEqual(collapseReactions([{ name: 'Dex', hearts: 0 }], new RNG(5)), []);
+  assert.deepEqual(collapseReactions([{ name: 'Rex', hearts: 0 }], new RNG(5)), []);
 });

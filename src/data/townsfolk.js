@@ -6,10 +6,10 @@
 // is shut, they hang around the Brass Lantern, where most of the town ends up sooner or later.
 
 export const CUSTOM_NPCS = [
-  { id: 'Morgan', name: 'Morgan', title: 'The Nerdy Librarian', job: 'library', spouse: 'Dex',
+  { id: 'Morgan', name: 'Morgan', title: 'The Nerdy Librarian', job: 'library', spouse: 'Rex',
     blurb: 'Runs the circulation desk at the Kessler University Library. Knows every rumor in town and has a book about most of them.' },
   // Phase 24: testers with no job yet. They're regulars at the Lantern until they get one.
-  { id: 'Dex', name: 'Dex', title: 'Lantern regular', job: null, spouse: 'Morgan', blurb: 'Tall, unhurried, married to Morgan. Saves her a seat at the Lantern every night.' },
+  { id: 'Rex', name: 'Rex', title: 'Lantern regular', job: null, spouse: 'Morgan', blurb: 'Tall, unhurried, married to Morgan. Saves her a seat at the Lantern every night.' },
   { id: 'Pablo', name: 'Pablo', title: 'Lantern regular', job: null, blurb: 'Knows the best cheap food in every district and will tell you about all of it.' },
   { id: 'Jackson', name: 'Jackson', title: 'Lantern regular', job: null, blurb: 'Has a theory about everything. Some of them are even right.' },
   { id: 'Stuart', name: 'Stuart', title: 'Lantern regular', job: null, blurb: 'Dresses for a funeral, laughs at the wrong moments, reads the obituaries for fun.' },

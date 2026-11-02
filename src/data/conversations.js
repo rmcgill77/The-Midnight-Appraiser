@@ -58,7 +58,7 @@ const firstSentence = t => (String(t || '').match(/^.*?[.!?](\s|$)/)?.[0] ?? Str
 const atBar = c => c.place === 'bar';
 const britHello = c => {
   if (c.flag('intro') === 'cold' && !c.at('acquaintance')) return 'Oh. Hi, Detective.';
-  if (atBar(c)) return pickToday(['Library’s shut, so I’m off duty. Mostly. I brought a book.', 'Oh, hey! Pull up a stool. I’m between chapters.', c.here?.includes('Dex') ? 'Dex saved me a seat. He always saves me a seat.' : 'Have you seen Dex? Tall, shaggy, probably holding my drink.'], c);
+  if (atBar(c)) return pickToday(['Library’s shut, so I’m off duty. Mostly. I brought a book.', 'Oh, hey! Pull up a stool. I’m between chapters.', c.here?.includes('Rex') ? 'Rex saved me a seat. He always saves me a seat.' : 'Have you seen Rex? Tall, shaggy, probably holding my drink.'], c);
   if (c.at('close')) return pickToday([`${c.player ?? 'You'}! My favorite patron in the whole university.`, 'There you are. I saved you the good chair. The one that doesn’t squeak.', 'Finally! I’ve been saving up gossip AND footnotes.'], c);
   if (c.at('friend')) return pickToday(['Hey, you! I pulled some books for you. Okay, for me. But you can look.', 'Oh good, it’s you. I found something weird in the archive.', 'Shh! …Kidding. Hi!'], c);
   if (c.at('acquaintance')) return pickToday(['Hi! Need anything looked up?', 'Oh, hi! How’s the creepy basement?', 'Welcome back to the stacks.'], c);
@@ -220,7 +220,7 @@ export const LOU = {
         ], c, 1)];
       },
     },
-    crowd: { say: ['The regulars. Everybody in this town ends up at the Lantern sooner or later. Some of them just never leave.', 'Dex is Morgan’s husband, the tall one. Pablo knows food, Jackson knows everything, Stuart knows the obituaries. Jade keeps the rest of them honest. Erin used to, before she opened her design shop.', 'The one in uniform is Kristen. Navy medic. Coffee till five, beer after. If you fall off a stool, she’s the one you want.'] },
+    crowd: { say: ['The regulars. Everybody in this town ends up at the Lantern sooner or later. Some of them just never leave.', 'Rex is Morgan’s husband, the tall one. Pablo knows food, Jackson knows everything, Stuart knows the obituaries. Jade keeps the rest of them honest. Erin used to, before she opened her design shop.', 'The one in uniform is Kristen. Navy medic. Coffee till five, beer after. If you fall off a stool, she’s the one you want.'] },
     aboutBrit: { say: ['That’s Morgan. Runs the desk at the university library. When it’s shut, she’s in here.', 'Knows every rumor in town and has a book about half of them. Go say hi, she doesn’t bite.'] },
   },
 };
@@ -491,9 +491,9 @@ const tester = ({ name, meet, hello, smallTalk, story, species, round = 'Buy you
   },
 });
 
-export const DEX = tester({
-  name: 'Dex', species: 'hound',
-  meet: ['Hey. Dex. I’m Morgan’s husband, so you’ve probably heard a lot about me. Most of it’s true.', 'You run the pawn shop. She talks about your basement like it’s a tourist attraction.'],
+export const REX = tester({
+  name: 'Rex', species: 'hound',
+  meet: ['Hey. Rex. I’m Morgan’s husband, so you’ve probably heard a lot about me. Most of it’s true.', 'You run the pawn shop. She talks about your basement like it’s a tourist attraction.'],
   hello: c => (c.here?.includes('Morgan') ? pickToday(['Hey. Morgan’s around here somewhere. Follow the sound of footnotes.', 'Pull up a chair. She’s telling the whole booth about a book again.'], c) : pickToday(['Hey. Saving Morgan a seat. She’ll be in when the library shuts.', 'Hey, you. Long day?', 'Evening. Or whatever it is.'], c)),
   smallTalk: ['I hit my head on the door frame coming in. Every time. Lou says he’ll raise it. Lou says a lot of things.', 'Morgan got me a library card. I’ve never once used it. Don’t tell her.', 'Our anniversary’s coming up. I’m thinking a book. She’ll have read it. She’s read all of them.', 'Being tall is mostly getting asked to reach things.'],
   story: ['Walking home last week, something kept pace with me on the other side of the street. Big. Low. Never in the light.', 'I stopped, it stopped. I walked, it walked. Morgan says it’s a story. Morgan wasn’t there.'],
@@ -634,16 +634,16 @@ export const kristenGuard = rel => KRISTEN_GUARD.find(([h]) => Math.floor(Math.m
 }
 
 // ---------- Phase 29: the married couples ----------
-// Morgan and Dex, Erin and Ryan. Each tells you, once, how they met (their own version), and
+// Morgan and Rex, Erin and Ryan. Each tells you, once, how they met (their own version), and
 // they notice when the other one is in the room.
 const HOW_MET = {
-  Morgan: ['Dex had sixty-three dollars in late fees. Sixty-three! On one book. A field guide to North American birds.', 'He came in to pay it off and asked me what the best book in the library was. I said it depends who’s asking. Married two years later. He never did finish the bird book.'],
-  Dex: ['I had a late fee. A big one. I went in to pay it and the librarian looked at me like I’d personally hurt the book.', 'Then she smiled, and I asked her for a recommendation, and I’ve been reading whatever she hands me ever since. Best fine I ever paid.'],
+  Morgan: ['Rex had sixty-three dollars in late fees. Sixty-three! On one book. A field guide to North American birds.', 'He came in to pay it off and asked me what the best book in the library was. I said it depends who’s asking. Married two years later. He never did finish the bird book.'],
+  Rex: ['I had a late fee. A big one. I went in to pay it and the librarian looked at me like I’d personally hurt the book.', 'Then she smiled, and I asked her for a recommendation, and I’ve been reading whatever she hands me ever since. Best fine I ever paid.'],
   Erin: ['He did a card trick at a gallery opening I was working. He got it wrong. He pulled out my business card instead of my card. He’d pocketed it while I wasn’t looking.', 'He called the next day and said, “Is this your card?” I married him anyway.'],
   Ryan: ['She’ll tell you I got the trick wrong. I’ll have you know I got exactly the card I wanted.', 'Best trick I ever did. Only one I’ll never do again. You only need it to work once.'],
 };
 for (const [name, lines] of Object.entries(HOW_MET)) {
-  const convo = { Morgan: BRIT, Dex: DEX, Erin: ERIN, Ryan: RYAN }[name], ch = convo.nodes.hello.choices;
+  const convo = { Morgan: BRIT, Rex: REX, Erin: ERIN, Ryan: RYAN }[name], ch = convo.nodes.hello.choices;
   ch.splice(ch.length - 1, 0, { text: 'How did you two meet?', if: c => c.p.met && c.at('acquaintance') && !c.flag('howMet'), effects: { flag: { howMet: true }, rel: 2 }, next: 'howMet' });
   convo.nodes.howMet = { say: lines };
 }
@@ -768,7 +768,7 @@ export const MIKE = {
 };
 const T_pick = (list, c) => list[Math.abs(c.day * 7 + (c.p?.talks ?? 0) * 3) % list.length];
 
-export const TESTERS = { Dex: DEX, Pablo: PACO, Jackson: RANDO, Stuart: STYG, Jade: JAE, Erin: ERIN, Kristen: KRISTEN };
+export const TESTERS = { Rex: REX, Pablo: PACO, Jackson: RANDO, Stuart: STYG, Jade: JAE, Erin: ERIN, Kristen: KRISTEN };
 export const TESTER_NAMES = Object.keys(TESTERS);
 
 export function convoFor(name) {

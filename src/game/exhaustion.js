@@ -58,13 +58,13 @@ const FRIEND_LINES = {
     annoyed: 'Pablo is annoyed. “I held your order a whole day. It went cold. Don’t make me waste a burrito.”',
     unaware: 'Pablo was slammed and didn’t notice you were gone.',
   },
-  Dex: {
-    worried: 'Dex was frantic. “I almost called somebody. Please sleep, okay? I can’t carry you and the groceries.”',
-    annoyed: 'Dex is annoyed. “You went dark for a whole day. I had a whole speech ready, and nobody to give it to.”',
-    unaware: 'Dex didn’t notice. He’d been up for two days himself.',
+  Rex: {
+    worried: 'Rex was frantic. “I almost called somebody. Please sleep, okay? I can’t carry you and the groceries.”',
+    annoyed: 'Rex is annoyed. “You went dark for a whole day. I had a whole speech ready, and nobody to give it to.”',
+    unaware: 'Rex didn’t notice. He’d been up for two days himself.',
   },
   Morgan: {
-    worried: 'Morgan was frantic. “I HAD A FEELING. I told Dex. A whole day! Promise me you’ll sleep.”',
+    worried: 'Morgan was frantic. “I HAD A FEELING. I told Rex. A whole day! Promise me you’ll sleep.”',
     annoyed: 'Morgan is annoyed. “I felt a disturbance, and you were just asleep on a sidewalk? Unacceptable.”',
     unaware: 'Morgan didn’t notice. Her feelings were busy elsewhere.',
   },

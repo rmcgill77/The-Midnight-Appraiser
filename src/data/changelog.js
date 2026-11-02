@@ -23,7 +23,7 @@ export const CHANGELOG = [
     'Fourteen new things for the shop and your apartment: a globe, a parlor palm, a coat rack, a steamer trunk, a candelabra, a birdcage, a fish tank, a gramophone, a suit of armor, a round rug, a loveseat, a writing desk and a little cactus.',
     'The radio is furniture now. It starts by the kitchen; move it wherever you like to listen.',
     'A Brightness slider in Settings, under Screen. The game is a little brighter to start with, too.',
-    'Ryan’s, Erin’s, Morgan’s and Dex’s birthdays are on their real dates.',
+    'Ryan’s, Erin’s, Morgan’s and Rex’s birthdays are on their real dates.',
   ] },
   { version: '2.5', title: 'The yard and the tide', items: [
     'St. Brigid’s churchyard, through the back door of the chapel. Read the stones: the old carvers usually knew what went in the box.',
@@ -88,7 +88,7 @@ export const CHANGELOG = [
   { version: '1.5', title: 'Couples and birthdays', items: [
     'Kristen’s shield is explained where you need it: in her advice, on the zone list, and as a blue Shield bar under Nerve on a night out. Stress soaks into it first, and it can save you from a knockout.',
     'Kristen can patch you up once a day: less stress the closer you are, and more the morning after a knockout.',
-    'The married couples act like it. Morgan and Dex sit together at the Lantern, couples visit your shop together, and each will tell you how they met.',
+    'The married couples act like it. Morgan and Rex sit together at the Lantern, couples visit your shop together, and each will tell you how they met.',
     'Ryan has lunch with Erin at the Wandering Brush every day from noon to one, out of costume. His table waits with a note.',
     'Everybody in town has a birthday. Check the corkboard at home or the radio, and wish them a happy one on the day.',
     'Beer at the Owl Diner too.',
@@ -127,7 +127,7 @@ export const CHANGELOG = [
     'Arrange the shop yourself: move the display cases anywhere on the open floor and slide the till and the register along the counter. Whatever’s in a case goes with it. Notice board → Arrange.',
     'Decor: a welcome mat, ferns, rugs, an umbrella stand, a brass floor lamp, a reading chair, a marble bust, a grandfather clock and a curio cabinet. Charm keeps people waiting longer and spending more, and a charming enough shop gets extra browsers.',
     'The bar is the Brass Lantern now, bigger and busier: it’s where the whole town ends up, and every shopkeeper spends about half their days off there.',
-    'Six new regulars at the Lantern: Dex (Morgan’s husband), Pablo, Jackson, Stuart, Jade and Erin. Each has a story worth hearing, and they’ll let you buy them a drink.',
+    'Six new regulars at the Lantern: Rex (Morgan’s husband), Pablo, Jackson, Stuart, Jade and Erin. Each has a story worth hearing, and they’ll let you buy them a drink.',
     'Morgan smiles without the teeth now, and looks right from the side.',
   ] },
   { version: '0.23', title: 'Weather', items: [

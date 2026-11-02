@@ -41,7 +41,7 @@ export const SIGNATURE = {
   // Phase 20: the first custom townsperson, drawn from a tester's own avatar.
   Morgan: { build: 0, skin: 1, hair: 13, hairColor: 1, face: 3, facial: 0, hat: 8, hatColor: 20, top: 8, topColor: 18, bottom: 0, bottomColor: 0, extra: 7, extraColor: 21, eyes: 4, eyeColor: 3, brows: 1, mouth: 5, mark: 0, pattern: 0, neck: 0, neckColor: 5 },
   // Phase 24: six more testers, regulars at the Brass Lantern until they're given jobs.
-  Dex: { build: 1, skin: 2, hair: 14, hairColor: 1, face: 0, facial: 1, hat: 0, hatColor: 0, top: 4, topColor: 14, bottom: 2, bottomColor: 0, extra: 0, extraColor: 0, eyes: 2, eyeColor: 1, brows: 2, mouth: 1, mark: 0, pattern: 0, neck: 0, neckColor: 5, height: 1 },
+  Rex: { build: 1, skin: 2, hair: 14, hairColor: 1, face: 0, facial: 1, hat: 0, hatColor: 0, top: 4, topColor: 14, bottom: 2, bottomColor: 0, extra: 0, extraColor: 0, eyes: 2, eyeColor: 1, brows: 2, mouth: 1, mark: 0, pattern: 0, neck: 0, neckColor: 5, height: 1 },
   Pablo: { build: 2, skin: 5, hair: 1, hairColor: 1, face: 0, facial: 2, hat: 0, hatColor: 0, top: 1, topColor: 8, bottom: 2, bottomColor: 4, extra: 0, extraColor: 0, eyes: 0, eyeColor: 0, brows: 2, mouth: 5, mark: 0, pattern: 3, neck: 4, neckColor: 9 },
   Jackson: { build: 1, skin: 0, hair: 1, hairColor: 6, face: 1, facial: 1, hat: 3, hatColor: 8, top: 4, topColor: 13, bottom: 0, bottomColor: 2, extra: 4, extraColor: 3, eyes: 1, eyeColor: 2, brows: 0, mouth: 1, mark: 0, pattern: 0, neck: 0, neckColor: 5 },
   Stuart: { build: 1, skin: 1, hair: 8, hairColor: 1, face: 2, facial: 4, hat: 0, hatColor: 0, top: 0, topColor: 18, bottom: 0, bottomColor: 18, extra: 3, extraColor: 0, eyes: 2, eyeColor: 4, brows: 4, mouth: 0, mark: 1, pattern: 0, neck: 3, neckColor: 18 },

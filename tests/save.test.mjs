@@ -1,7 +1,7 @@
 // Tests for old-save handling. Run: node --test tests/*.test.mjs
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { SaveSlots, SAVE_VERSION, FIRST_SUPPORTED } from '../src/game/save.js';
+import { migrate, SaveSlots, SAVE_VERSION, FIRST_SUPPORTED } from '../src/game/save.js';
 import { createStorage } from '../src/game/storage.js';
 
 const mem = () => { const m = new Map(); return { getItem: k => (m.has(k) ? m.get(k) : null), setItem: (k, v) => m.set(k, v), removeItem: k => m.delete(k) }; };
@@ -98,4 +98,9 @@ test('the preview mode keeps its own saves, apart from the normal ones', () => {
   assert.ok(preview.list()[1].data); assert.equal(normal.list()[1].data, null);
   assert.equal(storage.get('tma-cont.lastSlot'), '2'); assert.equal(storage.get('tma.lastSlot'), null);
   assert.equal(preview.lastSlot(), 2); assert.equal(normal.lastSlot(), null);
+});
+
+test('a save that names Dex loads with Rex instead', () => {
+  const d = migrate({ version: SAVE_VERSION, hearts: { Dex: 3 }, who: 'Dex' });
+  assert.deepEqual(d.hearts, { Rex: 3 }); assert.equal(d.who, 'Rex');
 });
