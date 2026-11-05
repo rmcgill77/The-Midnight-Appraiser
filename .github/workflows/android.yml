@@ -1,0 +1,79 @@
+# Builds the Google Play bundle (.aab) in GitHub's cloud, no Android Studio needed.
+# Run it from the Actions tab: "Build Android bundle" -> Run workflow. The bundle is attached to the run.
+#
+# One-time setup, repo Settings -> Secrets and variables -> Actions -> New repository secret:
+#   KEYSTORE_B64       the upload key, base64 (one long line)
+#   KEYSTORE_PASSWORD  the key's password
+#   KEY_ALIAS          midnight-appraiser-upload
+#   KEY_PASSWORD       the key's password (same value)
+# Without those secrets the run still builds, but the bundle is unsigned and Play will refuse it.
+# See mobile/BUILD.md.
+
+name: Build Android bundle
+on:
+  workflow_dispatch:
+
+jobs:
+  bundle:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - uses: android-actions/setup-android@v3
+
+      - name: Stage the game (same files as the website)
+        working-directory: .
+        run: |
+          mkdir _site
+          cp -r index.html sw.js manifest.webmanifest privacy.html src shared icons _site/
+          [ -d assets ] && cp -r assets _site/ || true
+
+      - name: Install
+        run: npm install
+
+      - name: Prepare the game files
+        run: node scripts/prepare-www.mjs ../_site
+
+      - name: Create and patch the Android project
+        run: |
+          npx cap add android
+          node scripts/patch-android.mjs
+          npx cap sync android
+
+      - name: Build the release bundle
+        run: cd android && ./gradlew bundleRelease
+
+      - name: Sign it
+        env:
+          KEYSTORE_B64: ${{ secrets.KEYSTORE_B64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          if [ -z "$KEYSTORE_B64" ]; then
+            echo "No signing secrets set: uploading the UNSIGNED bundle."
+            mkdir -p dist-play
+            cp android/app/build/outputs/bundle/release/app-release.aab dist-play/midnight-appraiser-UNSIGNED.aab
+          else
+            mkdir -p signing
+            echo "$KEYSTORE_B64" | base64 -d > signing/upload-keystore.jks
+            printf 'storeFile=upload-keystore.jks\nstorePassword=%s\nkeyAlias=%s\nkeyPassword=%s\n' "$KEYSTORE_PASSWORD" "$KEY_ALIAS" "$KEY_PASSWORD" > signing/keystore.properties
+            node scripts/sign-aab.mjs
+          fi
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: midnight-appraiser-aab
+          path: mobile/dist-play/*.aab

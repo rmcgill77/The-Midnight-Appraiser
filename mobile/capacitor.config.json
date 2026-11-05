@@ -1,0 +1,14 @@
+{
+  "appId": "com.ryandm96.midnightappraiser",
+  "appName": "The Midnight Appraiser",
+  "webDir": "www",
+  "backgroundColor": "#0a0b10",
+  "server": {
+    "androidScheme": "https"
+  },
+  "android": {
+    "backgroundColor": "#0a0b10",
+    "allowMixedContent": false,
+    "webContentsDebuggingEnabled": false
+  }
+}
