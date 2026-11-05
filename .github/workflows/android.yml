@@ -13,6 +13,9 @@ name: Build Android bundle
 on:
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   bundle:
     runs-on: ubuntu-latest
@@ -80,3 +83,15 @@ jobs:
         with:
           name: midnight-appraiser-aab
           path: mobile/dist-play/*.aab
+
+      # The same file as a plain download (no zip): a private DRAFT release, visible only to you.
+      # Repo -> Releases -> the newest draft -> tap the .aab under Assets.
+      - name: Attach the bundle to a draft release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VER=$(node -p "require('./app-version.json').versionName")
+          gh release create "android-$VER-run${{ github.run_number }}" dist-play/*.aab --draft \
+            --repo "${{ github.repository }}" \
+            --title "Android bundle $VER (run ${{ github.run_number }})" \
+            --notes "Built by the Build Android bundle workflow. Upload the .aab to Google Play."
