@@ -5,11 +5,12 @@
 //     (light, base, dark, deep) that lean warm in the light and cool in the shadow;
 //   - a dark seam wherever a part sits in front of another (arms over the coat, the coat over the legs);
 //   - the dark outline tinted by whatever it touches.
-// 34a is the body and clothes. Heads use stand-in hair and hats until 34b draws each style.
+// The heads (hair, hats, faces, things worn on the head) are in figure-noir-heads.js.
 // Left is right, mirrored, after painting (the light stays on the same side, as before).
 
 import { makeLayer, mix } from './figure-hd.js';
 import { PARTS, SKINS, HAIR_COLORS, CLOTH, EYE_COLORS, shade } from './figure.js';
+import { paintNoirHead } from './figure-noir-heads.js';
 
 const W = 24, H = 32;
 const INK = '#0b0a10', SHIRT = '#d8d0bc', WHITE = '#efe8d8', GOLD = '#e0a64a', SILVER = '#d4d6dc', LENS = '#9fc6d6',
@@ -45,6 +46,7 @@ function palette(look) {
       fallback: r('#808080'),
     },
     skin, hair, top, bot, ex, neck, eye: EYE_COLORS[look.eyeColor], hat,
+    beard: HAIR_COLORS[look.beardColor ?? look.hairColor], beardD: shade(HAIR_COLORS[look.beardColor ?? look.hairColor], 0.62),
   };
 }
 
@@ -232,9 +234,9 @@ function paintFront(ctx) {
   paintPattern(ctx);
   paintNeck(ctx);
 
-  // --- the head (34a: stand-ins; 34b draws each style) ---
+  // --- the head (figure-noir-heads.js) ---
   R(10, U(NECK), 4, 2, 'neckSkin', -1);
-  paintHead(ctx, front ? 'down' : 'up');
+  paintNoirHead(ctx, front ? 'down' : 'up');
   paintBodyExtras(ctx);
   if (pose === 'carry' && !front) {
     // the sack, full, across your back
@@ -403,7 +405,7 @@ function paintNeck(ctx) {
   if (neck === 'Bandana') { R(9, U(SHOULDER), 6, 1, 'neckw'); R(10, U(12), 4, 1, 'neckw'); O(11, U(13), tie); O(12, U(13), tieD); }
 }
 
-// Things worn on the body (head extras, like glasses and earrings, come with 34b's heads).
+// Things worn on the body (glasses, earrings and the rest are drawn with the head).
 function paintBodyExtras(ctx) {
   const { L, U, view, x0, x1, C, has } = ctx;
   const { R, O, P } = L;
@@ -527,81 +529,7 @@ function paintSide(ctx) {
 
   // --- the head ---
   if (n === 'Turtleneck') { R(11, U(NECK), 4, 2, 'neckw'); } else R(11, U(NECK), 3, 2, 'neckSkin', -1);
-  paintHead(ctx, 'right');
+  paintNoirHead(ctx, 'right');
   paintBodyExtras(ctx);
   if (ctx.opts.signature) { O(sx1, U(13), GOLD); O(sx1, U(14), ctx.frame % 2 ? LENS : '#e8f4f8'); O(sx1 - 1, U(12), '#3a2a20'); }
-}
-
-// ---------- heads (34a stand-ins: three hair shapes and one hat shape) ----------
-// Templates are 12 wide, placed at column 6, so the head is columns 8-15; template row 2 is
-// the top of the head (row 3 of the frame). Skin 1-4 = light..deep; w eye white; e eye;
-// b brow; m mouth. Hair and hat H h d D = light..deep.
-
-const FACE = {
-  down: ['............', '............', '...122223...', '..12222223..', '..12222223..', '..1bb22bb3..', '.21we22ew33.', '..1222n233..', '...22mm23...', '....2233....'],
-  up: ['............', '............', '...122223...', '..12222223..', '..12222223..', '..12222233..', '.2122222333.', '..12222233..', '...222233...', '....2233....'],
-  right: ['............', '............', '...122223...', '..12222223..', '..12222222..', '..122222bb..', '..123322e2..', '..123322222.', '..122222m2..', '....22223...'],
-};
-const FACE_LASH = {
-  down: [...FACE.down.slice(0, 6), '.2ewe22ewe3.', ...FACE.down.slice(7)],
-  right: [...FACE.right.slice(0, 5), '..122222be..', ...FACE.right.slice(6)],
-};
-const HAIR = {
-  short: {
-    down: ['....Hhhh....', '..HHhhhhdd..', '..Hhhhhhdd..', '..hh....dd..', '..h......d..'],
-    up: ['....Hhhh....', '..HHhhhhdd..', '..Hhhhhhdd..', '..hhhhhhdD..', '..hhhhhhdD..', '..hhhhhhdD..', '..hhhhhddd..', '...dddddD...'],
-    right: ['...Hhhh.....', '..HHhhhhhd..', '..Hhhhhhhhd.', '..hhhhhd....', '..hhhh......', '..hhh.......', '..hd........', '..dd........'],
-  },
-  bob: {
-    down: ['...HHhhh....', '..HHhhhhdd..', '.HHhhhhhhdd.', '.Hhhhhh.hdD.', '.hh......dD.', '.hh......dD.', '.hh......dD.', '.hd......DD.', '.dd......DD.'],
-    up: ['...HHhhh....', '..HHhhhhdd..', '.HHhhhhhhdd.', '.Hhhhhhhhdd.', '.hhhhhhhhdD.', '.hhhhhhhhdD.', '.hhhhhhhhdD.', '.hhhhhhhddD.', '.hhhhhhdddD.', '.ddddddDDDD.'],
-    right: ['...HHhhh....', '..HHhhhhhd..', '.HHhhhhhhhd.', '.Hhhhhhhhd..', '.hhhhhh.....', '.hhhhhh.....', '.hhhhhd.....', '.hhhhdd.....', '.dddDD......', '..DD........'],
-  },
-};
-HAIR.long = {
-  down: [...HAIR.bob.down, '.dd......DD.', '.dd......DD.', '.D........D.'],
-  up: [...HAIR.bob.up, '.dhhhhhhddD.', '.ddddddDDDD.', '..DDDDDDDD..'],
-  right: [...HAIR.bob.right.slice(0, 8), '.dhhhhd.....', '.dddddd.....', '.DDDDD......', '..DDD.......'],
-};
-const HAT = {
-  down: ['...hhhhhh...', '..Hhhhhhhd..', '..DDDDDDDD..', 'HHhhhhhhhhdd'],
-  up: ['...hhhhhh...', '..Hhhhhhhd..', '..DDDDDDDD..', 'HHhhhhhhhhdd'],
-  right: ['....hhhhh...', '...Hhhhhhd..', '...DDDDDDD..', '.Hhhhhhhhhhd'],
-};
-const CAP = {   // brimless hats (beanies, berets, caps, scarves) until 34b
-  down: ['...hhhhhh...', '..Hhhhhhhd..', '..Hhhhhhhd..', '..DDDDDDDD..'],
-  up: ['...hhhhhh...', '..Hhhhhhhd..', '..Hhhhhhhd..', '..DDDDDDDD..'],
-  right: ['...hhhhhh...', '..Hhhhhhhhd.', '..Hhhhhhhhd.', '..DDDDDDDD..'],
-};
-const LONG_HAIR = new Set(['Long', 'Streaked long', 'Waves', 'Braid', 'Dreadlocks', 'Pigtails']);
-const BOB_HAIR = new Set(['Bob', 'Curls', 'Shaggy', 'Ponytail', 'Bun', 'Space buns', 'Top knot', 'Afro', 'Mullet', 'Pixie']);
-const BRIMS = new Set(['Fedora', 'Bowler', 'Wide brim', 'Trilby', 'Top hat', 'Cowboy hat', 'Bucket hat', 'Deerstalker']);
-const TONE = { H: 1, h: 0, d: -1, D: -2 };
-const SKIN_T = { 1: 1, 2: 0, 3: -1, 4: -2, n: -1 };
-
-function paintHead(ctx, view) {
-  const { L, U, look, C, pose } = ctx;
-  const ox = 6, oy = U(HEAD_TOP - 2);
-  const hairName = PARTS.hair[look.hair], hatName = PARTS.hat[look.hat];
-  const lashes = PARTS.eyes[look.eyes] === 'Lashes';
-  const face = (lashes && FACE_LASH[view]) || FACE[view];
-  const lip = mix(shade(C.skin, 0.6), '#8e4a44', 0.5);
-  face.forEach((row, r) => [...row].forEach((ch, c) => {
-    const x = ox + c, y = oy + r;
-    if (ch === '.') return;
-    if (ch in SKIN_T) { L.P(x, y, 'skin', SKIN_T[ch]); return; }
-    L.P(x, y, 'skin', 0);
-    if (pose === 'ko' && (ch === 'w' || ch === 'e')) { L.O(x, y, shade(C.skin, 0.62)); return; }
-    if (ch === 'w') L.O(x, y, EYE_W);
-    if (ch === 'e') L.O(x, y, EYE);
-    if (ch === 'b') L.O(x, y, hairName === 'Bald' || hatName !== 'None' ? shade(C.skin, 0.55) : shade(C.hair, 0.6));
-    if (ch === 'm') L.O(x, y, lip);
-  }));
-  const kind = hairName === 'Bald' ? null : LONG_HAIR.has(hairName) ? 'long' : BOB_HAIR.has(hairName) ? 'bob' : 'short';
-  const hatted = hatName !== 'None' && hatName !== 'Hair bow';
-  if (kind) HAIR[kind][view].forEach((row, r) => {
-    if (hatted && r < 4) return;
-    [...row].forEach((ch, c) => { if (ch in TONE) L.P(ox + c, oy + r, 'hair', TONE[ch]); });
-  });
-  if (hatted) (BRIMS.has(hatName) ? HAT : CAP)[view].forEach((row, r) => [...row].forEach((ch, c) => { if (ch in TONE) L.P(ox + c, oy + r, 'hat', TONE[ch]); }));
 }

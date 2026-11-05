@@ -532,6 +532,10 @@ Build order (each a slice, checked with screenshots):
    **Built** (`src/engine/figure-noir.js`), behind a switch: add `?art=noir` to the game's address to see it. Heads
    use stand-in hair and hats (three hair shapes, a brimmed and a brimless hat) until 34b.
 2. 34b: hand-placed heads: every hair style, hat, face, eye, brow, mouth, facial hair and extra in all four directions.
+   **Built** (`src/engine/figure-noir-heads.js`), still behind `?art=noir`: all 26 hair styles and 21 hats, the 7 eye
+   shapes, 8 brows, 7 mouths, face details, 9 marks and 9 kinds of facial hair, glasses, aviators, monocle, spectacles,
+   eye cord, earrings, hoops and hair clips, balding, the cigarette, and closed eyes when knocked out. (Makeup, piercings
+   and the other portrait-only details stay portrait-only, as before.)
 3. 34c: portrait touch-up: clothes and accessories redrawn to match the new outfits and colours; nothing else changes.
 4. 34d: retake the store screenshots and feature graphic, then rebuild the Android bundle.
 
