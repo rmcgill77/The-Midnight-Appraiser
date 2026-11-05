@@ -529,6 +529,8 @@ files). Decisions from the mockup:
 Build order (each a slice, checked with screenshots):
 1. 34a: the new figure painter for the body and clothes (all outfits, builds and heights), four directions, walk,
    idle, carry, appraise and knocked-out poses.
+   **Built** (`src/engine/figure-noir.js`), behind a switch: add `?art=noir` to the game's address to see it. Heads
+   use stand-in hair and hats (three hair shapes, a brimmed and a brimless hat) until 34b.
 2. 34b: hand-placed heads: every hair style, hat, face, eye, brow, mouth, facial hair and extra in all four directions.
 3. 34c: portrait touch-up: clothes and accessories redrawn to match the new outfits and colours; nothing else changes.
 4. 34d: retake the store screenshots and feature graphic, then rebuild the Android bundle.
