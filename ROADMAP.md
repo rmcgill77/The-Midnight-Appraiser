@@ -504,6 +504,39 @@ realm (it can be built at any time, independent of the rest). Each slice can be 
 - Whether the Town Hall NPCs' schedules follow the long day and whether the council meets on a fixed weekday; how hard the
   Hearing should be to fail; the final names and looks of the Brethren and the Horned Judge.
 
+### Phase 34: Noir character art (style approved from a mockup; not built yet)
+
+The owner wants the characters redrawn in the look of the craftpix "gangster" pixel pack (no guns), bought as a
+free asset. The pack is a side-view platformer set of three fixed characters, so it is a style reference only: none of
+its files go into the game or the repo (the repo is public, and the pack's licence does not allow redistributing its
+files). Decisions from the mockup:
+
+- **Same size as now.** Walking figures stay 24 x 32, so they still fit the 16-pixel city and its doors. A taller
+  32 x 44 version was tried and rejected: it towered over the doors.
+- **The look:** muted noir colours, four shades per material lit from the upper left, rounded (spherical) shading on
+  heads, hair and hats, dark outlines tinted to the colour they touch, dark seams where arms cross the body, adult
+  proportions with a smaller head, open trench coats with lapels and ties.
+- **Faces with more definition.** At 24 x 32 the head, hair and hat are placed by hand at the final size (brows, eyes
+  with whites, a nose shadow, a mouth; lashes and fuller lips on the feminine face) rather than drawn large and shrunk.
+- **Portraits keep their current style** (the owner's call after seeing a 64 x 64 redesign). They are only updated
+  so the clothes and accessories match the new figures: the same outfits (trench coat with lapels and tie, braces,
+  jackets, dresses and the rest) and the same noir colours for clothes. Faces, hair, moods and the 96 x 96 size stay
+  as they are.
+- **Nothing about saves changes.** The creator keeps its index-based options: every existing option (hair, hats,
+  outfits, builds, skin, makeup and the rest) is redrawn in the new style under the same number, so saves and townsfolk
+  keep their looks.
+
+Build order (each a slice, checked with screenshots):
+1. 34a: the new figure painter for the body and clothes (all outfits, builds and heights), four directions, walk,
+   idle, carry, appraise and knocked-out poses.
+   **Built** (`src/engine/figure-noir.js`), behind a switch: add `?art=noir` to the game's address to see it. Heads
+   use stand-in hair and hats (three hair shapes, a brimmed and a brimless hat) until 34b.
+2. 34b: hand-placed heads: every hair style, hat, face, eye, brow, mouth, facial hair and extra in all four directions.
+3. 34c: portrait touch-up: clothes and accessories redrawn to match the new outfits and colours; nothing else changes.
+4. 34d: retake the store screenshots and feature graphic, then rebuild the Android bundle.
+
+Open question: how far the townsfolk's existing colour choices should be shifted toward the noir palette.
+
 ## Consistency check (done)
 
 All four phases were re-read against each other. Resolved: awake-time day length, the two

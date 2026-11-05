@@ -17,6 +17,14 @@
 
 import { makeCanvas } from './sprites.js';
 import { cleanLook, MOODS, shade, SKINS, HAIR_COLORS, CLOTH, EYE_COLORS, PARTS } from './figure.js';
+import { paintNoir } from './figure-noir.js';
+
+// Phase 34: the noir figures are built behind a switch until the owner approves them. Add ?art=noir to the
+// address to see them; everyone else keeps the current art. (Portraits are unchanged either way.)
+let ART = 'classic';
+try { if (/[?&]art=noir\b/.test(globalThis.location?.search ?? '')) ART = 'noir'; } catch { /* no location: tests */ }
+export const artStyle = () => ART;
+export function setArtStyle(s) { ART = s === 'noir' ? 'noir' : 'classic'; }
 
 export const HD_W = 24, HD_H = 32;
 export const HD_OFFSET = { x: -4, y: -15 };   // from the 16x16 entity box to the 24x32 sprite
@@ -154,6 +162,7 @@ function palette(L, opts = {}) {
 // opts.signature: the appraiser's loupe on its cord (the player always wears it).
 export function paintHD(lookIn, facing = 'down', frame = 0, pose = 'walk', opts = {}) {
   const look = cleanLook(lookIn);
+  if (ART === 'noir') return paintNoir(look, facing, frame, pose, opts);
   if (pose === 'ko') return paintKO(look, opts);
   if (pose === 'appraise') facing = 'down';
   const L = makeLayer(HD_W, HD_H);
