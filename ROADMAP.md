@@ -518,8 +518,10 @@ files). Decisions from the mockup:
   proportions with a smaller head, open trench coats with lapels and ties.
 - **Faces with more definition.** At 24 x 32 the head, hair and hat are placed by hand at the final size (brows, eyes
   with whites, a nose shadow, a mouth; lashes and fuller lips on the feminine face) rather than drawn large and shrunk.
-- **Portraits redesigned to match:** busts drawn at 64 x 64 in the same style (shown at 128 x 128), with clearly
-  different moods (brows, eye openness, mouth shape). All 12 existing moods get the new treatment.
+- **Portraits keep their current style** (the owner's call after seeing a 64 x 64 redesign). They are only updated
+  so the clothes and accessories match the new figures: the same outfits (trench coat with lapels and tie, braces,
+  jackets, dresses and the rest) and the same noir colours for clothes. Faces, hair, moods and the 96 x 96 size stay
+  as they are.
 - **Nothing about saves changes.** The creator keeps its index-based options: every existing option (hair, hats,
   outfits, builds, skin, makeup and the rest) is redrawn in the new style under the same number, so saves and townsfolk
   keep their looks.
@@ -528,11 +530,10 @@ Build order (each a slice, checked with screenshots):
 1. 34a: the new figure painter for the body and clothes (all outfits, builds and heights), four directions, walk,
    idle, carry, appraise and knocked-out poses.
 2. 34b: hand-placed heads: every hair style, hat, face, eye, brow, mouth, facial hair and extra in all four directions.
-3. 34c: the new 64 x 64 portrait painter with all 12 moods, and the conversation and creator panels resized for it.
+3. 34c: portrait touch-up: clothes and accessories redrawn to match the new outfits and colours; nothing else changes.
 4. 34d: retake the store screenshots and feature graphic, then rebuild the Android bundle.
 
-Open questions: whether the 64 x 64 portrait's larger panel needs layout changes on small phones; how far the
-townsfolk's existing colour choices should be shifted toward the noir palette.
+Open question: how far the townsfolk's existing colour choices should be shifted toward the noir palette.
 
 ## Consistency check (done)
 
