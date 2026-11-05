@@ -1,0 +1,25 @@
+{
+  "name": "midnight-appraiser-android",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Capacitor wrapper that packages The Midnight Appraiser as an Android app (Google Play).",
+  "scripts": {
+    "www": "node scripts/prepare-www.mjs",
+    "add": "cap add android",
+    "patch": "node scripts/patch-android.mjs",
+    "sync": "cap sync android",
+    "bundle": "cd android && ./gradlew bundleRelease",
+    "sign": "node scripts/sign-aab.mjs",
+    "all": "npm run www && npm run add && npm run patch && npm run sync && npm run bundle && npm run sign"
+  },
+  "dependencies": {
+    "@capacitor/android": "latest",
+    "@capacitor/core": "latest"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "latest",
+    "@fontsource/atkinson-hyperlegible": "latest",
+    "@fontsource/barlow-condensed": "latest"
+  }
+}
