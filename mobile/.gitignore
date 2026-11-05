@@ -3,3 +3,6 @@ android/
 www/
 dist-play/
 signing/
+app-version.json
+store/screenshots/05-sign.png
+store/screenshots/06-night-street.png
