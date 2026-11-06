@@ -504,7 +504,7 @@ realm (it can be built at any time, independent of the rest). Each slice can be 
 - Whether the Town Hall NPCs' schedules follow the long day and whether the council meets on a fixed weekday; how hard the
   Hearing should be to fail; the final names and looks of the Brethren and the Horned Judge.
 
-### Phase 34: Noir character art (style approved from a mockup; not built yet)
+### Phase 34: Noir character art (built, version 3.1.0)
 
 The owner wants the characters redrawn in the look of the craftpix "gangster" pixel pack (no guns), bought as a
 free asset. The pack is a side-view platformer set of three fixed characters, so it is a style reference only: none of
@@ -541,6 +541,9 @@ Build order (each a slice, checked with screenshots):
    seam where shirt meets coat, the trench coat's storm flap, the leather jacket's slanted zip, the raincoat's toggles,
    the kimono's sash in the accessory colour and the jacket's buttons. Faces, hair, moods and the 96 x 96 size are unchanged.
 4. 34d: retake the store screenshots and feature graphic, then rebuild the Android bundle.
+   **Built** (version 3.1.0): the noir art is on for everyone and the `?art=noir` switch is gone (the classic painter
+   stays in the code for tests and comparison). New store screenshots and feature graphic in `mobile/store/`. The owner
+   rebuilds the Android bundle from the Actions tab.
 
 Open question: how far the townsfolk's existing colour choices should be shifted toward the noir palette.
 

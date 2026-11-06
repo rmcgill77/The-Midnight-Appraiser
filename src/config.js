@@ -3,7 +3,7 @@
 export const CONFIG = {
   title: 'The Midnight Appraiser',
   saveVersion: 1,
-  version: '3.0.0',
+  version: '3.1.0',
   saveSlots: 3,
 
   tile: 16,

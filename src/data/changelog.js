@@ -2,6 +2,11 @@
 // Written for players: what they'll notice, not how it was built.
 
 export const CHANGELOG = [
+  { version: '3.1.0', title: 'New faces in town', items: [
+    'Everyone has been redrawn in a new noir style: grown-up proportions, lamp-lit shading with cool shadows, and faces with real features at walking size. Every hairstyle, hat, outfit and accessory in the creator has a new look, and your character and everyone in town keep theirs.',
+    'Portraits keep their faces; their clothes now match the new outfits.',
+    'Since 3.0: smooth, curving roads with a roundabout, lamplit windows and moving shadows, walk in and out of your shop and apartment freely, open the shop from its sign (and late, after dark, twice a week), and night spots are entered from their own doors.',
+  ] },
   { version: '3.0.0', title: 'Day and night, flowing', items: [
     'The day is one long, continuous day now, about fifteen to twenty minutes from waking to bed, with the night after it. No more menus to pick the day and the night.',
     'Open the shop when you like, for up to eight hours, set from the sign at the front. Pick a closed day each week. While it is open you stay in the shop; the rest of the time the city, your friends and the water are yours.',
