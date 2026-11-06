@@ -52,3 +52,15 @@ test('left is right mirrored (the shape; the light stays on the upper left)', ()
   const r = paintNoir(cleanLook(CLASSIC_LOOK), 'right', 2, 'walk'), l = paintNoir(cleanLook(CLASSIC_LOOK), 'left', 2, 'walk');
   assert.deepEqual(l.map(row => row.map(Boolean)), r.map(row => [...row].reverse().map(Boolean)));
 });
+
+test('34c: a noir portrait changes the clothes only: same size, the same face and hair', async () => {
+  const { paintPortraitHD } = await import('../src/engine/figure-hd.js');
+  const look = { ...CLASSIC_LOOK, hat: 0 };
+  const classic = paintPortraitHD(look, { mood: 'happy' });
+  setArtStyle('noir');
+  let noir;
+  try { noir = paintPortraitHD(look, { mood: 'happy' }); } finally { setArtStyle('classic'); }
+  assert.equal(noir.length, classic.length); assert.equal(noir[0].length, classic[0].length);
+  assert.deepEqual(noir.slice(0, 64), classic.slice(0, 64), 'the head is untouched');
+  assert.notDeepEqual(noir.slice(70), classic.slice(70), 'the clothes are restyled');
+});

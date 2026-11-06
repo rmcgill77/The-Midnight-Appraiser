@@ -17,7 +17,7 @@
 
 import { makeCanvas } from './sprites.js';
 import { cleanLook, MOODS, shade, SKINS, HAIR_COLORS, CLOTH, EYE_COLORS, PARTS } from './figure.js';
-import { paintNoir } from './figure-noir.js';
+import { paintNoir, noirRamp } from './figure-noir.js';
 
 // Phase 34: the noir figures are built behind a switch until the owner approves them. Add ?art=noir to the
 // address to see them; everyone else keeps the current art. (Portraits are unchanged either way.)
@@ -1600,7 +1600,30 @@ export function paintPortrait(lookIn, opts = {}) {
     O(14, 43, '#f4fbff'); O(15, 43, LENS); O(14, 44, LENS); O(15, 44, mix(LENS, INK, 0.35));
   }
 
+  if (ART === 'noir') noirPortraitClothes(L, C, look, top, cx);
   return compose(L, C.R, { band: 2, rim: true, outline: true });
+}
+
+// Phase 34c: with the noir figures, a portrait keeps its face, hair, moods and size; only the clothes change to
+// match the walking figure: the same noir colour ramps (warm light, cool shadow) and the details the figure has.
+const CLOTH_MATS = ['top', 'sleeve', 'sleeveF', 'hood', 'shirt', 'cuff', 'neckw', 'ex', 'ex2', 'strap', 'hat', 'brim', 'band'];
+function noirPortraitClothes(L, C, look, top, cx) {
+  const raw = { top: C.top, ex: C.ex, neckw: C.neck };
+  for (const m of CLOTH_MATS) if (C.R[m]) C.R[m] = noirRamp(raw[m] ?? C.R[m][2]);
+  const at = (x, y) => L.at(x, y), O = L.O;
+  const N = L.W;
+  const each = fn => { for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) fn(x, y); };
+  // a dark seam where the shirt meets the coat, as on the figure
+  each((x, y) => { if (at(x, y) === 'top' && (at(x - 1, y) === 'shirt' || at(x + 1, y) === 'shirt') && y > 37) O(x, y, c => c && shade(c, 0.6)); });
+  if (top === 'Trench coat') each((x, y) => { if (at(x, y) === 'top' && y >= 37 && y <= 40 && x <= cx - 6 && x >= cx - 10) O(x, y, c => c && shade(c, 1.12)); });   // the storm flap
+  if (top === 'Leather jacket') {
+    for (let y = 41; y <= 47; y++) O(24, y, null);                                           // the zip runs on the slant
+    for (let i = 0; i <= 7; i++) { const x = Math.round(28 - i * 0.55), y = 40 + i; if (at(x, y) === 'top') O(x, y, SILVER); }
+  }
+  if (top === 'Raincoat') for (const y of [41, 44, 47]) { O(Math.round(cx - 0.5), y, GOLD); O(Math.round(cx + 0.5), y, shade(GOLD, 0.72)); }
+  if (top === 'Kimono robe') each((x, y) => { if (y >= 45 && y <= 47 && at(x, y) === 'top') O(x, y, y === 46 ? shade(C.ex, 1.1) : C.ex); });
+  if (top === 'Jacket') for (const y of [42, 45]) O(Math.round(cx - 3), y, c => c && shade(c, 0.6));
+  void look;
 }
 
 // Scale2x (EPX): each pixel becomes four, and a corner takes its neighbor's color where two
