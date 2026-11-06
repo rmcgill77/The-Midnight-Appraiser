@@ -537,6 +537,9 @@ Build order (each a slice, checked with screenshots):
    eye cord, earrings, hoops and hair clips, balding, the cigarette, and closed eyes when knocked out. (Makeup, piercings
    and the other portrait-only details stay portrait-only, as before.)
 3. 34c: portrait touch-up: clothes and accessories redrawn to match the new outfits and colours; nothing else changes.
+   **Built**, behind `?art=noir`: clothes, neckwear, accessories and hats take the figures' noir colour ramps, with a
+   seam where shirt meets coat, the trench coat's storm flap, the leather jacket's slanted zip, the raincoat's toggles,
+   the kimono's sash in the accessory colour and the jacket's buttons. Faces, hair, moods and the 96 x 96 size are unchanged.
 4. 34d: retake the store screenshots and feature graphic, then rebuild the Android bundle.
 
 Open question: how far the townsfolk's existing colour choices should be shifted toward the noir palette.
