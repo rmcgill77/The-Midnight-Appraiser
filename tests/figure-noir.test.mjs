@@ -1,5 +1,5 @@
 // Phase 34a: the noir figure paints every option in every pose and direction, keeps the 24x32 frame
-// (32x24 knocked out) and the feet where the old figure had them, and is off unless switched on.
+// (32x24 knocked out) and the feet where the old figure had them, and is what players see.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { paintHD, setArtStyle, artStyle } from '../src/engine/figure-hd.js';
@@ -10,15 +10,13 @@ const POSES = [['walk', 4], ['idle', 2], ['carry', 4], ['appraise', 2]];
 const FACINGS = ['down', 'up', 'left', 'right'];
 const filled = g => g.flat().filter(Boolean).length;
 
-test('the switch is off by default, and switching it changes what paintHD draws', () => {
-  assert.equal(artStyle(), 'classic');
-  const classic = paintHD(CLASSIC_LOOK, 'down', 0);
-  setArtStyle('noir');
-  try {
-    assert.equal(artStyle(), 'noir');
-    assert.notDeepEqual(paintHD(CLASSIC_LOOK, 'down', 0), classic);
-  } finally { setArtStyle('classic'); }
-  assert.deepEqual(paintHD(CLASSIC_LOOK, 'down', 0), classic);
+test('the noir art is on by default; the classic painter is still there for comparison', () => {
+  assert.equal(artStyle(), 'noir');
+  const noir = paintHD(CLASSIC_LOOK, 'down', 0);
+  assert.deepEqual(noir, paintNoir(cleanLook(CLASSIC_LOOK), 'down', 0));
+  setArtStyle('classic');
+  try { assert.notDeepEqual(paintHD(CLASSIC_LOOK, 'down', 0), noir); } finally { setArtStyle('noir'); }
+  assert.equal(artStyle(), 'noir');
 });
 
 test('every option paints in every pose and direction, at the right size', () => {
@@ -56,10 +54,10 @@ test('left is right mirrored (the shape; the light stays on the upper left)', ()
 test('34c: a noir portrait changes the clothes only: same size, the same face and hair', async () => {
   const { paintPortraitHD } = await import('../src/engine/figure-hd.js');
   const look = { ...CLASSIC_LOOK, hat: 0 };
-  const classic = paintPortraitHD(look, { mood: 'happy' });
-  setArtStyle('noir');
-  let noir;
-  try { noir = paintPortraitHD(look, { mood: 'happy' }); } finally { setArtStyle('classic'); }
+  const noir = paintPortraitHD(look, { mood: 'happy' });
+  setArtStyle('classic');
+  let classic;
+  try { classic = paintPortraitHD(look, { mood: 'happy' }); } finally { setArtStyle('noir'); }
   assert.equal(noir.length, classic.length); assert.equal(noir[0].length, classic[0].length);
   assert.deepEqual(noir.slice(0, 64), classic.slice(0, 64), 'the head is untouched');
   assert.notDeepEqual(noir.slice(70), classic.slice(70), 'the clothes are restyled');

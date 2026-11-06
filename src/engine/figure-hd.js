@@ -19,10 +19,9 @@ import { makeCanvas } from './sprites.js';
 import { cleanLook, MOODS, shade, SKINS, HAIR_COLORS, CLOTH, EYE_COLORS, PARTS } from './figure.js';
 import { paintNoir, noirRamp } from './figure-noir.js';
 
-// Phase 34: the noir figures are built behind a switch until the owner approves them. Add ?art=noir to the
-// address to see them; everyone else keeps the current art. (Portraits are unchanged either way.)
-let ART = 'classic';
-try { if (/[?&]art=noir\b/.test(globalThis.location?.search ?? '')) ART = 'noir'; } catch { /* no location: tests */ }
+// Phase 34: the walking figures are drawn by figure-noir.js, and portrait clothes take its colours. The classic
+// painter below is kept for tests and comparison (setArtStyle('classic')); players always see the noir art.
+let ART = 'noir';
 export const artStyle = () => ART;
 export function setArtStyle(s) { ART = s === 'noir' ? 'noir' : 'classic'; }
 
